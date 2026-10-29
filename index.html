@@ -1001,7 +1001,77 @@ window.addEventListener('error', function (e) {
 
     const AudioController = {
         audioCtx: null, // 新增 Web Audio Context
+        // 手機（尤其 iOS）的 Web Audio 預設是靜音／暫停狀態，必須在使用者手勢內喚醒；
+        // 且 iOS 的實體靜音開關會讓 Web Audio 無聲，需靠播放一段無聲 <audio> 切換為「媒體播放」模式。
+        _silentEl: null,
+        _makeSilentWav: function() {
+            // 產生 0.5 秒、8kHz、單聲道、8-bit 的無聲 WAV（data URI）
+            const n = 4000, buf = new Uint8Array(44 + n);
+            const w32 = (o, v) => { buf[o] = v & 255; buf[o+1] = (v >> 8) & 255; buf[o+2] = (v >> 16) & 255; buf[o+3] = (v >> 24) & 255; };
+            const w16 = (o, v) => { buf[o] = v & 255; buf[o+1] = (v >> 8) & 255; };
+            [82,73,70,70].forEach((c, i) => buf[i] = c); w32(4, 36 + n);
+            [87,65,86,69,102,109,116,32].forEach((c, i) => buf[8 + i] = c);
+            w32(16, 16); w16(20, 1); w16(22, 1); w32(24, 8000); w32(28, 8000); w16(32, 1); w16(34, 8);
+            [100,97,116,97].forEach((c, i) => buf[36 + i] = c); w32(40, n);
+            for (let i = 0; i < n; i++) buf[44 + i] = 128;
+            let bin = ''; for (let i = 0; i < buf.length; i++) bin += String.fromCharCode(buf[i]);
+            return 'data:audio/wav;base64,' + btoa(bin);
+        },
+        wakeWebAudio: function() {
+            try {
+                const c = this._ctx();
+                if (!c) return;
+                if (c.state !== 'running') { try { c.resume(); } catch (e) {} }
+                if (!this._silentEl) {
+                    const a = new Audio(this._makeSilentWav());
+                    a.loop = true; a.setAttribute('playsinline', ''); a.preload = 'auto';
+                    this._silentEl = a;
+                    this.safePlay(a);
+                }
+                // 播放一個極短的無聲緩衝，完成 iOS 的解鎖
+                if (!this._wokeOnce) {
+                    this._wokeOnce = true;
+                    const b = c.createBuffer(1, 1, 22050), src = c.createBufferSource();
+                    src.buffer = b; src.connect(c.destination); src.start(0);
+                }
+            } catch (e) { console.log('Web Audio 喚醒失敗', e); }
+        },
+        _audioNoteShown: {},
+        reportMissingAudio: function(el) {
+            try {
+                const name = el.getAttribute('src');
+                if (this._audioNoteShown[name]) return;
+                this._audioNoteShown[name] = true;
+                let box = document.getElementById('audio-note');
+                if (!box) {
+                    box = document.createElement('div'); box.id = 'audio-note';
+                    box.style.cssText = 'position:fixed;left:8px;right:8px;bottom:8px;z-index:9998;background:#fff6d6;color:#5c4a42;border:2px solid #b8860b;border-radius:8px;font:14px/1.6 sans-serif;padding:8px 12px;';
+                    document.body.appendChild(box);
+                    setTimeout(() => { if (box.parentNode) box.parentNode.removeChild(box); }, 12000);
+                }
+                box.innerHTML += '♪ 找不到音樂檔「' + name + '」——請確認檔案已上傳到與網頁相同的資料夾，且檔名（含大小寫、空格）完全一致。<br>';
+            } catch (e) {}
+        },
         init: function() {
+            // 每次使用者手勢都檢查一次，確保 Web Audio 處於運作狀態（手機可能在切換 App 後再次暫停）
+            const wake = () => {
+                if (!this.audioCtx || this.audioCtx.state !== 'running' || !this._silentEl) this.wakeWebAudio();
+            };
+            ['touchstart', 'touchend', 'pointerdown', 'click', 'keydown'].forEach(ev =>
+                document.addEventListener(ev, wake, true));
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden && this.audioCtx && this.audioCtx.state !== 'running') { try { this.audioCtx.resume(); } catch (e) {} }
+            });
+            ['bg-music', 'ending-music', 'game-over-sound'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('error', () => this.reportMissingAudio(el));
+            });
+            // 錯誤事件可能在腳本執行前就已發生，所以也定時檢查音檔是否載入失敗（networkState 3 = 找不到來源）
+            const checkMissing = () => ['bg-music', 'ending-music', 'game-over-sound'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el && (el.networkState === 3 || el.error)) this.reportMissingAudio(el);
+            });
+            setTimeout(checkMissing, 1500); setTimeout(checkMissing, 5000);
             document.body.addEventListener('click', () => this.unlockAudio(), { once: true });
             // 全站按鈕音效（選項按鈕由 showFeedback 播放確認音，換造型按鈕播放骰子聲）
             document.addEventListener('click', (e) => {
@@ -1102,7 +1172,7 @@ window.addEventListener('error', function (e) {
         _ctx: function() {
             try {
                 if (!this.audioCtx) this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
+                if (this.audioCtx.state !== 'running') this.audioCtx.resume();
                 if (!this._master) {
                     // 總音量 + 壓縮器，避免多個音效疊加時爆音
                     const comp = this.audioCtx.createDynamicsCompressor();
