@@ -1019,7 +1019,7 @@ window.addEventListener('error', function (e) {
             <div id="handoff-sub" class="handoff-sub"></div>
             <div id="handoff-instruct" class="handoff-instruct"></div>
             <button id="handoff-ready-btn" class="btn handoff-btn" onclick="Page3_Gameplay.confirmHandoff()">我準備好了</button>
-            <div class="handoff-note">按下按鈕前，情境與選項不會顯示。<br>其他玩家請先移開視線，避免偷看。</div>
+            <div class="handoff-note">按下按鈕前，情境與選項不會顯示。</div>
         </div>
     </div>
 
@@ -2937,20 +2937,8 @@ const SceneArt = (function () {
                 return `<div class="title-row ${(i === cur && !p.isDead) ? 'current' : ''} ${p.isDead ? 'dead' : ''}"><span class="tr-name">${p.name}</span>${chips}</div>`;
             }).join('');
 
-            // 輪到的玩家若有稱號，給全班一句互動提示（同玩家同回合同稱號只抽一次，避免重繪時跳動）
-            let prompt = '';
-            const curP = players[cur];
-            if (curP && !curP.isDead && titles[cur].length) {
-                const pick = titles[cur].find(t => t.cls === 't-bad') || titles[cur][0];
-                const arr = this.quips[pick.key] || [];
-                curP._quipCache = curP._quipCache || {};
-                const ck = GameState.currentRound + ':' + pick.key;
-                if (!curP._quipCache[ck] && arr.length) curP._quipCache[ck] = arr[Math.floor(Math.random() * arr.length)];
-                if (curP._quipCache[ck]) {
-                    const line = curP._quipCache[ck].replace(/\{t\}/g, pick.label).replace(/\{n\}/g, curP.name).replace(/【([^】]+)】/g, '<span class="pp-tag">【$1】</span>');
-                    prompt = `<div class="party-prompt">🎉 ${line}</div>`;
-                }
-            }
+            // 已依需求移除第 4 回合起的互動問句（只保留稱號列表）
+            const prompt = '';
 
             const sigNow = players.map((p, i) => titles[i].map(t => i + ':' + t.key));
             const flat = [].concat(...sigNow);
@@ -3369,6 +3357,12 @@ const SceneArt = (function () {
             return max;
         },
         count: function(log, pred) { return log.filter(pred).length; },
+        // 道德指數 ≥ 8，且全場沒有其他人同分或更高（同分則都不給）
+        MORAL_HONOR_MIN: 8,
+        soleTopMoral: function(p, all) {
+            if (p.moral < this.MORAL_HONOR_MIN) return false;
+            return all.every(function(x) { return x === p || x.moral < p.moral; });
+        },
 
         defs: [
             // ---- 連續抉擇模式：三種「選擇務實／放棄道德選項」、兩種「選擇道德選項」----
@@ -3417,18 +3411,16 @@ const SceneArt = (function () {
             // ---- 結局與數值相關：結算時才看得出來 ----
             {
                 icon: '🕊️', name: '國際義人之路',
-                desc: '最終存活，且道德指數是全場最高。',
+                desc: '最終存活，道德指數達 8 以上，且是全場唯一最高。',
                 test: function(p, log, all) {
-                    const maxMoral = Math.max.apply(null, all.map(function(x) { return x.moral; }));
-                    return !p.isDead && p.moral === maxMoral;
+                    return !p.isDead && Achievements.soleTopMoral(p, all);
                 }
             },
             {
                 icon: '⚰️', name: '殉道者',
-                desc: '最終雖未能倖存，道德指數卻是全場最高——死得其所。',
+                desc: '最終雖未能倖存，道德指數卻達 8 以上且是全場唯一最高——死得其所。',
                 test: function(p, log, all) {
-                    const maxMoral = Math.max.apply(null, all.map(function(x) { return x.moral; }));
-                    return p.isDead && p.moral === maxMoral;
+                    return p.isDead && Achievements.soleTopMoral(p, all);
                 }
             },
             {
@@ -3845,7 +3837,6 @@ const SceneArt = (function () {
                     <div class="history-section">
                         <div class="history-title">🎞️ 人生跑馬燈</div>
                         <div class="history-cards">經歷情境：${p.history.length > 0 ? p.history.join(' ➔ ') : '無'}</div>
-                        ${worstDecisionHtml}
                     </div>
                 `;
 
