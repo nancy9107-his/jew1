@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>1940 ：誰能活下去？</title>
     <!-- 引入 Noto Serif TC (支援 400 一般與 900 Black 粗細) -->
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;900&display=swap" rel="stylesheet">
+    <meta name="theme-color" content="#0b0b0a">
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&family=Noto+Sans+TC:wght@400;700;900&family=Noto+Serif+TC:wght@400;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --parchment-bg: #f4ecd8;
@@ -613,6 +614,241 @@
         }
         .party-prompt .pp-tag { color: var(--accent-red); }
 
+
+        /* ==========================================================
+           戰時檔案風格（深色・打字機字體・機密印章）
+           以下規則覆蓋前面的繪本配色；尺寸類規則仍由下方 RWD 控制
+           ========================================================== */
+        :root {
+            --parchment-bg: #1c1a17;
+            --parchment-dark: #2b2824;
+            --text-main: #ddd7c4;
+            --text-muted: #a39d89;
+            --border-color: #5b5646;
+            --accent-red: #e0584b;
+            --accent-blue: #86aed1;
+            --accent-green: #82c48d;
+            --card-bg: #24221e;
+            --amber: #e0b84f;
+            --type: "Special Elite", "Courier Prime", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", monospace;
+        }
+        body {
+            font-family: var(--type);
+            background: radial-gradient(ellipse at 50% 0%, #1f1e1a 0%, #0a0a09 70%);
+            color: var(--text-main);
+        }
+        /* 掃描線與暗角：老舊螢幕／檔案投影的質感 */
+        body::after {
+            content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 50;
+            background:
+                repeating-linear-gradient(to bottom, rgba(0,0,0,0.16) 0, rgba(0,0,0,0.16) 1px, transparent 1px, transparent 3px),
+                radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.45) 100%);
+            opacity: 0.4;
+        }
+        .container {
+            background-color: #171613;
+            background-image: repeating-linear-gradient(0deg, rgba(255,255,255,0.012) 0 2px, transparent 2px 4px);
+            border: 2px solid var(--border-color);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.9), inset 0 0 0 6px #171613, inset 0 0 0 7px #3a372d;
+        }
+        /* 左上角「機密」印章 */
+        .container::before {
+            content: "機密 ‧ TOP SECRET";
+            position: absolute; top: 22px; left: 26px; z-index: 5; pointer-events: none;
+            border: 3px solid var(--accent-red); color: var(--accent-red);
+            padding: 2px 12px; font-size: 0.95rem; font-weight: 900; letter-spacing: 3px;
+            transform: rotate(-4deg); opacity: 0.85; border-radius: 3px;
+        }
+        .file-meta {
+            text-align: center; font-size: 1rem; color: var(--text-muted);
+            letter-spacing: 3px; margin: -6px 0 24px; line-height: 1.7;
+        }
+        h1 {
+            font-family: var(--type); color: #ece6d2; letter-spacing: 4px;
+            border-bottom: 3px double var(--border-color);
+            text-shadow: 0 0 18px rgba(224,88,75,0.28);
+        }
+        h2 { font-family: var(--type); letter-spacing: 3px; }
+        h2::before { content: "▌"; color: var(--accent-red); margin-right: 8px; }
+        .highlight-term { color: #ff7a6b; background-color: rgba(224,88,75,0.14); }
+
+        .btn {
+            background-color: #2b2824; color: var(--amber); border: 2px solid var(--border-color);
+            border-radius: 2px; letter-spacing: 3px; box-shadow: 3px 3px 0 rgba(0,0,0,0.6);
+        }
+        .btn:hover { background-color: var(--accent-red); color: #140f0d; border-color: var(--accent-red); box-shadow: 4px 5px 0 rgba(0,0,0,0.7); }
+        select, input { color: var(--text-main); background: #1b1a17; border-radius: 2px; font-family: inherit; }
+        input::placeholder { color: #6f6a5a; }
+        .player-input-group input:focus, select:focus { outline: 2px solid var(--amber); outline-offset: 1px; }
+        #music-toggle-btn { color: var(--text-muted); border-radius: 2px; letter-spacing: 1px; font-family: inherit; }
+
+        /* 身分檔案 */
+        .avatar-card { position: relative; border-radius: 4px; background: #24221e; padding-top: 34px; box-shadow: 4px 6px 14px rgba(0,0,0,0.6); }
+        .dossier-no { position: absolute; top: 9px; left: 12px; font-size: 0.85rem; color: var(--text-muted); letter-spacing: 2px; }
+        .avatar-role { display: inline-block; border: 3px solid currentColor; padding: 2px 12px; border-radius: 3px; transform: rotate(-3deg); letter-spacing: 2px; }
+        .reroll-btn { border-radius: 2px; font-family: inherit; color: var(--text-muted); }
+        /* 頭像與插畫：黑白檔案照片感 */
+        .avatar-card svg, .roster-item svg, .ending-avatar svg, #current-player-avatar svg {
+            filter: grayscale(0.35) sepia(0.25) contrast(1.06) brightness(0.98);
+        }
+        .scene-box svg {
+            filter: grayscale(0.85) sepia(0.35) contrast(1.12) brightness(0.88);
+            border: 5px solid #cfc9b6; border-bottom-width: 1px; border-radius: 2px;
+            box-shadow: 0 6px 14px rgba(0,0,0,0.7);
+        }
+        .scene-box .scene-cap { font-style: normal; letter-spacing: 1px; }
+        .scene-box .scene-cap::before { content: "▣ 照片說明："; color: var(--amber); }
+
+        /* 遊戲中 */
+        .game-status-bar { border-bottom: 3px double var(--border-color); }
+        .status-label.s-uneasy { color: #d9a441; }
+        .card-container { background: #1f1d19; border: 2px solid var(--border-color); border-radius: 2px; box-shadow: inset 0 0 40px rgba(0,0,0,0.5); }
+        .card-content {
+            font-size: 1.75rem;
+            background: linear-gradient(160deg, #2a2823 0%, #201e1a 100%);
+            border: 1px solid var(--border-color); border-radius: 3px;
+            box-shadow: 8px 12px 25px rgba(0,0,0,0.6), inset 0 0 0 4px #1c1a17, inset 0 0 0 5px #4a4638;
+        }
+        .card-content::after {
+            content: "案件 " attr(data-id);
+            position: absolute; top: 14px; right: 16px; z-index: 3; pointer-events: none;
+            transform: rotate(4deg); border: 3px solid var(--accent-red); color: var(--accent-red);
+            background: rgba(20,18,15,0.6); padding: 2px 12px; font-size: 1.1rem; font-weight: 900;
+            letter-spacing: 3px; opacity: 0.9; border-radius: 3px;
+        }
+        .card-content.chance-card {
+            background: linear-gradient(160deg, #2d2813 0%, #1f1b0d 100%); border-color: var(--amber);
+            box-shadow: 8px 12px 25px rgba(0,0,0,0.6), inset 0 0 0 4px #1c1a17, inset 0 0 0 5px #7a6428;
+        }
+        .card-content.chance-card::before { color: var(--amber); }
+        .card-content.chance-card::after { content: "機會 " attr(data-id); border-color: var(--amber); color: var(--amber); }
+        @keyframes flipCard3D {
+            0% { transform: rotateY(-90deg) scale(0.9); opacity: 0; box-shadow: 0 0 0 rgba(0,0,0,0); }
+            100% { transform: rotateY(0deg) scale(1); opacity: 1;
+                   box-shadow: 8px 12px 25px rgba(0,0,0,0.6), inset 0 0 0 4px #1c1a17, inset 0 0 0 5px #4a4638; }
+        }
+        .card-content.chance-card.flip-anim { animation-name: flipCard3DChance; }
+        @keyframes flipCard3DChance {
+            0% { transform: rotateY(-90deg) scale(0.9); opacity: 0; }
+            100% { transform: rotateY(0deg) scale(1); opacity: 1;
+                   box-shadow: 8px 12px 25px rgba(0,0,0,0.6), inset 0 0 0 4px #1c1a17, inset 0 0 0 5px #7a6428; }
+        }
+        /* 文字像打字機逐行印出 */
+        .card-content.flip-anim .card-text-body { animation: printOut 1.2s steps(12, end) both; }
+        @keyframes printOut { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0 0 0 0); } }
+        .option-btn {
+            background: #26241f; border: 2px solid var(--border-color); border-left: 6px solid var(--border-color);
+            border-radius: 2px; color: var(--text-main);
+        }
+        .option-btn:hover:not(:disabled) { background: #302d27; border-color: var(--amber); border-left-color: var(--amber); color: #fff; }
+        .option-btn.chance-btn { background: #2c2712; border-color: var(--amber); border-left-width: 2px; color: var(--amber); }
+        .feedback-box { border-radius: 2px; }
+        .fb-hint.dead { color: #140f0d; background: var(--accent-red); }
+        .death-banner { background-color: #2b1210; color: #ff8a7d; border: 3px double var(--accent-red); letter-spacing: 2px; }
+
+        /* 稱號與派對提示 */
+        .title-row { background: rgba(255,255,255,0.04); }
+        .title-chip { background: #1b1a17; color: var(--text-main); border-radius: 3px; }
+        .title-chip.t-bad { background: #2d1512; border-color: var(--accent-red); color: #ff8a7d; }
+        .title-chip.t-good { background: #14261a; border-color: var(--accent-green); color: var(--accent-green); }
+        .title-chip.t-neutral { background: #2c2410; border-color: #a8761a; color: var(--amber); }
+        .title-chip.t-dead { background: #2a2a2a; border-color: #777; color: #a0a0a0; }
+        .party-prompt { background: #2a2410; border: 2px dashed var(--amber); color: #eadfba; border-radius: 3px; }
+
+        /* 結算 */
+        .ending-card { position: relative; border-radius: 3px; border: 2px solid var(--border-color); box-shadow: inset 0 0 0 4px #1c1a17, inset 0 0 0 5px #3a372d; }
+        .ending-card::after {
+            content: "結案 CLOSED";
+            position: absolute; top: 18px; right: 18px; pointer-events: none;
+            transform: rotate(6deg); border: 3px solid var(--accent-red); color: var(--accent-red);
+            padding: 2px 10px; font-size: 1rem; font-weight: 900; letter-spacing: 2px; opacity: 0.8; border-radius: 3px;
+        }
+        .score-board th { color: var(--amber); }
+        .badge-section { background: #1f1d19; border: 1px solid #6b5a2a; border-radius: 3px; }
+        .badge-title { color: var(--amber); }
+        .badge-chip { background: #26241f; border: 1px solid var(--border-color); border-radius: 3px; }
+        .badge-text strong { color: var(--amber); }
+        .history-section { border-radius: 2px; }
+        .history-title { color: var(--accent-blue); }
+        .worst-title { color: #ff7a6b; }
+        .progress-bar-container { background: #2b2824; }
+        .share-box { border-radius: 2px; }
+
+        @media (max-width: 768px) {
+            .container::before { top: 10px; left: 10px; font-size: 0.7rem; padding: 1px 8px; letter-spacing: 2px; }
+            .file-meta { font-size: 0.78rem; letter-spacing: 1px; }
+            .card-content::after { font-size: 0.85rem; top: 8px; right: 8px; padding: 1px 8px; letter-spacing: 1px; }
+            .ending-card::after { font-size: 0.8rem; top: 8px; right: 8px; padding: 1px 6px; }
+            h2::before { margin-right: 4px; }
+            .card-content.chance-card.flip-anim { animation-name: flipCard3DMobile; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .card-content.flip-anim .card-text-body { animation: none !important; }
+        }
+
+        /* --- 回合交接過場（全螢幕，擋住卡牌避免誤觸與偷看）--- */
+        .handoff-overlay {
+            display: none; position: fixed; inset: 0; z-index: 9500;
+            background: #0a0908 radial-gradient(ellipse at 50% 30%, #25221d 0%, #0a0908 75%);
+            overflow-y: auto; -webkit-overflow-scrolling: touch;
+            align-items: center; justify-content: center; padding: 20px; box-sizing: border-box;
+        }
+        .handoff-overlay.active { display: flex; }
+        .handoff-overlay::before {
+            content: ""; position: absolute; inset: 0; pointer-events: none;
+            background: repeating-linear-gradient(to bottom, rgba(0,0,0,0.18) 0, rgba(0,0,0,0.18) 1px, transparent 1px, transparent 3px);
+        }
+        .handoff-inner {
+            position: relative; width: 100%; max-width: 760px; margin: auto; text-align: center;
+            border: 2px solid var(--border-color); box-shadow: inset 0 0 0 6px #14130f, inset 0 0 0 7px #3a372d, 0 20px 60px rgba(0,0,0,0.9);
+            background: #171613; padding: 44px 24px 32px; box-sizing: border-box;
+        }
+        .handoff-stamp {
+            position: absolute; top: 16px; left: 18px; transform: rotate(-4deg);
+            border: 3px solid var(--accent-red); color: var(--accent-red); padding: 2px 12px;
+            font-size: 0.95rem; font-weight: 900; letter-spacing: 3px; opacity: 0.85; border-radius: 3px;
+        }
+        .handoff-kicker { font-size: clamp(1.3rem, 4vw, 1.9rem); color: var(--text-muted); letter-spacing: 8px; margin-top: 8px; }
+        .handoff-avatar { margin: 16px auto 4px; display: flex; justify-content: center; }
+        .handoff-avatar svg { filter: grayscale(0.35) sepia(0.25) contrast(1.06) brightness(0.98); }
+        .handoff-name {
+            font-size: clamp(2.6rem, 11vw, 5.2rem); font-weight: 900; line-height: 1.15; color: #f0e9d2;
+            letter-spacing: 4px; word-break: break-all; text-shadow: 0 0 22px rgba(224,88,75,0.35);
+        }
+        .handoff-sub { font-size: clamp(1.05rem, 3.4vw, 1.35rem); color: var(--text-muted); letter-spacing: 3px; margin-top: 6px; }
+        .handoff-instruct {
+            margin: 22px auto 0; padding: 12px 14px; max-width: 560px; font-size: clamp(1.25rem, 4.6vw, 2rem); font-weight: 900;
+            color: var(--amber); border-top: 2px dashed var(--border-color); border-bottom: 2px dashed var(--border-color); line-height: 1.5;
+        }
+        .handoff-btn { margin-top: 28px; font-size: clamp(1.4rem, 5vw, 2rem); padding: 16px 44px; min-width: min(80%, 360px); }
+        .handoff-btn:disabled { opacity: 0.45; cursor: not-allowed; background: #26241f; color: var(--text-muted); box-shadow: none; }
+        .handoff-note { margin-top: 18px; font-size: clamp(0.9rem, 3vw, 1.05rem); color: var(--text-muted); line-height: 1.7; }
+        @media (max-width: 768px) { .handoff-stamp { top: 10px; left: 10px; font-size: 0.7rem; padding: 1px 8px; letter-spacing: 2px; } .handoff-inner { padding: 38px 14px 24px; } }
+
+        /* --- 歷史檔案卡視窗 --- */
+        .share-modal {
+            display: none; position: fixed; inset: 0; z-index: 9000;
+            background: rgba(10, 8, 7, 0.88); overflow-y: auto;
+            justify-content: center; align-items: flex-start; padding: 16px;
+        }
+        .share-modal.active { display: flex; }
+        .share-box {
+            width: 100%; max-width: 520px; text-align: center; margin: auto;
+            background: var(--card-bg); border: 4px double var(--border-color);
+            padding: 16px; box-sizing: border-box; box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+        }
+        .share-box img { width: 100%; height: auto; display: block; border: 2px solid var(--border-color); -webkit-touch-callout: default; }
+        .share-msg { font-size: 1.05rem; line-height: 1.6; color: var(--text-muted); margin: 12px 0; }
+        .share-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .share-act {
+            background: var(--parchment-dark); color: var(--text-main); border: 2px solid var(--border-color);
+            padding: 10px 18px; font-size: 1.1rem; font-family: inherit; font-weight: 900; cursor: pointer;
+        }
+        .share-act:disabled { opacity: 0.5; cursor: not-allowed; }
+        .share-act:hover:not(:disabled) { background: var(--text-main); color: var(--parchment-bg); }
+        .share-card-btn { font-size: 1.3rem; padding: 12px 22px; margin-top: 24px; }
+        @media (max-width: 768px) { .share-card-btn { font-size: 1.05rem; padding: 10px 14px; } }
+
         /* ==========================================================
            響應式設計（RWD）：平板與手機螢幕自動縮放
            ========================================================== */
@@ -755,11 +991,37 @@ window.addEventListener('error', function (e) {
 <div class="container">
     <button id="music-toggle-btn" onclick="AudioController.toggleMusic()">開啟音樂</button>
 
+    <div id="handoff-overlay" class="handoff-overlay" role="dialog" aria-modal="true" aria-labelledby="handoff-name">
+        <div class="handoff-inner">
+            <div class="handoff-stamp">傳遞裝置 ‧ HAND OVER</div>
+            <div class="handoff-kicker">接下來輪到</div>
+            <div id="handoff-avatar" class="handoff-avatar"></div>
+            <div id="handoff-name" class="handoff-name"></div>
+            <div id="handoff-sub" class="handoff-sub"></div>
+            <div id="handoff-instruct" class="handoff-instruct"></div>
+            <button id="handoff-ready-btn" class="btn handoff-btn" onclick="Page3_Gameplay.confirmHandoff()">我準備好了</button>
+            <div class="handoff-note">按下按鈕前，情境與選項不會顯示。<br>其他玩家請先移開視線，避免偷看。</div>
+        </div>
+    </div>
+
+    <div id="share-modal" class="share-modal" onclick="if (event.target === this) ShareCard.close()">
+        <div class="share-box">
+            <img id="share-img" alt="我的歷史檔案卡" style="display:none;">
+            <div id="share-msg" class="share-msg">檔案卡製作中…</div>
+            <div class="share-actions">
+                <button id="share-dl-btn" class="share-act" onclick="ShareCard.download()">⬇ 下載圖片</button>
+                <button id="share-send-btn" class="share-act" onclick="ShareCard.share()">📤 分享</button>
+                <button class="share-act" onclick="ShareCard.close()">關閉</button>
+            </div>
+        </div>
+    </div>
+
     <h1>1940 ：誰能活下去？</h1>
+    <div class="file-meta">檔案編號 1940-DE ｜ 保密等級：機密 ｜ 僅限歷史審判庭閱覽</div>
 
     <div id="step-1" class="step-section active">
         <h2>步驟一：設定玩家人數與姓名</h2>
-        <p style="text-align: center; color: var(--text-muted);">請選擇遊戲人數（1至6人），並輸入玩家姓名（限三個字內）。<br>系統將自動平均分配身分。</p>
+        <p style="text-align: center; color: var(--text-muted);">請選擇遊戲人數（1至6人），並輸入玩家姓名（限三個字內）。</p>
         <div style="text-align: center; margin: 40px 0;">
             <label for="player-count" style="font-size: 1.6rem; font-weight: 900;">遊戲人數 (1-6)：</label>
             <select id="player-count" onchange="Page1_Setup.renderPlayerInputs()">
@@ -829,120 +1091,127 @@ window.addEventListener('error', function (e) {
 
 <script>
     const gCards = [
-        { id: "G01", text: "G01\n凡穆勒醫生認為精神病患者和殘疾兒童是「浪費糧食的人」、「無用之人只是國家負擔」 ，將其安樂死是正當的行為。\n你是否會將劇毒調換為無害藥劑，並協助病童逃離醫院？", opt1: "是，我會暗中替換藥劑", opt2: "否，我會執行安樂死亡", s1: -1, m1: 2, s2: 1, m2: -2, fb1: "你成功救下了病童，但蓋世太保對藥劑的消耗起了疑心，你被列入了監視名單。", fb2: "你冷酷地執行了命令。長官對你的忠誠表示讚賞，但每當深夜，你總會聽見孩童的哭聲。" },
-        { id: "G02", text: "G02\n戈林將軍在一戰時創下擊落22架敵機的紀錄，因此被希特勒任命為德國空軍總司令。但是，完善空軍設備的經費卻是他強搶猶太人的財產而來。\n若你是戈林，是否會用猶太人財產來完備德國空軍？", opt1: "是，強大德國實力最重要", opt2: "否，侵吞他人財產不道德", s1: 1, m1: -1, s2: -1, m2: 1, fb1: "德國空軍日益壯大，你的權力也達到了頂峰，但雙手已沾滿無辜者的鮮血。", fb2: "你拒絕了這項提議。元首對你的軟弱感到失望，你的空軍預算遭到大幅削減。" },
-        { id: "G03", text: "G03\n「萊茵哈德行動」負責處理猶太人的財產。官員通過柏林的當舖、瑞士的珠寶市場來出售這些財物。然而，巨額財富也引發盜竊、貪腐等行為。\n若你沒收了大量猶太人的財物，你會如何處置？", opt1: "是，直接上繳充實國庫", opt2: "否，私藏珍貴物品變賣", s1: 1, m1: -1, s2: -1, m2: -2, fb1: "你將財富悉數上繳，獲得了上級的口頭表揚，但看著別的軍官中飽私囊，你內心五味雜陳。", fb2: "你偷偷藏起了名貴珠寶發了一筆橫財。然而你每天都心驚膽跳，深怕被查獲後送上軍事法庭。" },
-        { id: "G04", text: "G04\n普呂福在日記強烈批評屠殺猶太人的相關政策。但很可惜，普呂福日記的內容是在1946年（二戰結束後）加上去，就是刻意留下紀錄給將來的人閱讀。\n若你有書寫日記的習慣，你是否會像普呂福這樣做？", opt1: "是，我會刪除歧視的言論", opt2: "否，我不會竄改過往言論", s1: 1, m1: -1, s2: -1, m2: 1, fb1: "你銷毀了日記中所有敏感字眼。戰後調查時你成功自保，但歷史真相也因此少了一份見證。", fb2: "你冒著極大風險保留了原稿。這份日記日後成為紐倫堡大審的重要證據，但也讓你在戰時險些喪命。" },
-        { id: "G05", text: "G05\n1940年維也納科學會議裡，專家決議將「問題兒童」進行集中監管，但不少醫生反對，認為鼓勵、建立信任才能促進心理健康。\n若你是與會的精神科醫生，你會堅持反對監管嗎？", opt1: "是，即便高層會派人關切", opt2: "否，接受專家決議求升遷", s1: -1, m1: 2, s2: 1, m2: -2, fb1: "你堅持醫學倫理保護了數名兒童，卻被高層視為眼中釘，你的職涯岌岌可危。", fb2: "你妥協了。你如願獲得醫院高層的升遷，但看著被強制帶走的孩童，你的良知受到無盡折磨。" },
-        { id: "G06", text: "G06\n博斯成立小成衣廠，1930年因經濟不景氣，工廠面臨破產。於是，他決定為納粹軍方設計制服，替工廠帶來豐厚利潤。至1941年，成衣廠盈利增長80倍。\n若你是博斯，你願意成為納粹軍服的供應商嗎？", opt1: "是，能挽救破產危機", opt2: "否，不想與納粹掛勾", s1: 1, m1: -1, s2: -1, m2: 1, fb1: "成衣廠起死回生賺進大把鈔票，但你也成為了納粹戰爭機器的重要幫兇。", fb2: "你拒絕了訂單，工廠最終宣告破產。你失去了財富，卻保住了清白與靈魂。" },
-        { id: "G07", text: "G07\n醫生培育病毒，然後注射到犯人身上觀察效果，並沒有採取任何措施來減少疼痛。在實驗室裡，許多人蜷縮在角落，恐懼尖叫。\n執行實驗時，你是否願意為猶太人注射麻藥以減輕他們的痛苦？", opt1: "是，我會協助注射麻藥", opt2: "否，他人痛苦與我無關", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "你偷偷為受試者注射麻藥減輕痛苦，這短暫的仁慈讓你面臨被同僚舉發叛國的極大風險。", fb2: "你冷眼旁觀實驗進行。實驗數據逐漸完善，但你的心也隨著慘叫聲變得如鐵石般冰冷。" },
-        { id: "G08", text: "G08\n全國報社派出記者，每天都聚集在「宣傳部」接受納粹政權的指示。隨著希特勒地位持續上升，反納粹記者都遭驅離。野蠻指責猶太人的內容出現在所有的報紙之中。\n身為記者，你是否會配合納粹對猶太人醜化攻擊？", opt1: "是，加入譴責與醜化行列", opt2: "否，就事論事、眼見為憑", s1: 1, m1: -2, s2: -1, m2: 2, fb1: "你的激進報導大受宣傳部歡迎，知名度水漲船高，卻成為煽動仇恨的頭號打手。", fb2: "你堅持客觀報導，隨即遭到報社解雇，甚至面臨被蓋世太保送入集中營的威脅。" },
-        { id: "G09", text: "G09\n「生命源泉計畫」勸說年輕、種族純淨的女人和黨衛軍官結合，以產下純種亞利安後代，甚至鼓勵軍官與多名女人保持性關係。1936年上千名愛國少女未婚懷孕。在政府推動下，無需結婚且孩子是合法的。\n你是否願意出於愛國心，與黨衛軍官未婚懷孕？", opt1: "是，我願意加入集體配婚", opt2: "否，我不願因此犧牲真愛", s1: 1, m1: -1, s2: -1, m2: 1, fb1: "你成為了「國家英雄母親」並獲得豐厚補貼，但孩子生下後便被國家帶走，骨肉分離。", fb2: "你拒絕了這項荒謬的計畫，保住了對愛情的忠誠，卻被周遭鄰里貼上「不愛國」的危險標籤。" },
-        { id: "G10", text: "G10\n德國學校老師都須加入教師聯盟，宣誓效忠希特勒。「種族科學」課程被引入教學，並展示亞利安人特徵的圖像，藉此讓學生鄙視猶太人，而神化希特勒。\n身為納粹德國的老師，是否願意在課堂裡對猶太學生釋出善意？", opt1: "是，我願意提供善意環境", opt2: "否，我不願意多付出關注", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "你在課堂上展現的一絲溫柔，成為猶太學生黑暗中的微光，但也引來了納粹青年團學生的側目。", fb2: "你嚴格執行種族隔離。猶太學生在絕望中被迫退學，你保住了教職，卻失去了為人師表的初衷。" },
-        { id: "G11", text: "G11\n1940年代，德國勞改場收押大量妓女、小偷、流浪漢、酒鬼等，並請鑑定專家判定價值。專家們宣稱「沒有生存價值」，一致同意將這些人處死。\n若你有認識「符合勞改犯定義」的親屬朋友，你是否會配合政策向警察舉報？", opt1: "是，淨化血統人人有責", opt2: "否，維護家人朋友安危", s1: 1, m1: -2, s2: -1, m2: 2, fb1: "你大義滅親獲得了「模範公民」勳章，但家族從此與你斷絕往來，你餘生都在孤獨中度過。", fb2: "你拼死隱瞞了親屬的下落。雖然成功保住他們的性命，你卻日夜活在被舉發的恐懼之中。" },
-        { id: "G12", text: "G12\n女記者費德利希建立反抗組織，來照顧許多身處危險的猶太人。他們還從事破壞工廠、毀損納粹象徵、向國外報導集中營真實情況等激進行為。\n若你意外得知了這個組織的存在，你會怎麼做呢？", opt1: "是，加入組織並提供協助", opt2: "否，向蓋世太保告密，領取賞金", s1: -1, m1: 2, s2: 1, m2: -2, fb1: "你暗中協助破壞行動，拯救了無數猶太人。你的生活從此步步驚心，隨時可能面臨絞刑。", fb2: "你拿到了豐厚的賞金，組織成員隔天全數被捕。你的口袋滿了，靈魂卻徹底墮落。" },
-        { id: "G13", text: "G13\n儘管納粹政權秘密進行處置猶太人的最終方案，然而消息卻四處流傳。你聽聞有人參與射殺3000名猶太人行動，而且逼迫猶太人挖掘足球場大小的墳墓。\n若你聽聞不合理的大規模猶太屠殺事件，你是否會將事件上報高層？", opt1: "是，我願意舉發濫殺行為", opt2: "否，他人之行為與我無關", s1: 0, m1: 1, s2: 0, m2: -1, fb1: "你將屠殺事件向上呈報，不僅石沉大海，還收到上級的「善意警告」，命你立刻噤聲。", fb2: "你選擇明哲保身。你在官僚體系中安穩度日，但那些無辜亡魂的悲鳴常在你夢中縈繞。" },
-        { id: "G14", text: "G14\n當時社會日漸流行安樂死的觀點，特別是不少父母願意讓孩子得到解脫。同時為了減輕父母親良心負擔，醫生必須承擔解決問題兒童的責任。\n若你的後代是身心障礙病童，且從未聽聞治癒案例，你仍會配合政策，將孩子送入國家經營療養院？", opt1: "是，我會送走孩子", opt2: "否，我會自行撫養", s1: 0, m1: -1, s2: 0, m2: 1, fb1: "你含淚將孩子送上療養院巴士，幾週後只收到一張偽造死因的死亡證明。你追悔莫及。", fb2: "你帶著孩子東躲西藏，生活極度困苦，但每當看到孩子純真的笑容，你深信這一切都值得。" },
-        { id: "G15", text: "G15\n隆美爾將軍在二戰時建立彪炳戰功，曾俘虜「自由法國第一旅」，這是由眾多猶太人所組成的部隊。希特勒因此向隆美爾下令，將其成員處決。\n如果你是隆美爾，是否會遵照希特勒指示，處決這些人呢？", opt1: "是，忠誠地執行處決命令", opt2: "否，不忍心執行處決命令", s1: 1, m1: -2, s2: -1, m2: 2, fb1: "你忠實執行了元首的殘酷命令。軍方嘉獎了你的果斷，但這成為你軍事生涯中無法抹滅的汙點。", fb2: "你違抗了希特勒的命令釋放戰俘。此舉為你贏得敵軍的敬重，卻讓元首對你起了殺心。" },
-        { id: "G16", text: "G16\n約翰的猶太員工顫抖說著自己收到了「產物清單」，這代表即將被送到集中營。約翰為保全員工性命，向蓋世太保爭取：「你們把員工都帶走了，我該怎麼執行國防部的訂單呢？」\n如果是你，你是否願意向蓋世太保爭取留下員工？", opt1: "是，因為生命可貴", opt2: "否，各人有其命運", s1: -1, m1: 2, s2: 1, m2: -2, fb1: "你利用軍需訂單為藉口，成功保住了這批員工。他們對你感激涕零，你成為了他們的再生父母。", fb2: "你默默看著員工被卡車載走。工廠因勞力短缺而停擺，你也因無法交付訂單遭到軍方調查。" },
-        { id: "G17", text: "G17\n約書亞是看守奧斯維茲集中營的士兵。某天離開營區時，被一位老人攔住，表示願意以金錢為代價，請求他幫忙將信件、衣服轉交給另一猶太工人，並為他攜帶回信。\n你是否會願意冒著被人發現，甚至被射殺的風險提供協助？", opt1: "是，助人又可獲得金錢", opt2: "否，自己的生命更重要", s1: -2, m1: 2, s2: 2, m2: -2, fb1: "你成功傳遞了信件並獲得封口費。你發現原來在地獄般的集中營裡，金錢還能買到一點點人性。", fb2: "你粗暴地推開老人。在這種吃人的環境裡，任何一絲同情都可能成為送命的導火線。" },
-        { id: "G18", text: "G18\n保時捷是德國頂尖汽車生產公司。二戰時納粹政府要求協助設計坦克車，並將汽車工廠轉型成武器工廠，還提供猶太人作為廉價勞力。\n如果你是保時捷老闆，你會接受政府的提議嗎？", opt1: "是，趁戰爭賺取大筆財富", opt2: "否，不打算取得不義之財", s1: 1, m1: -1, s2: -1, m2: 1, fb1: "你的兵工廠日夜趕工，賺取了驚人的財富。戰後，你不得不面對剝削奴工的嚴厲指控。", fb2: "你拒絕轉型為武器工廠。政府立刻沒收了資產並將你驅逐出境，你失去了一切但問心無愧。" },
-        { id: "G19", text: "G19\n卡蘿拉是德國12歲中學生，「種族學」課程教導了猶太人是劣等人種。還曾目睹猶太人不需要任何原因，就被綁在椅上受皮鞭責打。\n如果你是卡蘿拉，看到這種場景，會有甚麼反應？", opt1: "是，他們本就是低賤人種，處罰是應得的", opt2: "否，找同學討論並質疑這行為的合理性", s1: 1, m1: -1, s2: -1, m2: 1, fb1: "你對暴力習以為常，完全融入了納粹青年團的狂熱。你的思想已徹底被仇恨所吞噬。", fb2: "你向同學表達了質疑卻被告發。你遭到老師嚴厲的體罰，並被列為思想危險份子。" },
-        { id: "G20", text: "G20\n艾希曼將匈牙利44萬名猶太孩童、婦女送進毒氣室。眾多納粹官員為了搶功而想要擔任先鋒，積極去爭取這項「血腥」的任務。\n如果你是納粹官員，你是否會去爭取這個任務？", opt1: "是，搶先立功可以過更好生活", opt2: "否，協助大屠殺是不道德行為", s1: 1, m1: -1, s2: 0, m2: 1, fb1: "你積極參與這場大屠殺獲得了豐厚物資，但每晚閉上眼，都是毒氣室門上絕望的抓痕。", fb2: "你以生病為由推託了任務。雖然失去了晉升機會，但你慶幸自己的雙手沒有沾滿鮮血。" },
-        { id: "G21", text: "G21\n埃里希曾是德國海軍元帥，因與希特勒發生戰術上的爭執，被解除元帥職位。隨著戰況惡化，一群軍官計畫推翻希特勒，於是邀請埃里希加入。\n如果你是埃里希，你會選擇加入推翻計畫嗎？", opt1: "是，反正有可能性命不保", opt2: "否，需保持對國家的忠誠", s1: -2, m1: 0, s2: 2, m2: 0, fb1: "你加入了密謀集團。政變失敗後你面臨殘酷審問與死刑，但你為國家盡了最後的努力。", fb2: "你選擇繼續效忠。儘管戰況一敗塗地，你保住了軍階，直到帝國崩塌的那一刻成為戰犯。" },
-        { id: "G22", text: "G22\n里芬斯塔爾是女性電影導演，作品深受希特勒喜愛。但金援拍片的條件是必須為希特勒拍攝形象影片，宣傳他與日耳曼民族的偉大，以及猶太人的邪惡。\n如果你是里芬斯塔爾，你會接受元首的條件嗎？", opt1: "是，得到金援才能有所成就", opt2: "否，藝術不應沾染政治色彩", s1: 0, m1: -1, s2: 0, m2: 1, fb1: "你的電影成為納粹宣傳的曠世巨作，名利雙收，戰後卻永遠背負著「希特勒御用導演」的罵名。", fb2: "你拒絕為政治服務，隨即遭到封殺，終生無法再執導筒，但你保住了作為藝術家的純粹。" },
-        { id: "G23", text: "G23\n為了毫無顧忌地實施「解決方案」，必須先修改法律規範讓猶太人失去參政權、工作權、財產權甚至國籍。\n如果你是一位法學專家，你是否會無視自身法學素養，配合政府制定法案？", opt1: "是，我不做也會有別人做", opt2: "否，這違背我的職業道德", s1: 1, m1: -2, s2: -1, m2: 2, fb1: "你親手起草了剝奪猶太人權利的法案。你攀上了法學界的巔峰，卻將法治精神踐踏在腳下。", fb2: "你堅守法理拒絕背書，隨即被吊銷執照。雖然生活陷入困頓，但你的靈魂沒有被權力收買。" },
-        { id: "G24", text: "G24\n倪慕樂牧師反抗納粹干涉教會與信仰的自由，因此他先被禁止發表言論，之後被捕。刑期屆滿卻未被釋放，在集中營滯留，直至戰爭結束。\n如果是你，願意為宗教信仰自由反抗政府當局嗎？", opt1: "是，一切應歸於耶穌基督", opt2: "否，上帝會明白我的困境", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "你的講道激勵了無數教徒，但也引來蓋世太保的逮捕。你在集中營受盡折磨，信仰卻愈發堅定。", fb2: "你選擇沉默以保全教會運作。教堂依舊敞開，但裡面的十字架已被萬字旗的陰影所籠罩。" },
-        { id: "G25", text: "G25\n1943年納粹開始逮捕德國女人的猶太裔丈夫。她們聚集於玫瑰街猶太人安置所門前，要求釋放她們的丈夫。軍人威脅開槍，但她們毫不退讓，持續抗議。\n如果你的猶太丈夫突然被監禁，你會進行抗議嗎？", opt1: "是，走上玫瑰街抗議，自己的男人自己救", opt2: "否，認同政策，接受命運", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "你們的堅持奇蹟般地迫使納粹讓步，丈夫重獲自由！這是極權統治下罕見的人性勝利。", fb2: "你眼睜睜看著丈夫被帶走，從此音訊全無。獨自苟活的你，餘生都被深沉的懊悔所折磨。" },
-        { id: "G26", text: "G26\n施丁騰堡伯爵是德國外交官，家世顯赫。他厭惡納粹，拒絕擔任政府公職。運用自己的影響力協助猶太學生申請獎學金留學英國，幫助猶太人移民國外。\n如果你是納粹時期的外交官，當你發現伯爵的作為，是否願意冒著風險協助他？", opt1: "是，會竭盡所能去幫助他", opt2: "否，不願意犧牲官場前程", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "你利用外交特權暗中幫忙，成功送走了一批留學生。雖然冒險，但這份跨國善意挽救了無數未來。", fb2: "你裝作不知情，繼續參加高級晚宴。你的仕途一帆風順，但內心的冷漠讓你與行屍走肉無異。" },
-        { id: "G27", text: "G27\n1944年史陶芬保上校曾企圖引爆炸彈炸死希特勒，但未成功，導致「華爾奇麗雅行動」未能啟動，使政變走向失敗。\n若你身為納粹軍官將領，你是否會參與 720 密謀案？", opt1: "是，為國家著想，無法認同希特勒理念", opt2: "否，保有個人地位才算是最重要的事情", s1: -2, m1: 0, s2: 2, m2: 0, fb1: "炸彈未能殺死希特勒。你被捕並面臨極刑，但在絞刑架前，堅信自己站在了歷史正確的一方。", fb2: "你拒絕加入政變。你安穩活到了戰後，卻對當年國家陷入毀滅時未曾挺身而出感到羞愧。" },
-        { id: "G28", text: "G28\n白玫瑰運動是由慕尼黑醫學院大學生組成，他們透過發送傳單，呼籲人們反抗希特勒。不久後，成員都被處死。然而傳單被大量印刷祕密送出德國，透過同盟國飛機散布各地。\n若你拾獲傳單，你是否願意將它傳遞出去？", opt1: "是，我願意傳遞學生理念", opt2: "否，我不願意冒生命風險", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "你將傳單偷偷塞進鄰居的信箱。這份微小的勇氣，成為了反抗極權統治的星星之火。", fb2: "你驚恐地將傳單撕碎沖進馬桶。恐懼讓你選擇了服從，也讓你成為了沉默的共犯。" },
-        { id: "G29", text: "G29\n德國相機品牌「萊卡」主席萊茲二世，二戰時雇用大量猶太人，並以派任海外為由將猶太人送離德國，被稱為「萊卡自由列車」。數百人因他而被拯救。\n若你是萊茲二世，會進行「自由列車行動」嗎？", opt1: "是，竭盡所能幫助猶太人", opt2: "否，與納粹保持良好關係", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "「自由列車」成功發車，數百名猶太員工因此獲救。你的義舉將在品牌歷史上留下最光輝的一頁。", fb2: "你中止救援行動以換取納粹的信任。相機大賣，但鏡頭下的世界卻充滿了血腥與暴力。" },
-        { id: "G30", text: "G30\n木匠艾爾塞對納粹作為反感，決心刺殺希特勒。他利用希特勒每年會到慕尼黑啤酒館發表演說的機會，預先裝設炸彈。但因希特勒提前離開，而未能成功。\n如果你是艾爾塞，你是否仍會執行暗殺行動？", opt1: "是，炸死希特勒才能拯救德國", opt2: "否，小人物無法對抗強權", s1: -2, m1: 1, s2: 2, m2: -1, fb1: "雖然暗殺失敗並付出了生命，但你以一介平民之姿挑戰獨裁暴君的勇氣，將永遠流傳。", fb2: "你默默拆除了炸彈。戰爭繼續無情地絞殺千萬人，你也只能在無力感中嘆息。" },
-        { id: "G31", text: "G31\n納粹佔領波蘭時，把動物園改為養豬場。札賓斯基夫婦被允許到猶太區收廚餘餵豬，趁機把猶太人私運出來，藏在獸檻、鳥籠、獅舍，並協助猶太人逃往安全地區。\n如果是你，是否會像札賓斯基夫婦救助猶太人？", opt1: "是，善行是人類永恆價值", opt2: "否，明哲保身是唯一選擇", s1: -2, m1: 2, s2: 1, m2: -2, fb1: "你把猶太人藏進獸檻、鳥籠與獅舍，藉著餵豬的名義，一批批送他們逃往安全地區。每一次查驗，你都提心吊膽，卻從未後悔。", fb2: "你選擇袖手旁觀。動物園裡只剩豬的嚎叫聲，但那些被你忽視的求救眼神，成為你心中揮之不去的重量。" },
-        { id: "G32", text: "G32\n1933年德國大學生組織(DST)成員衝進「猶太博物館」，把猶太裔學者包括佛洛依德和愛因斯坦等人的著作都焚燒殆盡。\n若你是當時德國大學生，你是否會參與焚書運動？", opt1: "是，反猶是國家政策，支持焚燒著作", opt2: "否，學術文化不應該存在有種族差別", s1: 1, m1: -1, s2: -1, m2: 1, fb1: "你高舉火把加入同學的行列，火光映紅了你的臉。你被視為「忠誠的青年」，卻親手焚毀了人類知識的瑰寶。", fb2: "你站在人群外圍沒有動手。同學投來質疑的目光，你被貼上「不合群」的標籤，但保住了對知識的敬意。" },
-        { id: "G33", text: "G33\n1938年，猶太青年格林斯潘因反對猶太人被逐出德國，槍殺了高官，此事成為納粹採取暴力的藉口。之後，蓋世太保對猶太人住宅、商店、教堂徹底破壞，被稱為「水晶之夜」。\n若你是德國年青人，你是否會參與「水晶之夜」的暴力行為？", opt1: "是，響應政府反猶政策", opt2: "否，不願捲入政治操弄", s1: 1, m1: -2, s2: -1, m2: 1, fb1: "你跟著人群砸碎櫥窗、闖進猶太人的店鋪。黨部肯定了你的「熱情」，但隔天面對滿街碎玻璃，你知道自己做了什麼。", fb2: "你拒絕加入暴行，轉身離開現場。同伴嘲笑你是懦夫，還記下了你的名字，但你的雙手是乾淨的。" },
-        { id: "G34", text: "G34\n奧古斯特為獲得造船廠工作加入納粹黨，但他愛上猶太人艾爾瑪後，堅持與她結婚。《紐倫堡法案》公布後，這段婚姻被視為非法，他被判「玷污種族」罪名而被送入集中營。\n如果你是奧古斯特，並能預知你的命運，是否決定與猶太妻子結婚？", opt1: "是，仍與猶太人結婚", opt2: "否，決定放棄艾爾瑪", s1: -2, m1: 2, s2: 1, m2: -1, fb1: "你選擇與艾爾瑪結婚。《紐倫堡法案》生效後，你因「玷污種族」罪被送入集中營，但你從未後悔愛過她。", fb2: "你含淚放棄了艾爾瑪，保住了自由與工作。但每當路過猶太人的住處，你都不敢抬起頭。" },
-        { id: "G35", text: "G35\n弗萊斯勒是法官，負責審理對抗希特勒獨裁政權的活動。他喜愛作秀式地公開審訊，並處以犯人極刑。1942-1945年間，5000件死刑案中，超過半數是由弗萊斯勒的法庭所判。\n若你是當時的法官，是否敢批評弗萊斯勒的作法？", opt1: "是，法律不應為政權服務", opt2: "否，極權下個人無從選擇", s1: -2, m1: 2, s2: 1, m2: -1, fb1: "你在法庭上公開質疑弗萊斯勒的審判。你的法官職務立刻被撤銷，你成為政治犯，但你的話在沉默的法庭裡久久迴盪。", fb2: "你低頭沉默，看著一份份死刑判決被簽下。你保住了職位與性命，但每一次敲槌聲，都像在你耳邊迴響。" }
+        { id: "G01", text: "G01\n凡穆勒醫生認為精神病患者和殘疾兒童是「浪費糧食的人」、「無用之人只是國家負擔」，將其安樂死是正當的行為。\n你是否會將劇毒調換為無害藥劑，並協助病童逃離醫院？", opt1: "暗中替換藥劑，協助病童逃離", opt2: "遵照命令執行安樂死", s1: -1, m1: 2, s2: 1, m2: -2, x1: 1, x2: -1, fb1: "你成功救下了病童，但蓋世太保對藥劑的消耗起了疑心，你被列入了監視名單。", fb2: "你冷酷地執行了命令。長官對你的忠誠表示讚賞，但每當深夜，你總會聽見孩童的哭聲。" },
+        { id: "G02", text: "G02\n戈林將軍在一戰時創下擊落22架敵機的紀錄，因此被希特勒任命為德國空軍總司令。但是，完善空軍設備的經費卻是他強搶猶太人的財產而來。\n若你是戈林，是否會用猶太人財產來完備德國空軍？", opt1: "動用猶太人財產壯大空軍", opt2: "拒絕侵吞他人財產", s1: 1, m1: -1, s2: -1, m2: 1, fb1: "德國空軍日益壯大，你的權力也達到了頂峰，但雙手已沾滿無辜者的鮮血。", fb2: "你拒絕了這項提議。元首對你的軟弱感到失望，你的空軍預算遭到大幅削減。" },
+        { id: "G03", text: "G03\n「萊茵哈德行動」負責處理猶太人的財產。官員通過柏林的當舖、瑞士的珠寶市場來出售這些財物。然而，巨額財富也引發盜竊、貪腐等行為。\n若你沒收了大量猶太人的財物，你會如何處置？", opt1: "全數上繳，充實國庫", opt2: "私藏珍貴物品變賣", s1: 1, m1: -1, s2: -1, m2: -2, fb1: "你將財富悉數上繳，獲得了上級的口頭表揚，但看著別的軍官中飽私囊，你內心五味雜陳。", fb2: "你偷偷藏起了名貴珠寶發了一筆橫財。然而你每天都心驚膽跳，深怕被查獲後送上軍事法庭。" },
+        { id: "G04", text: "G04\n普呂福在日記強烈批評屠殺猶太人的相關政策。但很可惜，普呂福日記的內容是在1946年（二戰結束後）加上去，就是刻意留下紀錄給將來的人閱讀。\n若你有書寫日記的習慣，你是否會像普呂福這樣做？", opt1: "刪改日記中歧視的言論", opt2: "保留原稿，不竄改過往言論", s1: 1, m1: -1, s2: -1, m2: 1, fb1: "你銷毀了日記中所有敏感字眼。戰後調查時你成功自保，但歷史真相也因此少了一份見證。", fb2: "你冒著極大風險保留了原稿。這份日記日後成為紐倫堡大審的重要證據，但也讓你在戰時險些喪命。" },
+        { id: "G05", text: "G05\n1940年維也納科學會議裡，專家決議將「問題兒童」進行集中監管，但不少醫生反對，認為鼓勵、建立信任才能促進心理健康。\n若你是與會的精神科醫生，你會堅持反對監管嗎？", opt1: "堅持反對，即便高層會派人關切", opt2: "接受專家決議，以求升遷", s1: -1, m1: 2, s2: 1, m2: -2, x1: 1, x2: -1, fb1: "你堅持醫學倫理保護了數名兒童，卻被高層視為眼中釘，你的職涯岌岌可危。", fb2: "你妥協了。你如願獲得醫院高層的升遷，但看著被強制帶走的孩童，你的良知受到無盡折磨。" },
+        { id: "G06", text: "G06\n博斯成立小成衣廠，1930年代初因經濟不景氣，工廠面臨破產。於是，他加入納粹黨，接下黨與軍方的制服訂單，替工廠帶來豐厚利潤。戰爭期間軍服需求大增，工廠業績大幅成長。\n若你是博斯，你願意成為納粹軍服的供應商嗎？", opt1: "接下訂單，挽救破產危機", opt2: "拒絕訂單，不與納粹掛勾", s1: 1, m1: -1, s2: -1, m2: 1, fb1: "成衣廠起死回生賺進大把鈔票，但你也成為了納粹戰爭機器的重要幫兇。", fb2: "你拒絕了訂單，工廠最終宣告破產。你失去了財富，卻保住了清白與靈魂。" },
+        { id: "G07", text: "G07\n醫生培育病毒，然後注射到犯人身上觀察效果，並沒有採取任何措施來減少疼痛。在實驗室裡，許多人蜷縮在角落，恐懼尖叫。\n執行實驗時，你是否願意為猶太人注射麻藥以減輕他們的痛苦？", opt1: "協助注射麻藥，減輕痛苦", opt2: "不予理會，他人痛苦與我無關", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "你偷偷為受試者注射麻藥減輕痛苦，這短暫的仁慈讓你面臨被同僚舉發叛國的極大風險。", fb2: "你冷眼旁觀實驗進行。實驗數據逐漸完善，但你的心也隨著慘叫聲變得如鐵石般冰冷。" },
+        { id: "G08", text: "G08\n全國報社派出記者，每天都聚集在「宣傳部」接受納粹政權的指示。隨著希特勒地位持續上升，反納粹記者都遭驅離。野蠻指責猶太人的內容出現在所有的報紙之中。\n身為記者，你是否會配合納粹對猶太人醜化攻擊？", opt1: "配合宣傳，加入醜化行列", opt2: "堅持就事論事、眼見為憑", s1: 1, m1: -2, s2: -1, m2: 2, x1: -1, x2: 1, fb1: "你的激進報導大受宣傳部歡迎，知名度水漲船高，卻成為煽動仇恨的頭號打手。", fb2: "你堅持客觀報導，隨即遭到報社解雇，甚至面臨被蓋世太保送入集中營的威脅。" },
+        { id: "G09", text: "G09\n「生命源泉計畫」勸說年輕、種族純淨的女人和黨衛軍官結合，以產下純種雅利安後代，甚至鼓勵軍官與多名女人保持性關係。第一所「生命源泉之家」於1936年開設，計畫存在的九年間，約有七千名嬰兒在這些機構出生，母親多為未婚。在政府推動下，無需結婚且孩子是合法的。\n你是否願意出於愛國心，與黨衛軍官未婚懷孕？", opt1: "出於愛國心，加入這項計畫", opt2: "拒絕加入，不願因此犧牲真愛", s1: 1, m1: -1, s2: -1, m2: 1, fb1: "你成為了「國家英雄母親」並獲得豐厚補貼，但孩子生下後便被國家帶走，骨肉分離。", fb2: "你拒絕了這項荒謬的計畫，保住了對愛情的忠誠，卻被周遭鄰里貼上「不愛國」的危險標籤。" },
+        { id: "G10", text: "G10\n德國學校老師都須加入教師聯盟，宣誓效忠希特勒。「種族科學」課程被引入教學，並展示雅利安人特徵的圖像，藉此讓學生鄙視猶太人，而神化希特勒。\n身為納粹德國的老師，是否願意在課堂裡對猶太學生釋出善意？", opt1: "在課堂上對猶太學生釋出善意", opt2: "照章行事，不多付出關注", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "你在課堂上展現的一絲溫柔，成為猶太學生黑暗中的微光，但也引來了納粹青年團學生的側目。", fb2: "你嚴格執行種族隔離。猶太學生在絕望中被迫退學，你保住了教職，卻失去了為人師表的初衷。" },
+        { id: "G11", text: "G11\n1940年代，德國勞改場收押大量妓女、小偷、流浪漢、酒鬼等，並請鑑定專家判定價值。專家們宣稱「沒有生存價值」，一致同意將這些人處死。\n若你有認識「符合勞改犯定義」的親屬朋友，你是否會配合政策向警察舉報？", opt1: "向警察舉報，配合淨化政策", opt2: "隱瞞下落，維護家人朋友安危", s1: 1, m1: -2, s2: -1, m2: 2, fb1: "你大義滅親獲得了「模範公民」勳章，但家族從此與你斷絕往來，你餘生都在孤獨中度過。", fb2: "你拼死隱瞞了親屬的下落。雖然成功保住他們的性命，你卻日夜活在被舉發的恐懼之中。" },
+        { id: "G12", text: "G12\n女記者費德利希建立反抗組織，來照顧許多身處危險的猶太人。他們還從事破壞工廠、毀損納粹象徵、向國外報導集中營真實情況等激進行為。\n若你意外得知了這個組織的存在，你會怎麼做呢？", opt1: "加入組織並提供協助", opt2: "向蓋世太保告密，領取賞金", s1: -1, m1: 2, s2: 1, m2: -2, x1: 1, x2: -1, fb1: "你暗中協助破壞行動，拯救了無數猶太人。你的生活從此步步驚心，隨時可能面臨絞刑。", fb2: "你拿到了豐厚的賞金，組織成員隔天全數被捕。你的口袋滿了，靈魂卻徹底墮落。" },
+        { id: "G13", text: "G13\n儘管納粹政權秘密進行處置猶太人的最終方案，然而消息卻四處流傳。你聽聞有人參與射殺3000名猶太人行動，而且逼迫猶太人挖掘足球場大小的墳墓。\n若你聽聞不合理的大規模猶太屠殺事件，你是否會將事件上報高層？", opt1: "將屠殺事件上報高層", opt2: "保持沉默，他人之行為與我無關", s1: 0, m1: 1, s2: 0, m2: -1, fb1: "你將屠殺事件向上呈報，不僅石沉大海，還收到上級的「善意警告」，命你立刻噤聲。", fb2: "你選擇明哲保身。你在官僚體系中安穩度日，但那些無辜亡魂的悲鳴常在你夢中縈繞。" },
+        { id: "G14", text: "G14\n當時社會日漸流行安樂死的觀點，特別是不少父母願意讓孩子得到解脫。同時為了減輕父母親良心負擔，醫生必須承擔解決問題兒童的責任。\n若你的後代是身心障礙病童，且從未聽聞治癒案例，你仍會配合政策，將孩子送入國家經營療養院？", opt1: "配合政策，送孩子進療養院", opt2: "拒絕送走，自行撫養孩子", s1: 0, m1: -1, s2: 0, m2: 1, fb1: "你含淚將孩子送上療養院巴士，幾週後只收到一張偽造死因的死亡證明。你追悔莫及。", fb2: "你帶著孩子東躲西藏，生活極度困苦，但每當看到孩子純真的笑容，你深信這一切都值得。" },
+        { id: "G15", text: "G15\n隆美爾將軍在二戰時建立彪炳戰功，曾俘虜「自由法國第一旅」，這是由眾多猶太人所組成的部隊。希特勒因此向隆美爾下令，將其成員處決。\n如果你是隆美爾，是否會遵照希特勒指示，處決這些人呢？", opt1: "忠誠地執行處決命令", opt2: "違抗命令，不執行處決", s1: 1, m1: -2, s2: -1, m2: 2, x1: -1, x2: 1, fb1: "你忠實執行了元首的殘酷命令。軍方嘉獎了你的果斷，但這成為你軍事生涯中無法抹滅的汙點。", fb2: "你違抗了希特勒的命令釋放戰俘。此舉為你贏得敵軍的敬重，卻讓元首對你起了殺心。" },
+        { id: "G16", text: "G16\n約翰的猶太員工顫抖說著自己收到了「產物清單」，這代表即將被送到集中營。約翰為保全員工性命，向蓋世太保爭取：「你們把員工都帶走了，我該怎麼執行國防部的訂單呢？」\n如果是你，你是否願意向蓋世太保爭取留下員工？", opt1: "向蓋世太保爭取留下員工", opt2: "不出面爭取，各人有其命運", s1: -1, m1: 2, s2: 1, m2: -2, x1: 1, x2: -1, fb1: "你利用軍需訂單為藉口，成功保住了這批員工。他們對你感激涕零，你成為了他們的再生父母。", fb2: "你默默看著員工被卡車載走。工廠因勞力短缺而停擺，你也因無法交付訂單遭到軍方調查。" },
+        { id: "G17", text: "G17\n約書亞是看守奧斯威辛集中營的士兵。某天離開營區時，被一位老人攔住，表示願意以金錢為代價，請求他幫忙將信件、衣服轉交給另一猶太工人，並為他攜帶回信。\n你是否會願意冒著被人發現，甚至被射殺的風險提供協助？", opt1: "冒險協助，同時收下金錢", opt2: "拒絕協助，自己的生命更重要", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "你成功傳遞了信件並獲得封口費。你發現原來在地獄般的集中營裡，金錢還能買到一點點人性。", fb2: "你粗暴地推開老人。在這種吃人的環境裡，任何一絲同情都可能成為送命的導火線。" },
+        { id: "G18", text: "G18\n保時捷是德國頂尖汽車生產公司。二戰時納粹政府要求協助設計坦克車，並將汽車工廠轉型成武器工廠，還提供猶太人作為廉價勞力。\n如果你是保時捷老闆，你會接受政府的提議嗎？", opt1: "接受提議，趁戰爭賺取財富", opt2: "拒絕提議，不取不義之財", s1: 1, m1: -1, s2: -1, m2: 1, fb1: "你的兵工廠日夜趕工，賺取了驚人的財富。戰後，你不得不面對剝削奴工的嚴厲指控。", fb2: "你拒絕轉型為武器工廠。政府立刻沒收了資產並將你驅逐出境，你失去了一切但問心無愧。" },
+        { id: "G19", text: "G19\n卡蘿拉是德國12歲中學生，「種族學」課程教導了猶太人是劣等人種。還曾目睹猶太人不需要任何原因，就被綁在椅上受皮鞭責打。\n如果你是卡蘿拉，看到這種場景，會有什麼反應？", opt1: "冷眼旁觀，認為他們是劣等人種，處罰是應得的", opt2: "找同學討論，質疑這行為的合理性", s1: 1, m1: -1, s2: -1, m2: 1, fb1: "你對暴力習以為常，完全融入了納粹青年團的狂熱。你的思想已徹底被仇恨所吞噬。", fb2: "你向同學表達了質疑卻被告發。你遭到老師嚴厲的體罰，並被列為思想危險分子。" },
+        { id: "G20", text: "G20\n艾希曼將匈牙利44萬名猶太孩童、婦女送進毒氣室。眾多納粹官員為了搶功而想要擔任先鋒，積極去爭取這項「血腥」的任務。\n如果你是納粹官員，你是否會去爭取這個任務？", opt1: "爭取任務，搶先立功過更好生活", opt2: "不去爭取，協助大屠殺是不道德行為", s1: 1, m1: -1, s2: 0, m2: 1, fb1: "你積極參與這場大屠殺獲得了豐厚物資，但每晚閉上眼，都是毒氣室門上絕望的抓痕。", fb2: "你以生病為由推託了任務。雖然失去了晉升機會，但你慶幸自己的雙手沒有沾滿鮮血。" },
+        { id: "G21", text: "G21\n埃里希曾是德國海軍元帥，因與希特勒發生戰術上的爭執，被解除元帥職位。隨著戰況惡化，一群軍官計畫推翻希特勒，於是邀請埃里希加入。\n如果你是埃里希，你會選擇加入推翻計畫嗎？", opt1: "加入推翻計畫", opt2: "拒絕加入，保持對國家的忠誠", s1: -1, m1: 0, s2: 1, m2: 0, fb1: "你加入了密謀集團。政變失敗後你面臨殘酷審問與死刑，但你為國家盡了最後的努力。", fb2: "你選擇繼續效忠。儘管戰況一敗塗地，你保住了軍階，直到帝國崩塌的那一刻成為戰犯。" },
+        { id: "G22", text: "G22\n里芬斯塔爾是女性電影導演，作品深受希特勒喜愛。但金援拍片的條件是必須為希特勒拍攝形象影片，宣傳他與日耳曼民族的偉大，以及猶太人的邪惡。\n如果你是里芬斯塔爾，你會接受元首的條件嗎？", opt1: "接受條件，得到金援才能有所成就", opt2: "拒絕條件，藝術不應沾染政治色彩", s1: 0, m1: -1, s2: 0, m2: 1, fb1: "你的電影成為納粹宣傳的曠世巨作，名利雙收，戰後卻永遠背負著「希特勒御用導演」的罵名。", fb2: "你拒絕為政治服務，隨即遭到封殺，終生無法再執導筒，但你保住了作為藝術家的純粹。" },
+        { id: "G23", text: "G23\n為了毫無顧忌地實施「解決方案」，必須先修改法律規範讓猶太人失去參政權、工作權、財產權甚至國籍。\n如果你是一位法學專家，你是否會無視自身法學素養，配合政府制定法案？", opt1: "配合制定法案，反正我不做也會有別人做", opt2: "拒絕背書，堅守職業道德", s1: 1, m1: -2, s2: -1, m2: 2, x1: -1, x2: 1, fb1: "你親手起草了剝奪猶太人權利的法案。你攀上了法學界的巔峰，卻將法治精神踐踏在腳下。", fb2: "你堅守法理拒絕背書，隨即被吊銷執照。雖然生活陷入困頓，但你的靈魂沒有被權力收買。" },
+        { id: "G24", text: "G24\n倪慕樂牧師反抗納粹干涉教會與信仰的自由，因此他先被禁止發表言論，之後被捕。刑期屆滿卻未被釋放，在集中營滯留，直至戰爭結束。\n如果是你，願意為宗教信仰自由反抗政府當局嗎？", opt1: "挺身反抗，一切應歸於耶穌基督", opt2: "保持沉默，相信上帝會明白我的困境", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "你的講道激勵了無數教徒，但也引來蓋世太保的逮捕。你在集中營受盡折磨，信仰卻愈發堅定。", fb2: "你選擇沉默以保全教會運作。教堂依舊敞開，但裡面的十字架已被萬字旗的陰影所籠罩。" },
+        { id: "G25", text: "G25\n1943年納粹開始逮捕德國女人的猶太裔丈夫。她們聚集於玫瑰街猶太人安置所門前，要求釋放她們的丈夫。軍人威脅開槍，但她們毫不退讓，持續抗議。\n如果你的猶太丈夫突然被監禁，你會進行抗議嗎？", opt1: "走上玫瑰街抗議，自己的男人自己救", opt2: "接受政策，聽天由命", s1: -1, m1: 1, s2: 1, m2: -1, x1: 1, x2: -1, fb1: "你們的堅持奇蹟般地迫使納粹讓步，丈夫重獲自由！這是極權統治下罕見的人性勝利。", fb2: "你眼睜睜看著丈夫被帶走，從此音訊全無。獨自苟活的你，餘生都被深沉的懊悔所折磨。" },
+        { id: "G26", text: "G26\n施丁騰堡伯爵是德國外交官，家世顯赫。他厭惡納粹，拒絕擔任政府公職。運用自己的影響力協助猶太學生申請獎學金留學英國，幫助猶太人移民國外。\n如果你是納粹時期的外交官，當你發現伯爵的作為，是否願意冒著風險協助他？", opt1: "竭盡所能協助伯爵", opt2: "裝作不知情，保住官場前程", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "你利用外交特權暗中幫忙，成功送走了一批留學生。雖然冒險，但這份跨國善意挽救了無數未來。", fb2: "你裝作不知情，繼續參加高級晚宴。你的仕途一帆風順，但內心的冷漠讓你與行屍走肉無異。" },
+        { id: "G27", text: "G27\n1944年史陶芬保上校曾企圖引爆炸彈炸死希特勒，但未成功，導致「華爾奇麗雅行動」未能啟動，使政變走向失敗。\n若你身為納粹軍官將領，你是否會參與 720 密謀案？", opt1: "參與密謀，無法認同希特勒理念", opt2: "拒絕參與，保住個人地位", s1: -1, m1: 0, s2: 1, m2: 0, fb1: "炸彈未能殺死希特勒。你被捕並面臨極刑，但在絞刑架前，堅信自己站在了歷史正確的一方。", fb2: "你拒絕加入政變。你安穩活到了戰後，卻對當年國家陷入毀滅時未曾挺身而出感到羞愧。" },
+        { id: "G28", text: "G28\n白玫瑰運動是由慕尼黑醫學院大學生組成，他們透過發送傳單，呼籲人們反抗希特勒。不久後，成員都被處死。然而傳單被大量印刷祕密送出德國，透過同盟國飛機散布各地。\n若你拾獲傳單，你是否願意將它傳遞出去？", opt1: "把傳單傳遞出去", opt2: "丟掉傳單，不冒生命風險", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "你將傳單偷偷塞進鄰居的信箱。這份微小的勇氣，成為了反抗極權統治的星星之火。", fb2: "你驚恐地將傳單撕碎沖進馬桶。恐懼讓你選擇了服從，也讓你成為了沉默的共犯。" },
+        { id: "G29", text: "G29\n德國相機品牌「萊卡」主席萊茲二世，二戰時雇用大量猶太人，並以派任海外為由將猶太人送離德國，被稱為「萊卡自由列車」。數百人因他而被拯救。\n若你是萊茲二世，會進行「自由列車行動」嗎？", opt1: "啟動「自由列車」，竭盡所能幫助猶太人", opt2: "不採取行動，與納粹保持良好關係", s1: -1, m1: 1, s2: 1, m2: -1, x1: 1, x2: -1, fb1: "「自由列車」成功發車，數百名猶太員工因此獲救。你的義舉將在品牌歷史上留下最光輝的一頁。", fb2: "你中止救援行動以換取納粹的信任。相機大賣，但鏡頭下的世界卻充滿了血腥與暴力。" },
+        { id: "G30", text: "G30\n木匠艾爾塞對納粹作為反感，決心刺殺希特勒。他利用希特勒每年會到慕尼黑啤酒館發表演說的機會，預先裝設炸彈。但因希特勒提前離開，而未能成功。\n如果你是艾爾塞，你是否仍會執行暗殺行動？", opt1: "照計畫執行暗殺行動", opt2: "放棄行動，小人物無法對抗強權", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "雖然暗殺失敗並付出了生命，但你以一介平民之姿挑戰獨裁暴君的勇氣，將永遠流傳。", fb2: "你默默拆除了炸彈。戰爭繼續無情地絞殺千萬人，你也只能在無力感中嘆息。" },
+        { id: "G31", text: "G31\n納粹佔領波蘭時，把動物園改為養豬場。札賓斯基夫婦被允許到猶太隔離區收廚餘餵豬，趁機把猶太人私運出來，藏在獸檻、鳥籠、獅舍，並協助猶太人逃往安全地區。\n如果是你，是否會像札賓斯基夫婦救助猶太人？", opt1: "冒險救助猶太人，善行是永恆價值", opt2: "袖手旁觀，明哲保身", s1: -1, m1: 1, s2: 1, m2: -1, x1: 1, x2: -1, fb1: "你把猶太人藏進獸檻、鳥籠與獅舍，藉著餵豬的名義，一批批送他們逃往安全地區。每一次查驗，你都提心吊膽，卻從未後悔。", fb2: "你選擇袖手旁觀。動物園裡只剩豬的嚎叫聲，但那些被你忽視的求救眼神，成為你心中揮之不去的重量。" },
+        { id: "G32", text: "G32\n1933年德國大學生組織(DST)成員衝進「猶太博物館」，把猶太裔學者包括佛洛依德和愛因斯坦等人的著作都焚燒殆盡。\n若你是當時德國大學生，你是否會參與焚書運動？", opt1: "參與焚書，支持國家反猶政策", opt2: "拒絕參與，學術文化不應有種族差別", s1: 0, m1: -1, s2: 0, m2: 1, fb1: "你高舉火把加入同學的行列，火光映紅了你的臉。你被視為「忠誠的青年」，卻親手焚毀了人類知識的瑰寶。", fb2: "你站在人群外圍沒有動手。同學投來質疑的目光，你被貼上「不合群」的標籤，但保住了對知識的敬意。" },
+        { id: "G33", text: "G33\n1938年，猶太青年格林斯潘因反對猶太人被逐出德國，槍殺了高官，此事成為納粹採取暴力的藉口。之後，蓋世太保對猶太人住宅、商店、教堂徹底破壞，被稱為「水晶之夜」。\n若你是德國年輕人，你是否會參與「水晶之夜」的暴力行為？", opt1: "參與暴行，響應政府反猶政策", opt2: "拒絕參與，不願捲入政治操弄", s1: 0, m1: -1, s2: 0, m2: 1, fb1: "你跟著人群砸碎櫥窗、闖進猶太人的店鋪。黨部肯定了你的「熱情」，但隔天面對滿街碎玻璃，你知道自己做了什麼。", fb2: "你拒絕加入暴行，轉身離開現場。同伴嘲笑你是懦夫，還記下了你的名字，但你的雙手是乾淨的。" },
+        { id: "G34", text: "G34\n奧古斯特為獲得造船廠工作加入納粹黨，但他愛上猶太人艾爾瑪後，堅持與她結婚。《紐倫堡法案》公布後，這段婚姻被視為非法，他被判「玷污種族」罪名而被送入集中營。\n如果你是奧古斯特，並能預知你的命運，是否決定與猶太妻子結婚？", opt1: "仍與艾爾瑪結婚", opt2: "放棄艾爾瑪", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "你選擇與艾爾瑪結婚。《紐倫堡法案》生效後，你因「玷污種族」罪被送入集中營，但你從未後悔愛過她。", fb2: "你含淚放棄了艾爾瑪，保住了自由與工作。但每當路過猶太人的住處，你都不敢抬起頭。" },
+        { id: "G35", text: "G35\n弗萊斯勒是法官，負責審理對抗希特勒獨裁政權的活動。他喜愛作秀式地公開審訊，並處以犯人極刑。1942-1945年間，5000件死刑案中，超過半數是由弗萊斯勒的法庭所判。\n若你是當時的法官，是否敢批評弗萊斯勒的作法？", opt1: "公開批評，法律不應為政權服務", opt2: "保持沉默，極權下個人無從選擇", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "你在法庭上公開質疑弗萊斯勒的審判。你的法官職務立刻被撤銷，你成為政治犯，但你的話在沉默的法庭裡久久迴盪。", fb2: "你低頭沉默，看著一份份死刑判決被簽下。你保住了職位與性命，但每一次敲槌聲，都像在你耳邊迴響。" }
     ];
 
     const jCards = [
-        { id: "J01", text: "J01\n有位猶太人回憶，為求盡快逃出危險的猶太隔離區以躲過死劫。於是考慮洗劫「猶太委員會」錢箱，讓自己能在短時間內弄到足夠的金錢。\n你是否會為了逃離隔離區而搶劫與納粹政權親近的「猶太委員會」？", opt1: "是，我願意為生存去冒險", opt2: "否，我不願搶劫導致別人的損失", s1: 1, m1: -1, s2: -1, m2: 1, fb1: "你成功拿到一筆逃命錢，但無辜的委員會成員卻因帳目不符遭到納粹嚴厲處決。", fb2: "你守住了道德底線，但在隨後的突襲檢查中，你因繳不出賄賂金而被強行送上遣送列車。" },
-        { id: "J02", text: "J02\n學醫的猶太人回憶：「曾經在納粹的要求下，切下健康女孩的肉，把侏儒、殘疾人的身體用化學溶液保存。目的是放入帝國博物館，讓後代理解滅絕猶太人的行為是正當的。」\n若你擁有醫學背景被聘為集中營醫生，你是否願意執行解剖活體的任務？", opt1: "是，為了生存願意執行", opt2: "否，拒絕任務，無法接受殘忍對待同胞", s1: 1, m1: -2, s2: -1, m2: 2, fb1: "你強忍作嘔完成了手術。納粹軍官滿意地丟給你一塊麵包，你活下來了，但靈魂已經死去。", fb2: "你斷然拒絕了褻瀆的任務。你隨即遭到毒打並被丟入毒氣室，但你保住了醫生的尊嚴。" },
-        { id: "J03", text: "J03\n猶太人遭受歧視的氛圍下，最慘的是猶太小孩。亞利安小孩會毆打他們，有些猶太人為了救小孩，不顧危險幫忙解圍，好讓猶太小孩有機會逃脫。\n如果你見到猶太小孩被毆打，是否願意伸出援手解救他們？", opt1: "是，願意對小孩伸出援手", opt2: "否，擔心受牽連不願介入", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "你拼死擋下拳頭救走小孩。雖然自己被打得遍體鱗傷，但孩子的眼神給了你活下去的希望。", fb2: "你低著頭快步走開。背後傳來孩童淒厲的哭聲，那聲音成為你日後無數個夜晚的夢魘。" },
-        { id: "J04", text: "J04\n地鐵、街上，會有不認識的人靠近猶太人，放些東西到大衣口袋，像是蘋果、肉等，大多是猶太人不能取得的物資。\n在猶太人被限制物資來源的情況下，你是否會將無法公開取得的物資分享給猶太人？", opt1: "是，願意提供猶太人物資", opt2: "否，物資有限，無法分享", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "你將偷來的蘋果分給素不相識的同胞。這份微薄的卡路里，或許就是他撐過嚴冬的關鍵。", fb2: "你捂緊口袋假裝沒看見飢餓的眼神。你保全了體力，但在這座冰冷的城市裡感到前所未有的孤獨。" },
-        { id: "J05", text: "J05\n1939年大學、科學機構，被要求解雇猶太人。同時猶太人亦被禁止出入公共場所、 參加體育比賽、擁有汽車牌照、電話和收音機。\n你若是被解雇的一員，是否會挺身抗議不平等法律？", opt1: "是，我願意挺身抗議不公", opt2: "否，我不願意冒生命危險", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "你的抗議換來了警棍的毒打與即刻逮捕。你在監獄中受盡折磨，但勇氣鼓舞了其他受壓迫者。", fb2: "你默默收拾紙箱離開了工作多年的機構。你保全了性命，卻失去了知識份子的傲骨與尊嚴。" },
-        { id: "J06", text: "J06\n克羅赫瑪是比利時猶太人，1943年他與1900人一起被移送到奧斯威辛集中營的路上。途中有3名年輕人阻止了死亡列車前進，拯救231條人命。\n如果你也在現場， 是否願意和年輕人們一起阻止死亡列車的前進呢？", opt1: "是，拯救人命是最重要的", opt2: "否，我害怕遭到納粹報復", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "你趁亂協助拔掉列車插銷，成功讓數百人逃入森林！雖然立刻遭到追捕，這是絕望中的偉大勝利。", fb2: "你瑟縮在車廂角落不敢動彈。抗議很快被機槍鎮壓，列車重新啟動駛向死亡營。" },
-        { id: "J07", text: "J07\n葛柏是奧斯威辛集中營猶太人囚工，負責把猶太人屍體從毒氣室拉出來，再塞進焚屍爐火化。在黨衛軍的監視下，他必須取出受害者的值錢物品和金牙，然後再把屍體塞進焚燒爐。\n如果你是葛柏，是否願意擔任這項工作？", opt1: "是，不計一切為求生存", opt2: "否，我不願當納粹幫凶", s1: 1, m1: -1, s2: -1, m2: 1, fb1: "你在屍堆中麻木地拔取金牙，換取了額外配給。你活得比別人久，但每天都在地獄最深處煎熬。", fb2: "你拒絕觸碰同胞的遺體。納粹毫不猶豫地扣下扳機，你結束了短暫卻保持純潔的一生。" },
-        { id: "J08", text: "J08\n鄰居門口站著兩位高大納粹，他們問：「霍恩斯坦太太是不是住在這裡？」結果她就被帶走了。我思考著是否應該通知她的女兒？但猶太人無法使用電話、夜晚又被禁止外出。\n若是你，是否會冒著被納粹捕捉的風險， 去告知霍恩斯坦太太的家人？", opt1: "是，願意冒險通知其家人", opt2: "否，無法接受被捕的風險", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "你冒著宵禁被擊斃的風險成功通知了她的女兒。他們及時逃亡，這份恩情永生難忘。", fb2: "你躲在窗簾後瑟瑟發抖。隔天她的家人也被蓋世太保一網打盡，你對自己的懦弱感到無比痛心。" },
-        { id: "J09", text: "J09\n「水晶之夜」使柏林成為人間煉獄，衝鋒隊在深夜以斧頭、長刀敲碎猶太商店的櫥窗玻璃。一對猶太夫婦木然看著，卻有人喊：「猶太人滾！」太太回嗆：「你這該死的豬！」先生面色慘白：「天啊～別再說了！」\n如果是你，你會如何面對這場災難與羞辱？", opt1: "是，出面指責亞利安人", opt2: "否，選擇閉嘴息事寧人", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "你的怒吼引來了衝鋒隊的暴力圍毆，商店被徹底砸爛，但你發洩了長久以來的屈辱與憤怒。", fb2: "你吞下羞辱眼睜睜看著畢生心血化為烏有。你保住了性命，但民族的尊嚴在此夜被徹底粉碎。" },
-        { id: "J10", text: "J10\n長居英國的猶太人只能收容一位家族成員，並需繳交高額保證金。最終，父親決定獨自飛往英國接受庇護，留下女兒與太太在混亂的德國。\n若是你擁有逃往英國的機會，是否會選擇拋下家人獨自前去英國接受庇護？", opt1: "是，能前往英國機會難得", opt2: "否，家人團聚比較安心", s1: 1, m1: -1, s2: -1, m2: 1, fb1: "你獨自登上前往英國的飛機。你逃過了屠殺，但終其一生都在為了拋棄家人而深深自責。", fb2: "你撕毀機票選擇與家人共存亡。幾個月後你們一同被送入集中營，但至少你們沒有分開。" },
-        { id: "J11", text: "J11\n凱明斯基擁有偽造護照的專業技術，他協助猶太人製造假護照，以避免被送至集中營。但此舉同時也讓他自己陷入危機。\n如果你是凱明斯基，你會幫助猶太人製作假證件嗎？", opt1: "是，努力製造護照，盡可能幫助更多人", opt2: "否，自己的安全最重要，選擇獨善其身", s1: -1, m1: 2, s2: 1, m2: 0, fb1: "你的假護照讓數十個家庭逃出生天。雖然最終被識破並遭到嚴刑拷打，但你覺得一切都值得。", fb2: "你銷毀了所有工具斷絕聯絡。你成功隱蔽了自己，卻也切斷了許多同胞最後的生機。" },
-        { id: "J12", text: "J12\n馬賽琳是一名13歲小女孩，在集中營裡負責拉馬鈴薯貨車。與她合作的另一個小女孩，因過度勞動與營養不良已奄奄一息。馬賽琳會偷留下馬鈴薯，讓她補充營養，維持體力。\n如果你是馬賽琳，你也會這樣幫助小女孩嗎？", opt1: "是，想辦法偷取馬鈴薯，補充她的營養", opt2: "否，無視她的身體狀況", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "你冒著被警犬咬死的危險偷藏馬鈴薯。女孩因這份食物奇蹟般撐了下來，你們成為生死之交。", fb2: "你別過頭去專心拉車。幾天後那個小女孩的床位空了，你默默告訴自己：這就是集中營的日常。" },
-        { id: "J13", text: "J13\n安妮・法蘭克為逃避查緝，和6名猶太人躲藏在密室，密室的空間尚可容納1人。此時，附近有位猶太人遭到追捕，密室裡7人開會討論是否要讓他進入密室。\n如果你是安妮・法蘭克，你是否會冒險收容這位逃亡的猶太人？", opt1: "是，同為猶太人就應該伸出援手", opt2: "否，人多被發現的風險就更高了", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "你們擠出空間收容了他。雖然空氣更渾濁、食物更匱乏，但你們多救了一條人命閃耀人性光輝。", fb2: "你們含淚將他拒之門外。不久後樓下傳來逮捕的腳步聲，你們安全了，但密室充滿了罪惡感。" },
-        { id: "J14", text: "J14\n史羅因在集中營時，因擁有修理水電技術，可自由來回於兩個看守營區。一位猶太人託他將親筆信和節省下來的食物，交給在另一個營區的7歲女兒。\n如果你是史羅因，你會幫助這位猶太同胞嗎？", opt1: "是，一定將食物與信親手交給他的女兒", opt2: "否，假裝答應他，但把信燒了留下食物", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "你冒死穿越營區將信與食物塞給女孩。女孩微弱的笑容，成為你在這地獄中見過最美的畫面。", fb2: "極度的飢餓讓你失去理智，你吞下了食物並燒毀信件。你多活了幾天，卻徹底喪失了人性。" },
-        { id: "J15", text: "J15\n納粹黨員沃納有一個猶太情人伊迪斯，沃納想要與伊迪斯完成合法婚姻程序，以生養孩子。官方提出的條件是伊迪斯必須更改信仰，並進行基督教婚禮。\n若你是伊迪斯，你會願意為生存改變猶太人信仰嗎？", opt1: "是，我願意改信，這樣才能活下去", opt2: "否，不願意，不能放棄猶太人信仰", s1: 1, m1: -1, s2: -1, m2: 1, fb1: "你受洗完成了婚禮獲得暫時的合法身份，但內心對背叛祖先信仰感到無比痛苦。", fb2: "你堅定地拒絕了。婚禮被取消，你隨即被列入遣送名單，但你帶著猶太人的驕傲走入黑暗。" },
-        { id: "J16", text: "J16\n一批辛德勒工廠的猶太工人正在集合，我獨自走到負責軍官面前說：「我應該在名單上，不知為何把我刪掉了？」軍官點頭示意我加入工人的行列，我終於脫離了地獄。\n若你看到進入辛德勒工廠的機會，是否敢冒險一試？", opt1: "是，這是活著與家人團聚的機會", opt2: "否，冒險行事可能會喪失生命", s1: -1, m1: 0, s2: 1, m2: 0, fb1: "你大膽的謊言竟然奏效了！你成功混入辛德勒的名單，這是你人生中最幸運的一次豪賭。", fb2: "你恐懼地退回人群中。錯失了這次機會，隔天你被推上了前往奧斯威辛的死亡列車。" },
-        { id: "J17", text: "J17\n開往集中營的火車上，每節車廂載滿80人，每人僅能攜帶幾塊麵包。車門被封死，車廂各指派一位廂長協助管理，如果有人逃脫，廂長就會被槍決。\n若是你被指派為廂長，火車突然出軌，你會把握機會帶著同車的人逃亡嗎？", opt1: "是，把握大家活命的機會", opt2: "否，一旦被抓我就完蛋了", s1: -2, m1: 2, s2: 2, m2: -2, fb1: "你帶領整節車廂砸破木板衝入黑夜！雖然背後槍聲大作，但你們終於呼吸到了自由的空氣。", fb2: "你為了自保死守車門不讓任何人離開。德軍很快控制局面，你保住了位置卻被同胞唾棄。" },
-        { id: "J18", text: "J18\n女記者露德與她的朋友們，替躲藏的猶太人、政治犯張羅了住處與食物配給卡，讓他們在藏身之處不致挨餓受凍。\n若你也認識露德，是否會願意分享食物給這些躲藏著的猶太人呢？", opt1: "是，自己少吃一點無所謂", opt2: "否，戰爭時物資短缺，擔心自己的溫飽就夠了", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "你省下口糧送往藏身處。那些政治犯與猶太人因你的接濟而存活，你成為了無名英雄。", fb2: "你拒絕了請求。幾週後，藏身處的人因飢餓被迫外出覓食而全數被捕，你為此深感內疚。" },
-        { id: "J19", text: "J19\n集中營的工頭發現一個男孩嘴巴裡有金牙套，要求男孩交出。工頭惡狠狠地說：「如果不交出牙套，你將付出慘痛代價！」從此每天毆打男孩的父親。\n如果你是男孩，看著父親天天遭人痛打，會不會交出金牙套呢？", opt1: "是，為了父親交出金牙套", opt2: "否，金牙套可以換取食物", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "你交出了金牙套，雖然保住了父親免受挨打，但你們的物資更加匱乏了。", fb2: "你保留了金牙套換取食物維持體力，但父親卻因此受盡折磨，這份愧疚將伴隨你一生。" },
-        { id: "J20", text: "J20\n有少數猶太人趁著遭遇空襲時，企圖逃離集中營，但失敗且被當場判刑，以儆效尤。營長用兩碗湯作為交換條件，徵求兩名集中營囚犯協助執行死刑。\n你長久以來都處於飢餓狀態，要把握住這個機會嗎？", opt1: "是，死刑不是我判決的，我只是協助執行而已", opt2: "否，雖然餓了很久，還是不忍心下手結束生命", s1: 1, m1: -1, s2: -1, m2: 1, fb1: "你為了一碗湯踢開了同胞腳下的木桶。熱湯下肚你活下來了，但所有囚犯看你的眼神充滿鄙夷。", fb2: "你強忍飢餓拒絕了營長的誘惑。雖然餓得發昏，但你保住了在集中營裡極度稀缺的道德底線。" },
-        { id: "J21", text: "J21\n集中營裡一位猶太父親忽然肚子痛，他走向警衛：「對不起，能否告訴我廁所在哪裡？」警衛從頭到腳打量他，突然重重賞給這位父親一記耳光。\n如果你是這位父親的兒子，目睹一切，你會奮力保護自己的父親嗎？", opt1: "是，衝上前去揍警衛一頓", opt2: "否，假裝沒看到這一幕以保全自己", s1: -1, m1: 2, s2: 1, m2: -2, fb1: "你發瘋似地將警衛撲倒！雖然立刻遭到毒打並關禁閉，但你保護父親的舉動震撼了所有囚犯。", fb2: "你死死咬住嘴唇看著父親倒在血泊中不敢出聲。你的理智保住了性命，但心靈早已千瘡百孔。" },
-        { id: "J22", text: "J22\n一名猶太女子在德軍佔領期間取得偽造文件，宣稱自己是亞利安人，躲過送進集中營的命運。\n你在無意之間發現了這位女子的真實身分，你會向上級報告嗎？", opt1: "是，誠實舉報可以換得比現在更好的待遇", opt2: "否，這不干我的事，何況救人一命是好事", s1: 1, m1: -1, s2: -1, m2: 1, fb1: "你為換取半條香腸向蓋世太保告密。那名女子當天就被逮捕，你的背叛讓你成為了納粹走狗。", fb2: "你裝作沒看見，甚至暗中幫她掩護。在這個隨時會死的年代，你選擇讓世界多一份善意存留。" },
-        { id: "J23", text: "J23\n集中營的監工身邊會有貼身「小助手」，由年紀較小的男孩擔任，他們卻比大人更殘忍。一名13歲小助手，因為自己父親未妥善整理床舖而出手痛打。\n你目睹這個情景，會出手阻止這名小助手嗎？", opt1: "是，提醒小助手：「這是你的父親！」", opt2: "否，裝作沒看到", s1: -1, m1: 2, s2: 1, m2: -2, fb1: "你的厲聲喝斥讓小助手愣住了，他羞愧地停下手。你冒險喚醒了他被極權洗腦的殘存人性。", fb2: "你麻木地看著這場家庭悲劇上演。在集中營裡權力與暴力早已扭曲了一切，你無力改變。" },
-        { id: "J24", text: "J24\n集中營定期會舉行「淘汰競選」，猶太人必須全身脫光向前奔跑。此時，黨衛軍則將無法奔跑或是體力虛弱的猶太人，送入焚化爐。\n你年邁的父親或許將無法通過淘汰競選，你會想辦法幫助他嗎？", opt1: "是，陪在他身邊，協助他努力向前衝", opt2: "否，以後就不需要再把麵包分給他了", s1: -1, m1: 2, s2: 1, m2: -2, fb1: "你架著父親奮力跑過了終點線！雖然雙雙累倒，但你們成功躲過了毒氣室的挑選相擁而泣。", fb2: "你冷漠甩開父親的手獨自奔向終點。你在活人區看著他被推向焚化爐，為了生存你拋棄了親情。" },
-        { id: "J25", text: "J25\n戰爭末期物資缺乏，集中營囚犯領不到食物，只能靠吃雪過活。好心工人會扔些麵包給囚犯，幾十個飢民為了麵包一團混戰，一位老人撿到一塊麵包……\n你也在現場，你會搶下老人手上的麵包嗎？", opt1: "是，既然大家都在搶，就逼迫老人交出麵包", opt2: "否，老人運氣太好了，摸摸鼻子繼續挨餓吧", s1: 1, m1: -2, s2: -1, m2: 1, fb1: "你仗著力氣硬生生摳出老人手裡的麵包。你嚥下食物延續了生命，卻也吃下了罪惡。", fb2: "你收回了伸出的手。老人感激地看著你，雖然依然飢腸轆轆，但你證明了自己還是個人。" },
-        { id: "J26", text: "J26\n集中營裡，病重的猶太父親已極度虛弱，營長對兒子說：「給你個建議，別再把你的麵包留給你父親，你應該吃下他的食物，才能存活下來。」\n如果你是這位父親的兒子，你會聽從營長的建議嗎？", opt1: "是，自己吃才能存活下來", opt2: "否，堅持要延續父親生命", s1: 1, m1: -2, s2: -1, m2: 2, fb1: "你狠下心拿走了父親的配給。你活了下來，但營長那句「你做得對」成為你一生揮之不去的詛咒。", fb2: "你無視營長的嘲諷，將最後一口麵包餵給父親。雖然他最終離世，但他在你懷抱中安詳閉眼。" },
-        { id: "J27", text: "J27\n1933年《重設公職人員法》規定：「非亞利安人血統的公職人員沒有退休資格」有超過1,200名猶太教授、助教遭無故解聘，經濟頓失依靠，淪為無業游民。\n你是否願意為了家中經濟，去重新學習手藝，成為皮匠或鞋匠？", opt1: "是，去學習一技之長，養活全家人比較實際", opt2: "否，工匠地位太低了，怎麼能為五斗米折腰", s1: 1, m1: 0, s2: -1, m2: 0, fb1: "你放下教授身段學會修鞋。這門粗活養活了家人，甚至讓你在集中營因擁有技能而免於一死。", fb2: "你堅持知識份子的尊嚴拒絕勞動。隨著積蓄耗盡家庭陷入絕境，最終只能依靠救濟苟活。" },
-        { id: "J28", text: "J28\n集中營裡，即將死去的猶太父親不斷呼喚兒子的名字，希望兒子可以在臨終之際陪伴在身邊，卻換來黨衛軍憤怒地用棍子毆打。\n你知道父親在呼喚你，你會回應他的要求嗎？", opt1: "是，衝到他身邊，握著他的手，令他安心", opt2: "否，太害怕被毆打，任由父親垂死掙扎", s1: -1, m1: 2, s2: 1, m2: -2, fb1: "你冒著棍棒交加緊緊握住父親的手。他在你的呼喚中平靜離世，而你被打斷了兩根肋骨。", fb2: "你恐懼地捂住耳朵不敢跨出隊伍。父親在孤獨與絕望中嚥下最後一口氣，成為你一生的痛。" },
-        { id: "J29", text: "J29\n畢爾斯基四兄弟，在納粹追捕中逃進了原始森林，父母和其他家庭成員都不幸遇難。他們開始著手組織反抗軍對抗納粹軍隊。\n如果你是畢爾斯基兄弟，是否會選擇組織武裝部隊進行反抗？", opt1: "是，也許有機會拯救其他猶太人", opt2: "否，好不容易逃跑，應該躲起來", s1: -2, m1: 1, s2: 2, m2: -1, fb1: "你們成功建立起強大的森林游擊隊，不僅重創德軍，更庇護了上千名逃亡的猶太同胞！", fb2: "你們選擇在防空洞中苟且偷生。避開了戰火，但也錯失了反抗納粹、拯救同胞的最佳時機。" },
-        { id: "J30", text: "J30\n一對姊妹被命令搬入猶太區時不願服從，坐在路邊泣不成聲。路過的波蘭人聽到哭聲，心生憐憫，把她們藏入農場，兩人因此倖存下來。\n你會順從搬遷命令嗎？你不一定會有她們的幸運喔？", opt1: "是，不服從命令會招致危險！", opt2: "否，要自行決定命運！", s1: 1, m1: 0, s2: -1, m2: 0, fb1: "你乖乖搬入了擁擠骯髒的隔離區。每天面臨飢餓與疾病的威脅，命運徹底掌控在納粹手中。", fb2: "你趁亂躲進了鄉間農場的草垛中。你成功避開了隔離區的地獄，展開了艱難的逃亡生涯。" },
-        { id: "J31", text: "J31 機會卡\n二戰初期，何鳳山擔任中國駐維也納領事。他不忍心猶太人處境，發放猶太人前往中國的生命簽證，一共救助2000多人。\n2000年，他被以色列政府授予「國際義人」稱號，並在耶路撒冷紀念碑為其刻下「永遠不能忘記的中國人」。\n你是住在維也納的猶太人，幸運取得何鳳山發放的「生命簽證」逃亡中國。", type: "chance", opt1: "領受這份幸運", s1: 1, m1: 0, fb1: "憑著那張「生命簽證」，你踏上前往中國的旅程，離開了越來越危險的歐洲。" },
+        { id: "J01", text: "J01\n有位猶太人回憶，為求盡快逃出危險的猶太隔離區以躲過死劫。於是考慮洗劫「猶太委員會」錢箱，讓自己能在短時間內弄到足夠的金錢。\n你是否會為了逃離隔離區而搶劫與納粹政權親近的「猶太委員會」？", opt1: "搶劫錢箱，為生存去冒險", opt2: "不搶劫，不願造成別人的損失", s1: 1, m1: -1, s2: -1, m2: 1, fb1: "你成功拿到一筆逃命錢，但無辜的委員會成員卻因帳目不符遭到納粹嚴厲處決。", fb2: "你守住了道德底線，但在隨後的突襲檢查中，你因繳不出賄賂金而被強行送上遣送列車。" },
+        { id: "J02", text: "J02\n學醫的猶太人回憶：「曾經在納粹的要求下，切下健康女孩的肉，把侏儒、殘疾人的身體用化學溶液保存。目的是放入帝國博物館，讓後代理解滅絕猶太人的行為是正當的。」\n若你擁有醫學背景被聘為集中營醫生，你是否願意執行解剖活體的任務？", opt1: "為了生存，執行任務", opt2: "拒絕任務，無法殘忍對待同胞", s1: 1, m1: -2, s2: -1, m2: 2, x1: -1, x2: 1, fb1: "你強忍作嘔完成了手術。納粹軍官滿意地丟給你一塊麵包，你活下來了，但靈魂已經死去。", fb2: "你斷然拒絕了褻瀆的任務。你隨即遭到毒打並被丟入毒氣室，但你保住了醫生的尊嚴。" },
+        { id: "J03", text: "J03\n猶太人遭受歧視的氛圍下，最慘的是猶太小孩。雅利安小孩會毆打他們，有些猶太人為了救小孩，不顧危險幫忙解圍，好讓猶太小孩有機會逃脫。\n如果你見到猶太小孩被毆打，是否願意伸出援手解救他們？", opt1: "伸出援手，解救小孩", opt2: "不介入，擔心受到牽連", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "你拼死擋下拳頭救走小孩。雖然自己被打得遍體鱗傷，但孩子的眼神給了你活下去的希望。", fb2: "你低著頭快步走開。背後傳來孩童淒厲的哭聲，那聲音成為你日後無數個夜晚的夢魘。" },
+        { id: "J04", text: "J04\n地鐵、街上，會有不認識的人靠近猶太人，放些東西到大衣口袋，像是蘋果、肉等，大多是猶太人不能取得的物資。\n在猶太人被限制物資來源的情況下，你是否會將無法公開取得的物資分享給猶太人？", opt1: "把物資分享給猶太人", opt2: "不分享，物資有限", s1: -1, m1: 1, s2: 1, m2: -1, x1: 1, x2: -1, fb1: "你將偷來的蘋果分給素不相識的同胞。這份微薄的卡路里，或許就是他撐過嚴冬的關鍵。", fb2: "你捂緊口袋假裝沒看見飢餓的眼神。你保全了體力，但在這座冰冷的城市裡感到前所未有的孤獨。" },
+        { id: "J05", text: "J05\n1939年大學、科學機構，被要求解雇猶太人。同時猶太人亦被禁止出入公共場所、參加體育比賽、擁有汽車牌照、電話和收音機。\n你若是被解雇的一員，是否會挺身抗議不平等法律？", opt1: "挺身抗議不公", opt2: "默默接受，不冒生命危險", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "你的抗議換來了警棍的毒打與即刻逮捕。你在監獄中受盡折磨，但勇氣鼓舞了其他受壓迫者。", fb2: "你默默收拾紙箱離開了工作多年的機構。你保全了性命，卻失去了知識分子的傲骨與尊嚴。" },
+        { id: "J06", text: "J06\n克羅赫瑪是比利時猶太人，1943年他與1900人一起被移送到奧斯威辛集中營的路上。途中有3名年輕人阻止了死亡列車前進，拯救231條人命。\n如果你也在現場，是否願意和年輕人們一起阻止死亡列車的前進呢？", opt1: "和年輕人一起阻止列車", opt2: "留在車廂，害怕遭到納粹報復", s1: -1, m1: 1, s2: 1, m2: -1, x1: 1, x2: -1, fb1: "你趁亂協助拔掉列車插銷，成功讓數百人逃入森林！雖然立刻遭到追捕，但這是絕望中的偉大勝利。", fb2: "你瑟縮在車廂角落不敢動彈。抗議很快被機槍鎮壓，列車重新啟動駛向死亡營。" },
+        { id: "J07", text: "J07\n葛柏是奧斯威辛集中營猶太人囚工，負責把猶太人屍體從毒氣室拉出來，再塞進焚屍爐火化。在黨衛軍的監視下，他必須取出受害者的值錢物品和金牙，然後再把屍體塞進焚燒爐。\n如果你是葛柏，是否願意擔任這項工作？", opt1: "接下工作，不計一切求生存", opt2: "拒絕工作，不當納粹幫凶", s1: 1, m1: -1, s2: -1, m2: 1, fb1: "你在屍堆中麻木地拔取金牙，換取了額外配給。你活得比別人久，但每天都在地獄最深處煎熬。", fb2: "你拒絕觸碰同胞的遺體。納粹毫不猶豫地扣下扳機，你結束了短暫卻保持純潔的一生。" },
+        { id: "J08", text: "J08\n鄰居門口站著兩位高大納粹，他們問：「霍恩斯坦太太是不是住在這裡？」結果她就被帶走了。我思考著是否應該通知她的女兒？但猶太人無法使用電話、夜晚又被禁止外出。\n若是你，是否會冒著被納粹捕捉的風險，去告知霍恩斯坦太太的家人？", opt1: "冒險通知她的家人", opt2: "留在家中，不冒被捕的風險", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "你冒著宵禁被擊斃的風險成功通知了她的女兒。他們及時逃亡，這份恩情永生難忘。", fb2: "你躲在窗簾後瑟瑟發抖。隔天她的家人也被蓋世太保一網打盡，你對自己的懦弱感到無比痛心。" },
+        { id: "J09", text: "J09\n「水晶之夜」使柏林成為人間煉獄，衝鋒隊在深夜以斧頭、長刀敲碎猶太商店的櫥窗玻璃。一對猶太夫婦木然看著，卻有人喊：「猶太人滾！」太太回嗆：「你這該死的豬！」先生面色慘白：「天啊～別再說了！」\n如果是你，你會如何面對這場災難與羞辱？", opt1: "出面指責雅利安人", opt2: "閉嘴忍耐，息事寧人", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "你的怒吼引來了衝鋒隊的暴力圍毆，商店被徹底砸爛，但你發洩了長久以來的屈辱與憤怒。", fb2: "你吞下羞辱眼睜睜看著畢生心血化為烏有。你保住了性命，但民族的尊嚴在此夜被徹底粉碎。" },
+        { id: "J10", text: "J10\n長居英國的猶太人只能收容一位家族成員，並需繳交高額保證金。最終，父親決定獨自飛往英國接受庇護，留下女兒與太太在混亂的德國。\n若是你擁有逃往英國的機會，是否會選擇拋下家人獨自前去英國接受庇護？", opt1: "拋下家人，獨自前往英國", opt2: "留下來，與家人團聚", s1: 1, m1: -1, s2: -1, m2: 1, fb1: "你獨自登上前往英國的飛機。你逃過了屠殺，但終其一生都在為了拋棄家人而深深自責。", fb2: "你撕毀機票選擇與家人共存亡。幾個月後你們一同被送入集中營，但至少你們沒有分開。" },
+        { id: "J11", text: "J11\n凱明斯基擁有偽造護照的專業技術，他協助猶太人製造假護照，以避免被送至集中營。但此舉同時也讓他自己陷入危機。\n如果你是凱明斯基，你會幫助猶太人製作假證件嗎？", opt1: "製造假護照，盡可能幫助更多人", opt2: "銷毀工具，獨善其身", s1: -1, m1: 2, s2: 1, m2: 0, x1: 1, x2: -1, fb1: "你的假護照讓數十個家庭得以逃離險境。雖然最終被識破並遭到嚴刑拷打，但你覺得一切都值得。", fb2: "你銷毀了所有工具斷絕聯絡。你成功隱蔽了自己，卻也切斷了許多同胞最後的生機。" },
+        { id: "J12", text: "J12\n馬賽琳是一名13歲小女孩，在集中營裡負責拉馬鈴薯貨車。與她合作的另一個小女孩，因過度勞動與營養不良已奄奄一息。馬賽琳會偷留下馬鈴薯，讓她補充營養，維持體力。\n如果你是馬賽琳，你也會這樣幫助小女孩嗎？", opt1: "偷取馬鈴薯，補充她的營養", opt2: "無視她的身體狀況", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "你冒著被警犬咬死的危險偷藏馬鈴薯。女孩因這份食物奇蹟般撐了下來，你們成為生死之交。", fb2: "你別過頭去專心拉車。幾天後那個小女孩的床位空了，你默默告訴自己：這就是集中營的日常。" },
+        { id: "J13", text: "J13\n安妮·法蘭克為逃避查緝，和6名猶太人躲藏在密室，密室的空間尚可容納1人。此時，附近有位猶太人遭到追捕，密室裡7人開會討論是否要讓他進入密室。\n如果你是安妮·法蘭克，你是否會冒險收容這位逃亡的猶太人？", opt1: "冒險收容這位猶太人", opt2: "拒絕收容，人多被發現的風險更高", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "你們擠出空間收容了他。雖然空氣更渾濁、食物更匱乏，但你們多救了一條人命，閃耀人性光輝。", fb2: "你們含淚將他拒之門外。不久後樓下傳來逮捕的腳步聲，你們安全了，但密室充滿了罪惡感。" },
+        { id: "J14", text: "J14\n史羅因在集中營時，因擁有修理水電技術，可自由來回於兩個看守營區。一位猶太人託他將親筆信和節省下來的食物，交給在另一個營區的7歲女兒。\n如果你是史羅因，你會幫助這位猶太同胞嗎？", opt1: "將食物與信親手交給他的女兒", opt2: "假裝答應，燒掉信並留下食物", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "你冒死穿越營區將信與食物塞給女孩。女孩微弱的笑容，成為你在這地獄中見過最美的畫面。", fb2: "極度的飢餓讓你失去理智，你吞下了食物並燒毀信件。你多活了幾天，卻徹底喪失了人性。" },
+        { id: "J15", text: "J15\n納粹黨員沃納有一個猶太情人伊迪斯，沃納想要與伊迪斯完成合法婚姻程序，以生養孩子。官方提出的條件是伊迪斯必須更改信仰，並進行基督教婚禮。\n若你是伊迪斯，你會願意為生存改變猶太人信仰嗎？", opt1: "改變信仰，以求活下去", opt2: "拒絕改信，不放棄猶太信仰", s1: 1, m1: -1, s2: -1, m2: 1, fb1: "你受洗並完成了婚禮，獲得暫時的合法身分，但內心對背叛祖先信仰感到無比痛苦。", fb2: "你堅定地拒絕了。婚禮被取消，你隨即被列入遣送名單，但你帶著猶太人的驕傲走入黑暗。" },
+        { id: "J16", text: "J16\n一批辛德勒工廠的猶太工人正在集合，我獨自走到負責軍官面前說：「我應該在名單上，不知為何把我刪掉了？」軍官點頭示意我加入工人的行列，我終於脫離了地獄。\n若你看到進入辛德勒工廠的機會，是否敢冒險一試？", opt1: "冒險一試，爭取活命與家人團聚", opt2: "不冒險，以免喪失生命", s1: -1, m1: 0, s2: 1, m2: 0, fb1: "你大膽的謊言竟然奏效了！你成功混入辛德勒的名單，這是你人生中最幸運的一次豪賭。", fb2: "你恐懼地退回人群中。錯失了這次機會，隔天你被推上了前往奧斯威辛的死亡列車。" },
+        { id: "J17", text: "J17\n開往集中營的火車上，每節車廂載滿80人，每人僅能攜帶幾塊麵包。車門被封死，車廂各指派一位廂長協助管理，如果有人逃脫，廂長就會被槍決。\n若是你被指派為廂長，火車突然出軌，你會把握機會帶著同車的人逃亡嗎？", opt1: "把握機會，帶同車的人逃亡", opt2: "守住車門，以免自己被槍決", s1: -1, m1: 2, s2: 1, m2: -2, x1: 1, x2: -1, fb1: "你帶領整節車廂砸破木板衝入黑夜！雖然背後槍聲大作，但你們終於呼吸到了自由的空氣。", fb2: "你為了自保死守車門不讓任何人離開。德軍很快控制局面，你保住了位置卻被同胞唾棄。" },
+        { id: "J18", text: "J18\n女記者露德與她的朋友們，替躲藏的猶太人、政治犯張羅了住處與食物配給卡，讓他們在藏身之處不致挨餓受凍。\n若你也認識露德，是否會願意分享食物給這些躲藏著的猶太人呢？", opt1: "分享食物，自己少吃一點無所謂", opt2: "不分享，顧好自己的溫飽就夠了", s1: -1, m1: 1, s2: 1, m2: -1, x1: 1, x2: -1, fb1: "你省下口糧送往藏身處。那些政治犯與猶太人因你的接濟而存活，你成為了無名英雄。", fb2: "你拒絕了請求。幾週後，藏身處的人因飢餓被迫外出覓食而全數被捕，你為此深感內疚。" },
+        { id: "J19", text: "J19\n集中營的工頭發現一個男孩嘴巴裡有金牙套，要求男孩交出。工頭惡狠狠地說：「如果不交出牙套，你將付出慘痛代價！」從此每天毆打男孩的父親。\n如果你是男孩，看著父親天天遭人痛打，會不會交出金牙套呢？", opt1: "為了父親，交出金牙套", opt2: "留下金牙套，換取食物", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "你交出了金牙套，雖然讓父親免於挨打，但你們的物資更加匱乏了。", fb2: "你保留了金牙套換取食物維持體力，但父親卻因此受盡折磨，這份愧疚將伴隨你一生。" },
+        { id: "J20", text: "J20\n有少數猶太人趁著遭遇空襲時，企圖逃離集中營，但失敗且被當場判刑，以儆效尤。營長用兩碗湯作為交換條件，徵求兩名集中營囚犯協助執行死刑。\n你長久以來都處於飢餓狀態，要把握住這個機會嗎？", opt1: "接受交換，協助執行死刑", opt2: "拒絕交換，不忍心結束他人生命", s1: 1, m1: -1, s2: -1, m2: 1, fb1: "你為了一碗湯踢開了同胞腳下的木桶。熱湯下肚你活下來了，但所有囚犯看你的眼神充滿鄙夷。", fb2: "你強忍飢餓拒絕了營長的誘惑。雖然餓得發昏，但你保住了在集中營裡極度稀缺的道德底線。" },
+        { id: "J21", text: "J21\n集中營裡一位猶太父親忽然肚子痛，他走向警衛：「對不起，能否告訴我廁所在哪裡？」警衛從頭到腳打量他，突然重重賞給這位父親一記耳光。\n如果你是這位父親的兒子，目睹一切，你會奮力保護自己的父親嗎？", opt1: "衝上前去，保護父親", opt2: "假裝沒看到，以保全自己", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "你發瘋似地將警衛撲倒！雖然立刻遭到毒打並關禁閉，但你保護父親的舉動震撼了所有囚犯。", fb2: "你死死咬住嘴唇看著父親倒在血泊中不敢出聲。你的理智保住了性命，但心靈早已千瘡百孔。" },
+        { id: "J22", text: "J22\n一名猶太女子在德軍佔領期間取得偽造文件，宣稱自己是雅利安人，躲過送進集中營的命運。\n你在無意之間發現了這位女子的真實身分，你會向上級報告嗎？", opt1: "向上級舉報，換取更好的待遇", opt2: "不舉報，救人一命是好事", s1: 1, m1: -1, s2: -1, m2: 1, fb1: "你為換取半條香腸向蓋世太保告密。那名女子當天就被逮捕，你的背叛讓你成為了納粹走狗。", fb2: "你裝作沒看見，甚至暗中幫她掩護。在這個隨時會死的年代，你選擇讓世界多一份善意存留。" },
+        { id: "J23", text: "J23\n集中營的監工身邊會有貼身「小助手」，由年紀較小的男孩擔任，他們卻比大人更殘忍。一名13歲小助手，因為自己父親未妥善整理床舖而出手痛打。\n你目睹這個情景，會出手阻止這名小助手嗎？", opt1: "出聲阻止：「這是你的父親！」", opt2: "裝作沒看到", s1: -1, m1: 1, s2: 1, m2: -1, fb1: "你的厲聲喝斥讓小助手愣住了，他羞愧地停下手。你冒險喚醒了他被極權洗腦的殘存人性。", fb2: "你麻木地看著這場家庭悲劇上演。在集中營裡權力與暴力早已扭曲了一切，你無力改變。" },
+        { id: "J24", text: "J24\n集中營定期會舉行「淘汰競選」，猶太人必須全身脫光向前奔跑。此時，黨衛軍則將無法奔跑或是體力虛弱的猶太人，送入焚化爐。\n你年邁的父親或許將無法通過淘汰競選，你會想辦法幫助他嗎？", opt1: "陪在父親身邊，協助他向前衝", opt2: "不管父親，以後也不必再分麵包給他", s1: -1, m1: 2, s2: 1, m2: -2, fb1: "你架著父親奮力跑過了終點線！雖然雙雙累倒，但你們成功躲過了毒氣室的挑選，相擁而泣。", fb2: "你冷漠甩開父親的手獨自奔向終點。你在活人區看著他被推向焚化爐，為了生存你拋棄了親情。" },
+        { id: "J25", text: "J25\n戰爭末期物資缺乏，集中營囚犯領不到食物，只能靠吃雪過活。好心工人會扔些麵包給囚犯，幾十個飢民為了麵包一團混戰，一位老人撿到一塊麵包……\n你也在現場，你會搶下老人手上的麵包嗎？", opt1: "逼迫老人交出麵包", opt2: "不搶麵包，繼續挨餓", s1: 1, m1: -1, s2: -1, m2: 1, fb1: "你仗著力氣硬生生摳出老人手裡的麵包。你嚥下食物延續了生命，卻也吃下了罪惡。", fb2: "你收回了伸出的手。老人感激地看著你，雖然依然飢腸轆轆，但你證明了自己還是個人。" },
+        { id: "J26", text: "J26\n集中營裡，病重的猶太父親已極度虛弱，營長對兒子說：「給你個建議，別再把你的麵包留給你父親，你應該吃下他的食物，才能存活下來。」\n如果你是這位父親的兒子，你會聽從營長的建議嗎？", opt1: "聽從建議，自己吃才能存活", opt2: "不聽從，堅持延續父親生命", s1: 1, m1: -2, s2: -1, m2: 2, fb1: "你狠下心拿走了父親的配給。你活了下來，但營長那句「你做得對」成為你一生揮之不去的詛咒。", fb2: "你無視營長的嘲諷，將最後一口麵包餵給父親。雖然他最終離世，但他在你懷抱中安詳閉眼。" },
+        { id: "J27", text: "J27\n1933年《重設公職人員法》規定：「非雅利安人血統的公職人員沒有退休資格」，有超過1,200名猶太教授、助教遭無故解聘，經濟頓失依靠，淪為無業遊民。\n你是否願意為了家中經濟，去重新學習手藝，成為皮匠或鞋匠？", opt1: "學習一技之長，養活全家人", opt2: "拒絕學手藝，不為五斗米折腰", s1: 1, m1: 0, s2: -1, m2: 0, fb1: "你放下教授身段學會修鞋。這門粗活養活了家人，甚至讓你在集中營因擁有技能而免於一死。", fb2: "你堅持知識分子的尊嚴拒絕勞動。隨著積蓄耗盡家庭陷入絕境，最終只能依靠救濟苟活。" },
+        { id: "J28", text: "J28\n集中營裡，即將死去的猶太父親不斷呼喚兒子的名字，希望兒子可以在臨終之際陪伴在身邊，卻換來黨衛軍憤怒地用棍子毆打。\n你知道父親在呼喚你，你會回應他的要求嗎？", opt1: "衝到父親身邊，握著他的手", opt2: "不敢回應，任由父親垂死掙扎", s1: -1, m1: 2, s2: 1, m2: -2, fb1: "你冒著棍棒交加緊緊握住父親的手。他在你的呼喚中平靜離世，而你被打斷了兩根肋骨。", fb2: "你恐懼地捂住耳朵不敢跨出隊伍。父親在孤獨與絕望中嚥下最後一口氣，成為你一生的痛。" },
+        { id: "J29", text: "J29\n畢爾斯基四兄弟，在納粹追捕中逃進了原始森林，父母和其他家庭成員都不幸遇難。他們開始著手組織反抗軍對抗納粹軍隊。\n如果你是畢爾斯基兄弟，是否會選擇組織武裝部隊進行反抗？", opt1: "組織武裝部隊，拯救其他猶太人", opt2: "躲藏起來，避開戰火", s1: -1, m1: 1, s2: 1, m2: -1, x1: 1, x2: -1, fb1: "你們成功建立起強大的森林游擊隊，不僅重創德軍，更庇護了上千名逃亡的猶太同胞！", fb2: "你們選擇在防空洞中苟且偷生。避開了戰火，但也錯失了反抗納粹、拯救同胞的最佳時機。" },
+        { id: "J30", text: "J30\n一對姊妹被命令搬入猶太隔離區時不願服從，坐在路邊泣不成聲。路過的波蘭人聽到哭聲，心生憐憫，把她們藏入農場，兩人因此倖存下來。\n你會順從搬遷命令嗎？你不一定會有她們的幸運喔？", opt1: "順從命令，搬入隔離區", opt2: "不服從，自行決定命運", s1: 1, m1: 0, s2: -1, m2: 0, fb1: "你乖乖搬入了擁擠骯髒的隔離區。每天面臨飢餓與疾病的威脅，命運徹底掌控在納粹手中。", fb2: "你趁亂躲進了鄉間農場的草垛中。你成功避開了隔離區的地獄，展開了艱難的逃亡生涯。" },
+        { id: "J31", text: "J31 機會卡\n二戰初期，何鳳山擔任中國駐維也納領事。他不忍見猶太人處境艱難，發放猶太人前往中國的生命簽證，一共救助2000多人。\n2000年，他被以色列政府授予「國際義人」稱號，並在耶路撒冷紀念碑為其刻下「永遠不能忘記的中國人」。\n你是住在維也納的猶太人，幸運取得何鳳山發放的「生命簽證」逃亡中國。", type: "chance", opt1: "領受這份幸運", s1: 1, m1: 0, fb1: "憑著那張「生命簽證」，你踏上前往中國的旅程，離開了越來越危險的歐洲。" },
         { id: "J32", text: "J32 機會卡\n荷蘭小鎮哈林的一家鐘錶店，樓上房間的衣櫃夾層就藏匿著一批猶太人。\n店主布姆幫助800多位猶太人和地下反抗成員逃生。\n1944年納粹逮捕了布姆，但納粹並沒有抓到密室裡的猶太人和地下反抗成員。\n你是布姆的猶太人鄰居，藉由他的協助而逃過這場迫害。", type: "chance", opt1: "領受這份幸運", s1: 1, m1: 0, fb1: "鐘錶店樓上的密室悄悄守住了你的性命。納粹搜查時，滴答的鐘聲掩蓋了你屏住的呼吸。" },
         { id: "J33", text: "J33 機會卡\n在立陶宛的日本領事杉原千畝，發出數千張日本過境簽證，來拯救猶太人生命。但此舉違反了日本外交部指示，因為當時日本是納粹德國的盟友。\n據聞杉原千畝於離開立陶宛前，依然在火車站繼續簽發過境簽證。被問到動機，他說只是「出於對人類的愛」。\n你也拿到了一份日本簽證，因此逃出歐洲。", type: "chance", opt1: "領受這份幸運", s1: 1, m1: 0, fb1: "你緊握著那張過境簽證登上列車。窗外的歐洲漸漸遠去，你終於逃出了這片土地。" },
         { id: "J34", text: "J34 機會卡\n英國曾啟動「兒童救援」計畫，允許未滿17歲的猶太小孩到英國避難。\n溫頓在英國尋找願意收養小孩的家庭，並用8列火車，將669名兒童從捷克送往英國。這些「溫頓兒童」及其子孫，約有6000人因溫頓而得以存活。\n你是位15歲的猶太男孩，幸運獲得溫頓的協助得以前往英國。", type: "chance", opt1: "領受這份幸運", s1: 1, m1: 0, fb1: "火車駛離布拉格的那一刻，你回頭望了一眼。你在英國的新家庭裡，重新開始了生活。" },
-        { id: "J35", text: "J35 機會卡\n德勒斯基是德國亞利安女孩，但她不願意在軍工廠工作，因此用相當低的價格賣掉了工作證。\n你身為猶太人，買到這一張假造的工作證，上方還印有納粹老鷹徽章。\n你因此擁有基本的收入與工作機會，在戰爭期間的柏林幸運存活下來。", type: "chance", opt1: "領受這份幸運", s1: 1, m1: 0, fb1: "那張印著老鷹徽章的工作證成了你的護身符。你靠它在柏林熬過了一個又一個艱難的日子。" }
+        { id: "J35", text: "J35 機會卡\n德勒斯基是德國雅利安女孩，但她不願意在軍工廠工作，因此用相當低的價格賣掉了工作證。\n你身為猶太人，買到這一張假造的工作證，上方還印有納粹老鷹徽章。\n你因此擁有基本的收入與工作機會，在戰爭期間的柏林幸運存活下來。", type: "chance", opt1: "領受這份幸運", s1: 1, m1: 0, fb1: "那張印著老鷹徽章的工作證成了你的護身符。你靠它在柏林熬過了一個又一個艱難的日子。" }
     ];
 
     const endingsDB = {
-        "G51": { title: "G51 卡爾·馮·奧西茨基 (1889-1938)", paras: ["德國記者，擔任週刊《世界舞台》總編輯，曾因揭露政府秘密建軍而被處以叛國罪，後獲特赦。希特勒上台後，仍持續批評德國的軍國主義和納粹主義。", "1933年，他再次被捕並送往關押政治異議人士的埃斯特韋根集中營，遭受殘酷的折磨與勞動。1936年獲得諾貝爾和平獎。納粹迫於國際壓力釋放他，但他在集中營時感染肺結核，兩年後病逝，享年48歲。"], url: "https://pse.is/9rrbec" },
-        "G52": { title: "G52 埃爾溫·隆美爾 (1891-1944)", paras: ["二次大戰著名德國陸軍元帥。多次在北非戰場上以寡擊眾，而獲得「沙漠之狐」的外號。", "二戰末期，因不滿希特勒的統治，加入希特勒暗殺計畫。行動失敗後，希特勒讓他選擇有榮譽的自殺，或接受軍法審判、全家送至集中營。", "最終，隆美爾選擇了前者，服毒身亡，享年52歲。德國官方偽稱隆美爾因作戰負傷而死，並為其舉辦國葬。"], url: "https://pse.is/9rrbtb" },
-        "G53": { title: "G53 萊因哈德·海德里希 (1904-1942)", paras: ["1934年擔任蓋世太保首長，可在未經法律程序的情況下任意監禁公民。曾參與籌劃「水晶之夜」，並於1942年主持萬湖會議，制定清洗猶太人的最終解決方案。", "德國佔領捷克後，於1941年出任波希米亞副總督，積極鎮壓境內的抵抗運動，而有「納粹劊子手」、「布拉格屠夫」之稱。隔年，接受英國培訓的捷克軍官發起代號「猿人作戰」的暗殺行動，就在他心愛的敞篷賓士車上被炸傷，送醫後不治，享年38歲。"], url: "https://pse.is/9rrf6k" },
-        "G54": { title: "G54 約瑟夫·戈培爾 (1897-1945)", paras: ["1924年擔任納粹黨宣傳部長，因善於造勢、演講，被譽為「宣傳天才」。", "他在大學城推動焚毀禁書活動，將猶太作家的作品銷毀，同時掌控德國媒體，抵制猶太商店、醫生、律師，對納粹的成功有著極大貢獻。", "1945年希特勒自殺後，他繼任帝國總理一職。但與蘇聯的談判破裂，他選擇在先殺死6個孩子之後，與妻子一同自盡，享年47歲。"], url: "https://pse.is/9rverw" },
-        "G55": { title: "G55 沃爾夫岡·比克納 (1913-1945)", paras: ["德國黨衛隊軍官。德國入侵波蘭後，被調往華沙，在黨衛隊國家安全總局及華沙安全警察局任職。", "1941年，他率領由29名安全警察和蓋世太保組成的「比亞維斯托克突擊隊」，以清除蘇聯游擊隊為名，在波蘭東北部對當地猶太人進行屠殺，短短兩個月內就奪走至少1800名猶太人性命。", "1945年，戰爭結束前夕，他在波蘭境內陣亡，享年31歲。"], url: "https://pse.is/9rzydy" },
-        "G56": { title: "G56 維爾姆·霍森費爾德 (1895-1952)", paras: ["德國國防軍上尉軍官，納粹黨員。曾私下對至少60多名波蘭猶太人伸出援手，其中包含瀕死的猶太裔鋼琴家華迪史洛·史匹曼。", "戰後，受到蘇聯軍隊俘虜，被送往戰俘營。史匹曼曾嘗試營救卻未果。1952年因遭受酷刑而死，享年57歲。", "2008年被以色列追認為國際義人。現今華沙獨立大道223號的紀念牌上，刻寫當年他在此地的營救義舉。"], url: "https://pse.is/9rramm" },
-        "G57": { title: "G57 威廉·卡納里斯 (1887-1945)", paras: ["德國海軍上將與軍事情報機構「阿勃維爾」負責人。他是反對希特勒的軍官行動的主要參與者，還曾錄用幾名反希特勒密謀分子進入機構，並掩護他們的活動。", "他還數度協助辛德勒保護其工廠的猶太人，避免遭受納粹迫害、處死。", "然而，1944年7月20日暗殺希特勒的計劃失敗後，遭到逮捕。最終，在弗洛森比格集中營被絞死，享年58歲。"], url: "https://pse.is/9sghck" },
-        "G58": { title: "G58 路德維希·穆勒 (1883-1945)", paras: ["德國神學家。成立親納粹的「日耳曼教會」，之後被希特勒任命為「德意志新教教會」的帝國主教。", "擔任主教時，禁止牧師批評政治，並允許蓋世太保監督教會。宣揚「耶穌是雅利安人的耶穌」，主張開除具有猶太血統的神職人員。", "1945年7月，德國宣布投降，穆勒選擇在柏林自殺身亡，享年62歲。"], url: "https://pse.is/9rvltp" },
-        "G59": { title: "G59 海因里希·希姆萊 (1900-1945)", paras: ["擔任納粹德國親衛隊全國領袖，宣稱「消滅猶太民族」是雅利安人肩負的義務，是納粹大屠殺的主要策劃者。", "大戰期間，組建了專門負責種族滅絕的別動隊，因此被指控要對歐洲數百萬名猶太人、同性戀者的死亡負起主要責任。", "二戰末期，因戰情失利，曾企圖與盟軍談和，失敗後被希特勒發現而遭到免職。德國投降後，逃亡失敗，選擇服毒自殺，享年44歲。"], url: "https://pse.is/9rvm5e" },
-        "G60": { title: "G60 阿佛烈·羅森堡 (1893-1946)", paras: ["納粹黨報《人民觀察家報》的主編，也是納粹黨的思想領袖。其代表著作《二十世紀的神話》銷量超過100萬冊。", "他打造了一套種族階級理論，將猶太人、黑人置於最底層，雅利安人處於最頂端。此外，亦反對同性戀，對於猶太人的種族屠殺負有重大責任。", "德國投降後，羅森堡於紐倫堡審判中以戰犯身份被判處絞刑，享年53歲。"], url: "https://pse.is/9rvmay" },
-        "G61": { title: "G61 阿蒙·哥特 (1908-1946)", paras: ["納粹親衛隊成員。二戰期間，擔任波蘭普瓦舒夫集中營的司令官。他被指控在清洗猶太居民區時，曾親自射殺了30至90名的婦女和兒童。", "戰後，被引渡至波蘭克拉科夫，由最高國民法庭進行審判。因他「親自殺害、殘害與虐待了大量的人」，並下令針對個人和群體實施監禁、酷刑以及滅絕的罪行，被判處絞刑，享年37歲。"], url: "https://pse.is/9szb6s" },
-        "G62": { title: "G62 喬治·杜克維茲 (1904-1973)", paras: ["德國外交官，二戰期間在德國佔領下的丹麥擔任大使館專員。因他無法接受迫害猶太政策，故私下透露丹麥猶太人將被遣送的確切時間。於是丹麥民眾自發性動員，偷偷用漁船將7000多名猶太人載到中立國瑞典，讓丹麥國內95%的猶太人得到拯救。", "戰後，於1971年得到以色列政府褒揚為「國際義人」。享壽68歲。"], url: "https://pse.is/9rvmju" },
-        "G63": { title: "G63 奧斯卡·辛德勒 (1908-1974)", paras: ["德國資本家，因在波蘭開設珐瑯、彈藥工廠而僱傭大量猶太工人，挽救近1300人免遭屠殺。", "起初，他僱傭猶太人是受利益驅使；到了後期，卻耗盡積蓄賄賂納粹，來保護猶太工人。致使戰後辛德勒一貧如洗，宣布破產，還需依靠猶太人救濟金過活。", "1963年以色列授予他國際義人稱號。逝世後安葬於耶路撒冷聖地錫安山，且是唯一葬於此地的前納粹黨成員，享壽67歲。"], url: "https://pse.is/9rvmqv" },
-        "G64": { title: "G64 馬丁·尼莫拉 (1892-1984)", paras: ["德國神學家，因發表反納粹的懺悔文《起初他們》而聞名。", "尼莫拉公開反對納粹對德國新教教會的影響，並組織牧師緊急同盟，保護牧師免受警察影響。1937年被蓋世太保逮捕，流轉於薩克森豪森和達豪集中營，差一點遭到處死。", "戰後，他致力於推動和平對話，訪問莫斯科、北越，獲得列寧和平獎。1984年去世，享耆壽92歲。"], url: "https://pse.is/9rwau9" },
-        "G65": { title: "G65 貝特霍爾德·貝茨 (1913-2013)", paras: ["德國實業家，曾任克魯伯鋼鐵集團總裁，對重建德國為工業強國，具有重大貢獻。", "二戰期間，他與妻子以「工廠急需熟練勞工」，將數百名即將被送往集中營的猶太人從火車上救下。還曾將猶太兒童藏匿在家中房間，以躲避緝捕。", "戰後，於1973年獲得以色列授予「國際義人」稱號。2013年逝世，享耆壽99歲。世界猶太人大會會長羅納德·勞德稱讚他為「上個世紀最偉大的德國人之一」。"], url: "https://pse.is/9rwbhs" },
-        "G66": { title: "G66 約瑟夫·門格勒 (1911-1979)", paras: ["德國納粹黨衛隊軍官，曾在奧斯威辛集中營擔任軍醫。他負責裁決將囚犯送到毒氣室殺死，或者成為強制勞動勞工。", "他對集中營裡的人進行殘酷的人體實驗，如注射藥物企圖改變眼珠顏色；在活人身上接種病毒和細菌；無麻醉進行摘除器官手術等，而被稱為「死亡天使」。", "戰後被重金懸賞追捕，逃亡至南美洲隱姓埋名。最終，1979年因中風意外溺斃於巴西的海灘，享壽67歲。"], url: "https://pse.is/9rwd4v" },
-        "G67": { title: "G67 胡波圖斯·斯特拉胡德 (1898-1986)", paras: ["德國航空部門醫學家，在NASA的早期太空計劃貢獻良多，而被譽為「太空醫學之父」。", "二戰期間，曾利用猶太囚犯進行實驗。包括將囚犯置於低壓艙模擬高空缺氧環境，以及將其浸泡在冰水中進行極端低溫實驗，導致大量受害者痛苦死亡。", "戰後他被秘密帶往美國，在太空總署擔任高階職位。88歲過世後，進行人體實驗的事被公諸於世，自此名譽掃地，所有榮譽頭銜遭到撤銷。"], url: "https://pse.is/9s833t" },
-        "G68": { title: "G68 奧斯卡·葛朗寧 (1921-2018)", paras: ["納粹親衛隊下士，因駐守奧斯威辛集中營，負責登記、整理從猶太人身上搜刮來的財產，並將其寄回柏林總部，而被稱為「奧斯威辛的帳房」。", "戰後，他隱姓埋名。直到四十年後，才公開承認並詳細講述他在集中營親眼見證了大規模屠殺的殘酷過程，以此駁斥那些否認歷史的言論。", "他被德國法庭以「協助謀殺」三十萬名猶太人，判處四年徒刑。但在入獄前病逝，享耆壽96歲。"], url: "https://pse.is/9s829j" },
-        'J51': { title: 'J51 柯扎克 1879-1942年', desc: '「兒童人權之父」。拒絕逃亡，最終和孩子們在死亡集中營慘遭殺害。' },
-        'J52': { title: 'J52 弗朗切斯卡曼恩 ?-1943年', desc: '波蘭芭蕾舞演員。在移送中奪槍反擊軍官，最終所有婦女遭機關槍掃射身亡。' },
-        'J53': { title: 'J53 安妮.法蘭克 1929-1945年', desc: '躲藏密室多年後被捕送往集中營病逝，其遺留手稿成為著名的《安妮日記》。' },
-        'J54': { title: 'J54 維多·哈森 1916-1946年', desc: '自願成為抓捕逃亡猶太人的「賞金獵人」。希臘解放後被捕受審,判處死刑。' },
-        'J55': { title: 'J55 埃米爾·埃爾溫·馬爾 1900-1967年', desc: '納粹集中營的猶太人囚工「卡波」,對待同胞極為殘暴,戰後遭判刑。' },
-        'J56': { title: 'J56 佩切爾斯基 1909-1990年', desc: '策畫反抗行動暗殺黨衛軍,使420人越獄。死後英勇事蹟才被披露。' },
-        'J57': { title: 'J57 海倫娜 1920-1998年', desc: '加入游擊隊並混入德軍指揮部擔任秘書。戰後遭人誤解唾罵,身分釐清後才平反。' },
-        'J58': { title: 'J58 羅泰姆 1924-2018年', desc: '參加華沙猶太人起義,幫助數千猶太人逃亡,獲波蘭政府頒發最高榮譽。' },
-        'J59': { title: 'J59 葛柏 1922-2020年', desc: '「特遣隊」隊員，負責修剪女屍頭髮。戰後擔任納粹戰犯法庭證人。' },
-        'J60': { title: 'J60 米爾希 1892-1972年', desc: '漢莎航空第一任總經理,因父親是猶太人備受質疑,戰後被判終身監禁。' },
-        'J61': { title: 'J61 魏什爾 1891-1982年', desc: '捷克記者,曾呼籲「驕傲地戴上黃色六芒星」,後來對此口號感到無比後悔。' },
-        'J62': { title: 'J62 韋內齊亞 1923-2012年', desc: '「特遣隊」倖存者。撰寫回憶錄《奧斯威辛特遣隊》揭露納粹真實罪行。' }
+        "G51": {"title": "G51 卡爾·馮·奧西茨基 (1889-1938)", "paras": ["德國記者，擔任週刊《世界舞台》總編輯，曾因揭露政府秘密建軍而被處以叛國罪，後獲特赦。希特勒上台後，仍持續批評德國的軍國主義和納粹主義。", "1933年，他再次被捕並送往關押政治異議人士的埃斯特韋根集中營，遭受殘酷的折磨與勞動。", "1936年獲得諾貝爾和平獎。納粹迫於國際壓力釋放他，但他在集中營時感染肺結核，兩年後病逝，享年48歲。"], "url": "https://pse.is/9rrbec"},
+        "G52": {"title": "G52 埃爾溫·隆美爾 (1891-1944)", "paras": ["二次大戰著名德國陸軍元帥。 多次在北非戰場上以寡擊眾，而獲得「沙漠之狐」的外號 。", "二戰末期，因不滿希特勒的統治，加入希特勒暗殺計畫。行動失敗後，希特勒讓他選擇有榮譽的自殺，或接受軍法審判、全家送至集中營。", "最終，隆美爾選擇了前者，服毒身亡，享年52歲。德國官方偽稱隆美爾因作戰負傷而死，並為其舉辦國葬。"], "url": "https://pse.is/9rrbtb"},
+        "G53": {"title": "G53 威廉·卡納里斯 (1887-1945)", "paras": ["德國海軍上將與軍事情報機構「阿勃維爾」負責人。他是反對希特勒的軍官行動的主要參與者，還曾錄用幾名反希特勒密謀分子進入機構，並掩護他們的活動。", "他還數度協助辛德勒保護其工廠的猶太人，避免遭受納粹迫害、處死。", "然而，1944年7月20日暗殺希特勒的計劃失敗後，遭到逮捕。最終，在弗洛森比格集中營被絞死，享年58歲。"], "url": "https://pse.is/9sghck"},
+        "G54": {"title": "G54 維爾姆·霍森費爾德 (1895-1952)", "paras": ["德國國防軍上尉軍官，納粹黨員。曾私下對至少60多名波蘭猶太人伸出援手，其中包含瀕死的猶太裔鋼琴家華迪史洛·史匹曼。", "戰後，受到蘇聯軍隊俘虜，被送往戰俘營。史匹曼曾嘗試營救卻未果。1952年因遭受酷刑而死，享年57歲。", "2008年被以色列追認為國際義人。現今華沙獨立大道223號的紀念牌上，刻寫當年他在此地的營救義舉。"], "url": "https://pse.is/9rramm"},
+        "G55": {"title": "G55 萊因哈德·海德里希 (1904-1942)", "paras": ["1934年擔任蓋世太保首長，可在未經法律程序的情況下任意監禁公民。曾參與籌劃「水晶之夜」，並於1942年主持萬湖會議，制定清洗猶太人的最終解決方案。", "德國佔領捷克後，於1941年出任波希米亞副總督，積極鎮壓境內的抵抗運動，而有「納粹劊子手」、「布拉格屠夫」之稱。隔年，接受英國培訓的捷克軍官發起代號「猿人作戰」的暗殺行動，就在他心愛的敞篷賓士車上被炸傷，送醫後不治，享年38歲。"], "url": "https://pse.is/9rrf6k"},
+        "G56": {"title": "G56 沃爾夫岡·比克納 (1913-1945)", "paras": ["德國黨衛隊軍官。德國入侵波蘭後，被調往華沙，在黨衛隊國家安全總局及華沙安全警察局任職。", "1941年，他率領由29名安全警察和蓋世太保組成的「比亞維斯托克突擊隊」，以清除蘇聯游擊隊為名，在波蘭東北部對當地猶太人進行屠殺，短短兩個月內就奪走至少1800名猶太人性命。", "1945年，戰爭結束前夕，他在波蘭境內陣亡，享年31歲。"], "url": "https://pse.is/9rzydy"},
+        "G57": {"title": "G57 海因里希·希姆萊 (1900-1945)", "paras": ["擔任納粹德國親衛隊全國領袖，宣稱「消滅猶太民族」是雅利安人肩負的義務，是納粹大屠殺的主要策劃者。", "大戰期間，組建了專門負責種族滅絕的別動隊，因此被指控要對歐洲數百萬名猶太人、同性戀者的死亡負起主要責任。", "二戰末期，因戰情失利，曾企圖與盟軍談和，失敗後被希特勒發現而遭到免職。德國投降後，逃亡失敗，選擇服毒自殺，享年44歲。"], "url": "https://pse.is/9rvm5e"},
+        "G58": {"title": "G58 約瑟夫·戈培爾 (1897-1945)", "paras": ["1924年擔任納粹黨宣傳部長，因善於造勢、演講，被譽為「宣傳天才」。", "他在大學城推動焚毀禁書活動，將猶太作家的作品銷毀，同時掌控德國媒體，抵制猶太商店、醫生、律師，對納粹的成功有著極大貢獻。", "1945年希特勒自殺後，他繼任帝國總理一職。但與蘇聯的談判破裂，他在先殺死6個孩子之後，與妻子一同自盡，享年47歲。"], "url": "https://pse.is/9rverw"},
+        "G59": {"title": "G59 路德維希·穆勒 (1883-1945)", "paras": ["德國神學家。成立親納粹的「日耳曼教會」，之後被希特勒任命為「德意志新教教會」的帝國主教。", "擔任主教時，禁止牧師批評政治，並允許蓋世太保監督教會。宣揚「耶穌是雅利安人的耶穌」，主張開除具有猶太血統的神職人員。", "1945年7月，德國宣布投降，穆勒在柏林選擇自殺身亡，享壽62歲。"], "url": "https://pse.is/9rvltp"},
+        "G60": {"title": "G60 喬治·杜克維茲 (1904-1973)", "paras": ["德國外交官，二戰期間在德國佔領下的丹麥擔任大使館專員。", "因他無法接受迫害猶太政策，故私下透露丹麥猶太人將被遣送的確切時間。於是丹麥民眾自發性動員，偷偷用漁船將7000多名猶太人載到中立國瑞典，讓丹麥國內95%的猶太人得到拯救。", "戰後，於1971年得到以色列政府褒揚為「國際義人」。享壽68歲。"], "url": "https://pse.is/9rvmju"},
+        "G61": {"title": "G61 奧斯卡·辛德勒 (1908-1974)", "paras": ["德國資本家，因在波蘭開設珐瑯、彈藥工廠而僱傭大量猶太工人，挽救近1300人免遭屠殺。", "起初，他僱傭猶太人是受利益驅使；到了後期，卻耗盡積蓄賄賂納粹，來保護猶太工人。致使戰後辛德勒一貧如洗，宣布破產，還需依靠猶太人救濟金過活。", "1963年以色列授予他國際義人稱號。逝世後安葬於耶路撒冷聖地錫安山，且是唯一葬於此地的前納粹黨成員，享壽67歲。"], "url": "https://pse.is/9rvmqv"},
+        "G62": {"title": "G62 馬丁·尼莫拉 (1892-1984)", "paras": ["德國神學家，因發表反納粹的懺悔文《起初他們》而聞名。", "尼莫拉公開反對納粹對德國新教教會的影響，並組織牧師緊急同盟，保護牧師免受警察影響。1937年被蓋世太保逮捕，流轉於薩克森豪森和達豪集中營，差一點遭到處死。", "戰後，他致力於推動和平對話，訪問莫斯科、北越，獲得列寧和平獎。1984年去世，享耆壽92歲。"], "url": "https://pse.is/9rwau9"},
+        "G63": {"title": "G63 貝特霍爾德·貝茨 (1913-2013)", "paras": ["德國實業家，曾任克魯伯鋼鐵集團總裁，對重建德國為工業強國，具有重大貢獻。", "二戰期間，他與妻子以「工廠急需熟練勞工」，將數百名即將被送往集中營的猶太人從火車上救下。還曾將猶太兒童藏匿在家中房間，以躲避緝捕。", "戰後，於1973年獲得以色列授予「國際義人」稱號。2013年逝世，享耆壽99歲。世界猶太人大會會長羅納德·勞德稱讚他為「上個世紀最偉大的德國人之一」。"], "url": "https://pse.is/9rwbhs"},
+        "G64": {"title": "G64 阿蒙·哥特 (1908-1946)", "paras": ["奧地利裔的納粹親衛隊軍官。二戰期間，擔任波蘭普瓦舒夫集中營司令官，因手段極其殘暴、嗜殺而聞名，被冠以「普瓦舒夫的屠夫」稱號。", "他常隨機射殺集中營內的囚犯和猶太工人。一位辛德勒的猶太倖存者費佛伯格曾說：「當你看到哥特時，你就看到了死亡。」", "戰後，哥特被引渡至波蘭克拉科夫，由最高國民法庭進行審判。因「親自殺害、殘害與虐待了大量的人」，判處絞刑，享年37歲。"], "url": "https://pse.is/9szb6s"},
+        "G65": {"title": "G65 阿佛烈·羅森堡 (1893-1946)", "paras": ["納粹黨報《人民觀察家報》的主編，也是納粹黨的思想領袖。其代表著作《二十世紀的神話》銷量超過100萬冊。", "他打造了一套種族階級理論，將猶太人、黑人置於最底層，雅利安人處於最頂端。此外，亦反對同性戀，對於猶太人的種族屠殺負有重大責任。", "德國投降後，羅森堡於紐倫堡審判中以戰犯身份被判處絞刑，享年53歲。"], "url": "https://pse.is/9rvmay"},
+        "G66": {"title": "G66 埃米爾·馬爾 (1899-1967)", "paras": ["德國機械工，因刑事犯罪被送入達豪集中營。1943-45年間，他被拔擢為集中營火葬場的「卡波」（Kapo，即協助納粹管理其他囚犯的囚監），主要負責搬運與焚燒屍體。因他在營內協助納粹進行了近1000場絞刑，而被稱為「達豪的絞刑吏」", "1945 年，馬爾因參與集中營的殘暴罪行被判處絞刑，但他曾指證多名納粹軍官與集中營軍醫的罪行，隨後被減刑為十年徒刑。", "1952年他從監獄提前獲釋，最終於1967年去世，享壽67歲。"], "url": "https://pse.is/9tgaj4"},
+        "G67": {"title": "G67 約瑟夫·門格勒 (1911-1979)", "paras": ["德國納粹黨衛隊軍官，曾在奧斯威辛集中營擔任軍醫。他負責裁決將囚犯送到毒氣室殺死，或者成為強制勞動勞工。", "他對集中營裡的人進行殘酷的人體實驗，如注射藥物企圖改變眼珠顏色；在活人身上接種病毒和細菌；無麻醉進行摘除器官手術等，而被稱為「死亡天使」。", "戰後被重金懸賞追捕，逃亡至南美洲隱姓埋名。最終，1979年因中風意外溺斃於巴西的海灘，享壽67歲。"], "url": "https://pse.is/9rwd4v"},
+        "G68": {"title": "G68 胡波圖斯·斯特拉胡德 (1898-1986)", "paras": ["德國航空部門醫學家，在NASA的早期太空計劃貢獻良多，而被譽為「太空醫學之父」。", "二戰期間，曾利用猶太囚犯進行實驗。包括將囚犯置於低壓艙模擬高空缺氧環境，以及將其浸泡在冰水中進行極端低溫實驗，導致大量受害者痛苦死亡。", "戰後他被秘密帶往美國，在太空總署擔任高階職位。88歲過世後，進行人體實驗的事被公諸於世，自此名譽掃地，所有榮譽頭銜遭到撤銷。"], "url": "https://pse.is/9s833t"},
+        "G69": {"title": "G69 奧斯卡·葛朗寧 (1921-2018)", "paras": ["納粹親衛隊下士，因駐守奧斯威辛集中營，負責登記、整理從猶太人身上搜刮來的財產，並將其寄回柏林總部，而被稱為「奧斯威辛的帳房」。", "戰後，他隱姓埋名。直到四十年後，才公開承認並詳細講述他在集中營親眼見證了大規模屠殺的殘酷過程，以此駁斥那些否認歷史的言論。", "他被德國法庭以「協助謀殺」三十萬名猶太人，判處四年徒刑。但在入獄前病逝，享耆壽96歲。"], "url": "https://pse.is/9s829j"},
+        "J51": {"title": "J51 雅努什·科扎克 (1878-1942)", "paras": ["波蘭猶太裔兒科醫生、教育家，倡導應平等對待兒童與成年人，被譽為「兒童人權之父」，並為華沙的猶太兒童創立孤兒之家。", "二戰爆發後，他多次拒絕友人替他偽造證件來逃離猶太隔離區，而是選擇留下來陪伴孤兒院的孩子。", "1942年8月，科扎克牽著約200名孤兒的手，高舉著孤兒院的綠色旗幟，平靜而尊嚴地走上前往毒氣室的列車，全數不幸罹難，享壽64歲。"], "url": "https://pse.is/9rngz7"},
+        "J52": {"title": "J52 費利克斯·努斯鮑姆 (1904-1944)", "paras": ["德國猶太裔畫家，被譽為是二十世紀最偉大的猶太畫家。納粹上台後，流亡至比利時，並與妻子躲藏在布魯塞爾的陰暗閣樓中生活整整四年。", "儘管處境危險，仍持續創作，其作品深刻記錄了當時猶太人所遭受的恐懼、流亡與迫害，成為見證歷史的畫作，而被稱為「大屠殺藝術家」。", "1944年7月，努斯鮑姆夫婦因遭人告發而被捕，送往奧斯威辛集中營，並於同年遇害，享年39歲。"], "url": "https://pse.is/9sypdt"},
+        "J53": {"title": "J53 莫德哈伊·阿涅萊維奇 (1919-1943)", "paras": ["阿涅萊維奇是波蘭華沙猶太區起義事件中的領導人。他出身貧困，高中畢業後就投身於猶太復國主義青年運動，培養了卓越的組織與領導才能。", "德軍入侵波蘭後，他積極組織秘密抵抗活動、開辦地下報紙，並奔走於各個猶太人聚居區，以喚醒青年的反抗意識。", "1943年4月，當德軍企圖對華沙猶太區實施「清算」時，他率領幾百名裝備簡陋的猶太人，與裝備精良的納粹展開近一個月的頑強巷戰。最終與女友、同伴集體自殺，年僅23歲。"], "url": "https://pse.is/9rzxst"},
+        "J54": {"title": "J54 法蘭切斯卡·曼恩 (1917-1943)", "paras": ["波蘭猶太裔芭蕾舞女演員，是當時備受矚目的天才舞者。德軍入侵波蘭後，被關押進華沙猶太隔離區，並在當地的夜總會表演以維持生計。", "1943年，曼恩與1,700名猶太人被宣稱要送往瑞士換俘，實則載往奧斯威辛集中營的第二更衣室，準備送入毒氣室。她在假裝脫衣服的過程中，搶奪了軍官席林格的手槍並打傷他和另一名守衛。", "然而，隨後調來的增援部隊，用機槍對更衣室進行掃射，並將倖存者拖出處決。曼恩最終不幸在混戰中中彈身亡，得年26歲。"], "url": "https://pse.is/9rnhl2"},
+        "J55": {"title": "J55 安妮·法蘭克 (1929-1945)", "paras": ["二戰中納粹大屠殺最著名的猶太人受害者之一，因在躲藏期間寫下的《安妮日記》而聞名於世。", "安妮生於德國的富裕猶太家庭。納粹崛起後，舉家遷居荷蘭。二戰時德軍佔領荷蘭，與家人一起躲藏在密室，並於長達兩年的幽閉生活中，開始書寫日記。1944年因遭人告發，被送往奧斯威辛集中營，隔年病逝，年僅15歲。", "安妮的父親奧托是全家唯一倖存者，他將女兒的手稿《安妮日記》整理後出版，不僅成為珍貴的第一手歷史見證，也是全球發行量最大的圖書之一。"], "url": "https://pse.is/9rnhrg"},
+        "J56": {"title": "J56 西蒙·特南鮑姆 (1892-1941)", "paras": ["波蘭猶太裔動物學家和昆蟲學家。他一生收集了超過50萬件昆蟲標本，分裝於400個玻璃櫃中，時間跨度從1840年一直到1940年9月。對於昆蟲研究有著重大貢獻。", "德國入侵波蘭後，他與家人被監禁在華沙猶太區，卻拒絕好友華沙動物園園長揚·扎賓斯基的逃亡援助，最終於區內因飢餓與力竭而逝世，享年49歲。", "戰後，他的遺孀將這批完好無損的龐大標本捐贈給了華沙動物學博物館。"], "url": "https://pse.is/9s23ba"},
+        "J57": {"title": "J57 雅各布·萊金 (1906-1942)", "paras": ["波蘭猶太裔律師，曾在華沙猶太區擔任受納粹德國管轄的「猶太區秩序警察」副指揮官暨實際管理人。", "萊金在執行「華沙大行動」（將華沙猶太人驅逐至特雷布林卡滅絕營的慘劇）中扮演了關鍵角色。他以極高的辦事效率、對驅逐配額的冷血追求以及異常殘酷的手段聞名，由於他身材矮小，德國人甚至嘲諷地稱他為「小拿破崙」。", "1942年10月，萊金在華沙街頭遭到猶太戰鬥組織成員槍殺身亡，享年36歲。"], "url": "https://pse.is/9t4d6h"},
+        "J58": {"title": "J58 亞伯拉罕·甘茨瓦伊赫 (1902-1943)", "paras": ["波蘭猶太裔記者。二戰期間，他與蓋世太保合作，成為著名的納粹通敵者兼猶太裔犯罪頭目。", "他領導了華沙猶太區一個名為「第十三處」的組織，名義上是打擊猶太區黑市的監督機構，實際上是直接受蓋世太保控制的情報蒐集網路與走私集團。由於他的嚴重背叛行為，華沙猶太戰鬥組織對他下達了死刑判決。", "1941年前後，「第十三處」遭到德軍解散，甘茨瓦伊赫偽裝成波蘭地下組織成員繼續活動。1943年，他與家人最終在帕維亞克監獄被納粹處決，享年41歲。"], "url": "https://pse.is/9tbmwh"},
+        "J59": {"title": "J59 維多·哈森 (1916-1948)", "paras": ["哈森出生於希臘塞薩洛尼基的猶太中產階級家庭。1941年德軍佔領希臘，他當上猶太警察局長，並自願成為抓捕逃亡者的「賞金獵人」，向遭到囚禁的猶太人勒索大筆珠寶、金錢。", "1943年，納粹將希臘近五萬名猶太人送往集中營，當中也包含公開與兒子斷絕關係的哈森父親。", "戰後，逃亡國外的哈森被英軍逮捕並送回希臘受審，判處死刑，享年32歲。他也是二戰期間，全歐洲唯一一名因與納粹勾結而遭希臘政府審判並處決的猶太人。"], "url": "https://pse.is/9rnj4c"},
+        "J60": {"title": "J60 海倫·莫斯科維茨 (1920-1998)", "paras": ["比利時猶太裔的英國情報間諜。在納粹佔領比利時後，她偽造身分混入布魯塞爾的蓋世太保總部擔任秘書，並利用職務之便暗中拯救了許多猶太人與盟軍士兵。", "由於她的「雙面間諜」身分，在不知情的民眾與猶太同胞眼中，她就是一個為了苟活而投靠納粹、甚至出賣肉體的「叛徒」或「德軍情婦」。", "她的父母在 1943 年死於集中營。戰後她選擇移居加拿大，出版了戰時回憶錄，講述親身經歷的苦痛故事，並在1991年改編成電影《A Woman at War》。享壽77歲。"], "url": "https://pse.is/9rnlle"},
+        "J61": {"title": "J61 華迪史洛·史匹曼 (1911-2000)", "paras": ["波蘭猶太裔鋼琴家、作曲家，任職於波蘭廣播電台。", "德國入侵波蘭，史匹曼與家人被關進華沙猶太人區。1942年，他的家人全數被送往特雷布林卡滅絕營殺害，而他則在火車出發前最後一刻被一名猶太警察救下。", "之後，他獨自過著驚心動魄的逃亡與躲藏生活，並在一名德國軍官霍森費爾德的暗中庇護下，撐到了二戰結束。", "他將這段慘痛的倖存經歷寫成回憶錄出版，並在2002年被改編成奧斯卡得獎電影《戰地琴人》而廣為人知。享壽88歲。"], "url": "https://pse.is/9syqxm"},
+        "J62": {"title": "J62 波德克·費佛伯格 (1913-2001)", "paras": ["波蘭猶太裔軍官。波蘭淪陷後，與家人被迫進入猶太人區。之後被德國商人辛德勒僱用為工廠工人，並在他的庇護下與約1,200名猶太同胞一同死裡逃生。", "戰後費佛伯格遷居美國，並不斷向人講述辛德勒的偉大事跡。澳洲作家簡尼利將這段故事寫成小說《辛德勒的方舟 》，並說服史蒂芬·史匹柏改編成榮獲多項奧斯卡的影史巨作《辛德勒的名單》，實現了費佛伯格畢生心願 。", "他曾說：「辛德勒給了我生命，我希望以永恆作回報」。2001年費佛伯格與世長辭，享壽87歲。"], "url": "https://pse.is/9rzxdw"},
+        "J63": {"title": "J63 辛查·羅森 (1924-2018)", "paras": ["波蘭猶太裔的地下反抗軍成員，也是1943年華沙猶太區起義中最後一位逝世的倖存戰士。", "德軍佔領波蘭後，他的家人被驅逐至特雷布林卡滅絕營，18歲的羅森則毅然加入了華沙猶太區的猶太戰鬥組織，奮勇抵抗。", "1943年他參加華沙猶太區起義，到了戰況不利的後期，羅森利用下水道系統讓數十名倖存的反抗軍戰士成功撤離。", "2013年，波蘭政府頒發羅森最高榮譽勳章。晚年定居以色列，以94歲高齡逝於耶路撒冷。"], "url": "https://pse.is/9rp6ah"},
+        "J64": {"title": "J64 米米·萊因哈特 (1915-2022)", "paras": ["奧地利猶太裔女性，二戰初期她隨丈夫搬至波蘭克拉科夫。納粹佔領波蘭後，丈夫不幸遭到槍殺，自己則被遣送至集中營。", "由於她精通速記與德語，在集中營管理處工作時結識了辛德勒，並成為他的私人秘書。她最著名的事蹟是親手打字編纂了那份拯救無數生命的「辛德勒的名單」，幫助約1,300名猶太人免於被送往納粹集中營屠殺。", "戰後她幸運找回逃難時失散的兒子。晚年和兒子定居以色列，於2022年辭世，享嵩壽107歲。"], "url": "https://pse.is/9rzxew"},
+        "J65": {"title": "J65 艾爾哈德·米爾希 (1892-1972)", "paras": ["德國猶太裔空軍元帥，也是漢莎航空的聯合創辦人兼首任總經理。他一手包辦了德軍飛機的研發與大規模量產，是德國空軍實質上的主要奠基者。", "米爾希的生父是一名猶太裔藥劑師。根據紐倫堡法案，他屬於「半猶太人」，理應被清洗。但由於他的建軍能力無可替代，空軍總司令戈林強行干預，並留下名言：「在空軍裡，由我來決定誰是猶太人！」", "戰後，米爾希因在工廠內大規模強迫奴役勞工，被判處終身監禁。1954年獲得假釋。享壽79歲。"], "url": "https://pse.is/9rqg3q"},
+        "J66": {"title": "J66 史黛拉·戈德施拉格 (1922-1994)", "paras": ["史黛拉出生於柏林的猶太中產階級家庭。二戰時，她為了活命，憑藉亮麗的外貌、對猶太社群的熟悉以及猶太人的身份降低被害者戒心。即使後來她的父母仍被送往奧斯威辛集中營遇害，依然繼續為蓋世太保工作。據估計，經她出賣而遭逮捕、殺害的猶太人介於600至3,000人之間。", "二戰後，她被蘇聯判處10年監禁。服刑期滿後，移居西德。1994年，她在家中自殺身亡，享壽72歲。", "2024 年的德國電影《金髮毒藥》即改編自她的故事，細膩刻畫了在納粹統治下，她從受害者轉變為加害者的扭曲心理與歷史傷痕。"], "url": "https://pse.is/9t4epq"},
+        "J67": {"title": "J67 什洛莫·韋內齊亞 (1923-2012)", "paras": ["出生於希臘的義大利猶太裔人。1944年，他和家人被送到奧斯威辛集中營，成為少數倖存者之一。", "他因為年輕且體格強健，被編入「特遣隊」。工作包括：引導受害者進入毒氣室、在屠殺後搬運屍體、剪下死者的頭髮、拔除金牙，並將屍體送入焚屍爐焚燒。", "晚年，他撰寫回憶錄，詳細記錄了納粹死亡工廠的日常運作，被歷史學界視為研究大屠殺極為珍貴的第一手文獻。他還曾擔任電影《美麗人生》的歷史顧問。2012年在羅馬逝世，享壽88歲。"], "url": "https://pse.is/9rp6xd"},
+        "J68": {"title": "J68 達里奧·葛柏 (1922-2020)", "paras": ["希臘猶太裔人，也是已知最後一位離世的奧斯威辛集中營「特遣隊」成員。", "1944年他與家人一同被送至奧斯威辛集中營，家人不幸被殺，而他則因體格強健被強徵入「特遣隊」，被迫在第二火葬場協助處理毒氣室受害者的屍體與財物。", "納粹會複查屍體，若發現有遺漏，特遣隊員也會被丟入焚化爐，並且每隔六個月就要清洗一次「特遣隊」成員。", "戰後，他擔任納粹戰犯法庭的證人，積極為歷史作證。直到2020年才以97歲高齡辭世。"], "url": "https://pse.is/9tgeag"}
     };
 
     // ==========================================
     // 2. 全域狀態與工具模組
     // ==========================================
     
-    // 玩家起始數值（生存 6：較貼近高壓的歷史處境；道德 10）
-    const START_STATS = { survival: 6, moral: 10 };
+    // 玩家起始數值（新版計分：生存、道德指數皆從 5 分開始）
+    const START_STATS = { survival: 5, moral: 5 };
 
     const GameState = {
         players: [],
@@ -986,12 +1255,14 @@ window.addEventListener('error', function (e) {
         highlightKeywords: function(text) {
             if (!text) return "";
             const keywords = [
-                '蓋世太保', '毒氣室', '水晶之夜', '集中營', '屠殺', '安樂死', '希特勒', '黨衛軍', 
-                '焚屍爐', '焚化爐', '奧斯威辛', '奧斯維茲', '絞刑', '死刑', '死亡列車', '萬字旗', 
-                '紐倫堡大審', '萊茵哈德行動', '生命源泉計畫', '總體戰', '衝鋒隊', '死亡集中營', 
-                '叛國罪', '最終方案', '血腥', '滅絕', '死劫', '槍決', '毒打', '殘暴', '槍殺', '射殺', 
-                '納粹', '極權', '法西斯', '大屠殺', '集中監管', '預防性拘留', '勞改場', '隔離區', 
-                '猶太委員會', '特遣隊', '種族清洗'
+                '蓋世太保', '集中營', '死亡集中營', '奧斯威辛集中營',
+                '法西斯', '總體戰', '預防性拘留',
+                '集中監管', '猶太隔離區', '安樂死', '屠殺', '解決方案', '辛德勒工廠',
+                '納粹德國', '反納粹', '反抗納粹', '納粹捕捉', '納粹軍隊',
+                '納粹軍服', '屠殺猶太人', '解雇猶太人', '納粹黨員', '納粹老鷹徽章', '劣等人種',
+                '推翻希特勒', '幫助猶太人移民', '刺殺希特勒', '納粹黨',
+                '猶太裔丈夫', '躲藏在密室', '反抗希特勒', '日耳曼民族的偉大', '猶太人的邪惡',
+                '雅利安小孩', '猶太男孩', '希特勒獨裁政權', '希特勒上台'
             ];
             keywords.sort((a, b) => b.length - a.length);
             const regex = new RegExp('(' + keywords.join('|') + ')', 'g');
@@ -1110,7 +1381,7 @@ window.addEventListener('error', function (e) {
               } catch (e) { try { audio.muted = false; } catch (x) {} }
             });
 
-            if (bgMusic.paused && !document.getElementById('step-4').classList.contains('active')) {
+            if (!this.muted && bgMusic.paused && !document.getElementById('step-4').classList.contains('active')) {
                 try {
                     const pp = bgMusic.play();
                     if (pp && pp.then) pp.then(() => { btn.innerText = "關閉音樂"; }).catch(e => console.log("音檔需等待互動", e));
@@ -1136,11 +1407,15 @@ window.addEventListener('error', function (e) {
             const isPlaying = !bgMusic.paused || !endingMusic.paused || !gameOverSound.paused;
             
             if (isPlaying) {
+                this.muted = true;
+                this._applyMute();
                 bgMusic.pause();
                 endingMusic.pause();
                 gameOverSound.pause();
                 btn.innerText = "開啟音樂";
             } else {
+                this.muted = false;
+                this._applyMute();
                 if (document.getElementById('step-4').classList.contains('active')) {
                     if (document.querySelector('.ending-card') !== null) this.safePlay(endingMusic);
                     else this.safePlay(gameOverSound);
@@ -1158,15 +1433,22 @@ window.addEventListener('error', function (e) {
             
             bgMusic.pause();
             if (gameOverSound) gameOverSound.pause();
-            
+
             endingMusic.currentTime = 0;
+            // 老師若已手動關閉音樂，結局頁就不再自動播放
+            if (this.muted) { btn.innerText = "開啟音樂"; return; }
             this.safePlay(endingMusic, () => { btn.innerText = "關閉音樂"; }, () => { btn.innerText = "開啟音樂"; });
+        },
+        // 靜音旗標：同時控制 <audio> 與程式合成的音效
+        muted: false,
+        _applyMute: function() {
+            try { if (this._master) this._master.gain.value = this.muted ? 0 : this.sfxVolume; } catch (e) {}
         },
 
         // ==========================================================
         // 程式化合成音效（Web Audio API，不需任何外部音檔）
         // ==========================================================
-        sfxVolume: 3.0, // 音效總音量倍率（1.0 為原始音量）
+        sfxVolume: 1.5, // 音效總音量倍率（1.0 為原始音量；3.0 在教室喇叭容易破音）
         _master: null,
         _noiseBuf: null,
         _ctx: function() {
@@ -1180,7 +1462,7 @@ window.addEventListener('error', function (e) {
                     comp.threshold.value = -3; comp.knee.value = 0; comp.ratio.value = 20;
                     comp.attack.value = 0.002; comp.release.value = 0.1;
                     this._master = this.audioCtx.createGain();
-                    this._master.gain.value = this.sfxVolume;
+                    this._master.gain.value = this.muted ? 0 : this.sfxVolume;
                     this._master.connect(comp);
                     comp.connect(this.audioCtx.destination);
                 }
@@ -1354,10 +1636,10 @@ window.addEventListener('error', function (e) {
     const AvatarFactory = {
         uid: 0,
         ink: '#5a4636',
-        skins: ['#fbe3cc', '#f6d3b3', '#ebc09a', '#d9a577', '#b98259'],
-        hairColors: ['#3a2a22', '#5a3b2a', '#8a5a3a', '#d9b560', '#a8512f', '#8d8d8d', '#2b2320'],
-        clothColors: ['#6f8fb0', '#b3786b', '#7ba17d', '#c9a24f', '#8d7bab', '#d08c60', '#5a7a93', '#6b6b6b'],
-        accentColors: ['#c0504d', '#3f7f6e', '#d6a23a', '#5b7fa6', '#9a5b8a', '#8a6a4a'],
+        skins: ['#f1cfb0', '#e6bb94', '#d3a07a', '#b97f58', '#8d5a3c'],
+        hairColors: ['#2b211c', '#4a3326', '#6b4a32', '#b89a5e', '#7a3f26', '#8a8a88', '#1c1714'],
+        clothColors: ['#4d5a66', '#6a4f48', '#55634f', '#7a6a45', '#5b5068', '#7a5a40', '#3f4d5c', '#555555'],
+        accentColors: ['#8a3b36', '#3a6355', '#a07e32', '#445f80', '#6e4561', '#6a5238'],
         // 髮型清單：多數為男性偏好造型（平頭、旁分、油頭、方型頭），
         // 少數保留中性／女性造型（短髮、捲髮、鮑伯頭、丸子頭、辮子），
         // 高職男學生比例高，故權重約 8:2
@@ -1420,202 +1702,210 @@ window.addEventListener('error', function (e) {
         render: function(cfg, size) {
             size = size || 150;
             const id = 'av' + (this.uid++);
-            const ink = this.ink;
             const o = cfg.occ;
             const S = cfg.skin, H = cfg.hair, C = cfg.cloth, A = cfg.accent;
             const isA = cfg.role === 'A';
-            const frame = isA ? '#1c3b57' : '#8b0000';
-            const bg1 = isA ? '#e3edf6' : '#f6e2dc';
-            const bg2 = isA ? '#b9cfe4' : '#e5bdb2';
-            const st = `stroke="${ink}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"`;
             const isMasc = this.maleHairStyles.indexOf(cfg.hairStyle) !== -1;
 
-            // 髮型（後層 / 前層）
+            // ---- 色彩工具 ----
+            const rgb = h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16));
+            const blend = (a, b, t) => { const x = rgb(a), y = rgb(b); return '#' + x.map((v, i) => Math.round(v + (y[i] - v) * t).toString(16).padStart(2, '0')).join(''); };
+            const dark = (h, t) => blend(h, '#000000', t), light = (h, t) => blend(h, '#ffffff', t);
+            const LN = '#17120f';
+            const ol = `stroke="${LN}" stroke-opacity="0.55" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"`;
+            const skinD = dark(S, 0.3), hairD = dark(H, 0.35), hairL = light(H, 0.3);
+            const lip = blend(S, '#8f3f3a', 0.5);
+
+            // 棚拍背景：依身分略帶冷／暖色調，兩者共用同一組外貌，避免刻板印象
+            const bgTop = isA ? '#5b6672' : '#6d5d52', bgBot = isA ? '#20262c' : '#291f1a';
+            const frame = isA ? '#7f9bb5' : '#b57b6f';
+
+            // ---- 頭型 ----
+            const headD = isMasc
+                ? 'M80 38 C57 38 49 58 50 82 C51 100 57 116 80 122 C103 116 109 100 110 82 C111 58 103 38 80 38Z'
+                : 'M80 38 C58 38 50 58 51 80 C52 98 61 114 80 122 C99 114 108 98 109 80 C110 58 102 38 80 38Z';
+
+            // ---- 髮型 ----
             let hairBack = '', hairFront = '';
-            const fringeShort = `<path d="M40 82 Q36 40 80 38 Q124 40 120 82 Q114 60 98 56 Q80 66 62 56 Q46 60 40 82Z" fill="${H}" ${st}/>`;
-            const fringeBob = `<path d="M42 74 Q48 42 80 40 Q112 42 118 74 Q100 58 80 62 Q60 58 42 74Z" fill="${H}" ${st}/>`;
-            const bobBack = `<path d="M36 104 Q28 40 80 36 Q132 40 124 104 Q112 110 108 92 L52 92 Q48 110 36 104Z" fill="${H}" ${st}/>`;
+            const hf = `fill="${H}" ${ol}`;
+            const hl = d => `<path d="${d}" fill="none" stroke="${hairL}" stroke-width="1.4" stroke-opacity="0.45" stroke-linecap="round"/>`;
             switch (cfg.hairStyle) {
-                case 'short':
-                    hairFront = fringeShort; break;
-                case 'bob':
-                    hairBack = bobBack; hairFront = fringeBob; break;
-                case 'bun':
-                    hairBack = `<circle cx="80" cy="32" r="14" fill="${H}" ${st}/>`;
-                    hairFront = fringeShort; break;
-                case 'curly':
-                    hairBack = [[42,78],[118,78],[48,58],[112,58],[62,44],[98,44],[80,38]]
-                        .map(c => `<circle cx="${c[0]}" cy="${c[1]}" r="14" fill="${H}" ${st}/>`).join('');
-                    hairFront = [[62,56],[80,52],[98,56]]
-                        .map(c => `<circle cx="${c[0]}" cy="${c[1]}" r="10" fill="${H}" ${st}/>`).join('');
-                    break;
-                case 'braids':
-                    hairBack = bobBack + [40, 120].map(x =>
-                        [112, 124, 136].map(y => `<circle cx="${x}" cy="${y}" r="6.5" fill="${H}" ${st}/>`).join('') +
-                        `<circle cx="${x}" cy="145" r="4.5" fill="${A}" ${st}/>`).join('');
-                    hairFront = fringeBob; break;
                 case 'buzz':
-                    // 平頭／極短寸頭：緊貼頭型，帶髮根短線質感
-                    hairFront = `<path d="M42 68 Q40 44 80 42 Q120 44 118 68 Q112 54 80 54 Q48 54 42 68Z" fill="${H}" ${st}/>` +
-                        Array.from({ length: 7 }, (_, i) => `<line x1="${53 + i * 9}" y1="47" x2="${53 + i * 9}" y2="53" stroke="${ink}" stroke-width="1.2" opacity="0.3"/>`).join('');
+                    hairFront = `<path d="M50 80 C46 52 60 38 80 38 C100 38 114 52 110 80 C108 64 100 56 80 55 C60 56 52 64 50 80Z" fill="${H}" fill-opacity="0.92" stroke="none"/>`;
                     break;
                 case 'side':
-                    // 旁分短髮
-                    hairFront = `<path d="M40 66 Q41 38 84 36 Q122 40 118 64 Q104 48 76 48 Q54 48 40 66Z" fill="${H}" ${st}/>` +
-                        `<path d="M62 40 L54 52" stroke="${ink}" stroke-width="1.6" opacity="0.4" fill="none"/>`;
+                    hairFront = `<path d="M48 84 C42 48 62 32 84 34 C108 36 118 56 111 86 C109 68 102 58 88 56 C72 54 56 62 48 84Z" ${hf}/>` + hl('M66 38 Q62 48 60 58');
                     break;
                 case 'slick':
-                    // 油頭／西裝頭（後梳＋亮澤）
-                    hairBack = `<path d="M38 70 Q34 34 80 30 Q126 34 122 70 Q118 48 80 44 Q42 48 38 70Z" fill="${H}" ${st}/>`;
-                    hairFront = `<path d="M44 58 Q80 42 116 58 Q110 46 80 44 Q50 46 44 58Z" fill="${H}" ${st}/>` +
-                        `<path d="M58 47 Q80 40 102 47" stroke="#fff" stroke-width="1.6" opacity="0.35" fill="none"/>`;
+                    hairFront = `<path d="M47 82 C42 46 64 30 82 32 C108 34 118 54 112 82 C108 64 96 52 80 51 C62 51 52 62 47 82Z" ${hf}/>` + hl('M60 44 Q80 36 102 44') + hl('M58 52 Q80 44 104 52');
                     break;
                 case 'flat':
-                    // 方型平頭（flat-top）
-                    hairFront = `<rect x="44" y="36" width="72" height="19" rx="3" fill="${H}" ${st}/>` +
-                        `<path d="M44 55 Q80 48 116 55 Q110 42 80 42 Q50 42 44 55Z" fill="${H}" ${st}/>`;
+                    hairFront = `<path d="M49 76 C46 54 50 40 60 36 L100 36 C110 40 114 54 111 76 C106 62 96 56 80 56 C64 56 54 62 49 76Z" ${hf}/>` + hl('M56 42 L104 42');
+                    break;
+                case 'short':
+                    hairFront = `<path d="M47 90 C40 50 62 32 82 34 C106 34 120 54 113 90 C112 72 104 60 88 57 C72 55 56 62 47 90Z" ${hf}/>` + hl('M62 42 Q80 36 98 44');
+                    break;
+                case 'curly':
+                    hairBack = [[50, 74], [110, 74], [52, 56], [108, 56], [62, 44], [98, 44], [80, 38]]
+                        .map(c => `<circle cx="${c[0]}" cy="${c[1]}" r="11" fill="${hairD}" ${ol}/>`).join('');
+                    hairFront = [[56, 60], [66, 50], [80, 46], [94, 50], [104, 60]]
+                        .map(c => `<circle cx="${c[0]}" cy="${c[1]}" r="7" fill="${H}" ${ol}/>`).join('');
+                    break;
+                case 'bob':
+                    hairBack = `<path d="M44 74 C38 40 60 28 80 28 C102 28 124 40 116 74 L120 122 Q108 130 106 112 L54 112 Q52 130 40 122Z" fill="${hairD}" ${ol}/>`;
+                    hairFront = `<path d="M49 80 C48 52 62 40 82 40 C102 40 114 54 111 80 C104 60 96 54 80 54 C64 54 56 62 49 80Z" ${hf}/>` + hl('M62 46 Q80 40 98 48');
+                    break;
+                case 'bun':
+                    hairBack = `<circle cx="80" cy="30" r="12" fill="${hairD}" ${ol}/>`;
+                    hairFront = `<path d="M49 82 C46 50 62 38 80 38 C100 38 114 50 111 82 C106 62 96 54 80 54 C64 54 54 62 49 82Z" ${hf}/>` + hl('M62 44 Q80 38 98 46');
+                    break;
+                case 'braids':
+                    hairBack = `<path d="M44 74 C38 40 60 28 80 28 C102 28 124 40 116 74 L118 112 L42 112Z" fill="${hairD}" ${ol}/>`;
+                    hairFront = `<path d="M49 80 C48 52 62 40 82 40 C102 40 114 54 111 80 C104 60 96 54 80 54 C64 54 56 62 49 80Z" ${hf}/>` +
+                        [46, 114].map(x => [128, 140, 152].map(y => `<ellipse cx="${x}" cy="${y}" rx="6" ry="7" fill="${H}" ${ol}/>`).join('') + `<circle cx="${x}" cy="164" r="4" fill="${A}" ${ol}/>`).join('');
                     break;
             }
 
-            // 較成熟／陽剛的下顎輪廓（疊加於頭型之上，髮型與鬍子之下）
-            const jawOverlay = isMasc
-                ? `<path d="M48 94 Q48 114 80 118 Q112 114 112 94 Q102 112 80 112 Q58 112 48 94Z" fill="${S}" ${st}/>`
-                : '';
-
-            // 鬍子
-            let beard = '';
-            switch (cfg.beard) {
-                case 'stubble':
-                    beard = `<g fill="${ink}" opacity="0.4">` +
-                        [[57,97],[103,97],[52,106],[108,106],[64,113],[96,113],[72,117],[88,117],[80,118]]
-                            .map(c => `<circle cx="${c[0]}" cy="${c[1]}" r="1.4"/>`).join('') + `</g>`;
-                    break;
-                case 'mustache':
-                    beard = `<path d="M66 95 Q80 100 94 95 Q87 98 80 97 Q73 98 66 95Z" fill="${H}" ${st}/>`;
-                    break;
-                case 'full':
-                    beard = `<path d="M50 92 Q48 112 80 117 Q112 112 110 92 Q100 110 80 110 Q60 110 50 92Z" fill="${H}" ${st}/>` +
-                        `<path d="M67 96 Q80 101 93 96 Q86 99 80 98 Q74 99 67 96Z" fill="${H}" opacity="0.001"/>`;
-                    break;
-            }
-
-            // 眉毛：陽剛造型用較粗、較平直的眉形；中性／女性造型維持原本的弧形眉
-            const eyebrows = isMasc
-                ? `<path d="M55 72 L74 76 M86 76 L105 72" fill="none" stroke="${ink}" stroke-width="3.2" stroke-linecap="round"/>`
-                : `<path d="M57 74 Q65 70 72 74 M88 74 Q95 70 103 74" fill="none" stroke="${ink}" stroke-width="2.4" stroke-linecap="round"/>`;
-
-            // 衣服
-            const baseFill = o.outfit === 'coat' ? '#f4f1e8' : C;
-            const body = `<path d="M26 182 Q26 132 80 128 Q134 132 134 182Z" fill="${baseFill}" ${st}/>`;
+            // ---- 上衣 ----
+            const baseFill = o.outfit === 'coat' ? '#d6d2c6' : C;
+            const torsoD = 'M6 190 C8 152 40 140 64 134 L80 140 L96 134 C120 140 152 152 154 190Z';
             let outfit = '';
             switch (o.outfit) {
-                case 'cardigan':
-                    outfit = `<path d="M62 128 L80 148 L98 128 L90 124 L80 134 L70 124Z" fill="#fffaf0" ${st}/>
-                        <path d="M80 148 L80 182" stroke="${ink}" stroke-width="2.5" fill="none"/>
-                        <circle cx="80" cy="160" r="2.4" fill="${ink}"/><circle cx="80" cy="172" r="2.4" fill="${ink}"/>
-                        <path d="M80 136 L68 129 L68 143Z M80 136 L92 129 L92 143Z" fill="${A}" ${st}/>
-                        <circle cx="80" cy="136" r="3.2" fill="${A}" ${st}/>`;
-                    break;
-                case 'coat':
-                    outfit = `<path d="M64 128 L80 156 L96 128 L88 124 L80 134 L72 124Z" fill="#e2ddcf" ${st}/>
-                        <rect x="100" y="158" width="14" height="14" rx="2" fill="#fff" ${st}/>
-                        <path d="M107 160.5 v9 M102.5 165 h9" stroke="#4a8a5c" stroke-width="2.6" fill="none" stroke-linecap="round"/>
-                        <path d="M80 156 L80 182" stroke="${ink}" stroke-width="2" fill="none"/>`;
+                case 'workwear':
+                    outfit = `<path d="M66 134 L80 152 L94 134Z" fill="#b9b2a0" ${ol}/>
+                        <path d="M58 134 L80 158 L66 170 L48 144Z" fill="${dark(C, 0.18)}" ${ol}/>
+                        <path d="M102 134 L80 158 L94 170 L112 144Z" fill="${dark(C, 0.18)}" ${ol}/>
+                        <path d="M80 158 L80 190" stroke="${LN}" stroke-opacity="0.6" stroke-width="2" fill="none"/>
+                        <rect x="104" y="162" width="20" height="16" rx="2" fill="none" ${ol}/>`;
                     break;
                 case 'apron':
-                    outfit = `<path d="M58 146 Q80 140 102 146 L106 182 L54 182Z" fill="#f2e8d0" ${st}/>
-                        <path d="M62 143 L66 128 M98 143 L94 128" stroke="${ink}" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-                        <rect x="68" y="160" width="24" height="14" rx="3" fill="none" stroke="${ink}" stroke-width="2"/>`;
+                    outfit = `<path d="M62 134 L80 146 L98 134 L96 128 L80 138 L64 128Z" fill="${light(C, 0.2)}" ${ol}/>
+                        <path d="M54 190 L58 152 Q80 146 102 152 L106 190Z" fill="#d7cfb8" ${ol}/>
+                        <path d="M60 152 L68 134 M100 152 L92 134" stroke="#d7cfb8" stroke-width="5" fill="none" stroke-linecap="round"/>
+                        <path d="M60 152 L68 134 M100 152 L92 134" stroke="${LN}" stroke-opacity="0.45" stroke-width="1.2" fill="none"/>
+                        <rect x="68" y="166" width="24" height="14" rx="2" fill="none" ${ol}/>`;
+                    break;
+                case 'cardigan':
+                    outfit = `<path d="M62 134 L80 168 L98 134 L90 130 L80 146 L70 130Z" fill="#dcd7c8" ${ol}/>
+                        <path d="M80 146 L75 156 L80 178 L85 156Z" fill="${A}" ${ol}/>
+                        <path d="M62 134 L78 172 M98 134 L82 172" stroke="${LN}" stroke-opacity="0.55" stroke-width="2" fill="none"/>
+                        <circle cx="80" cy="180" r="2" fill="${LN}" fill-opacity="0.7"/><circle cx="80" cy="188" r="2" fill="${LN}" fill-opacity="0.7"/>`;
+                    break;
+                case 'coat':
+                    outfit = `<path d="M70 134 L80 162 L90 134Z" fill="#9aa4ad" ${ol}/>
+                        <path d="M80 142 L76 152 L80 170 L84 152Z" fill="${dark(A, 0.2)}" ${ol}/>
+                        <path d="M60 134 L80 172 L64 178 L50 146Z" fill="#c1bdb0" ${ol}/>
+                        <path d="M100 134 L80 172 L96 178 L110 146Z" fill="#c1bdb0" ${ol}/>
+                        <path d="M62 140 Q56 178 80 182 Q104 178 98 140" fill="none" stroke="#1d1a17" stroke-width="2.6" stroke-linecap="round"/>
+                        <circle cx="80" cy="183" r="4" fill="#3a3733" ${ol}/>`;
                     break;
                 case 'sweater':
-                    outfit = `<path d="M30 160 Q80 150 130 160" stroke="${A}" stroke-width="6" fill="none"/>
-                        <path d="M28 173 Q80 163 132 173" stroke="${A}" stroke-width="6" fill="none"/>
-                        <path d="M62 128 Q80 144 98 128" fill="none" stroke="${ink}" stroke-width="3" stroke-linecap="round"/>`;
+                    outfit = `<path d="M64 134 Q80 152 96 134 L98 142 Q80 160 62 142Z" fill="${dark(C, 0.22)}" ${ol}/>
+                        <path d="M14 168 Q80 156 146 168" stroke="${A}" stroke-width="6" fill="none" opacity="0.85"/>
+                        <path d="M12 180 Q80 168 148 180" stroke="${A}" stroke-width="6" fill="none" opacity="0.85"/>`;
                     break;
                 case 'scarf':
-                    outfit = `<path d="M58 124 Q80 142 102 124 L104 138 Q80 156 56 138Z" fill="${A}" ${st}/>
-                        <path d="M92 144 L102 174 L86 170Z" fill="${A}" ${st}/>
-                        <path d="M66 134 L72 140 M80 138 L86 144" stroke="#fff" stroke-width="2" opacity="0.6" stroke-linecap="round"/>`;
-                    break;
-                case 'workwear':
-                    // 吊帶工作服：胸前護胸片＋背帶＋工具口袋
-                    outfit = `<path d="M56 182 L56 134 Q80 126 104 134 L104 182 L88 182 L88 152 L72 152 L72 182Z" fill="${A}" ${st}/>
-                        <path d="M63 134 L69 182 M97 134 L91 182" stroke="${ink}" stroke-width="2" fill="none" opacity="0.5"/>
-                        <rect x="69" y="140" width="22" height="13" rx="2" fill="none" stroke="${ink}" stroke-width="2"/>
-                        <path d="M61 128 L67 108 M99 128 L93 108" stroke="${A}" stroke-width="8" fill="none" stroke-linecap="round"/>
-                        <path d="M61 128 L67 108 M99 128 L93 108" stroke="${ink}" stroke-width="2" fill="none" opacity="0.3"/>`;
+                    outfit = `<path d="M56 128 Q80 152 104 128 L108 146 Q80 166 52 146Z" fill="${A}" ${ol}/>
+                        <path d="M90 152 L106 184 L86 180Z" fill="${dark(A, 0.15)}" ${ol}/>
+                        <path d="M64 136 L68 142 M80 142 L84 148 M94 138 L98 144" stroke="${light(A, 0.4)}" stroke-width="1.6" opacity="0.6" stroke-linecap="round"/>`;
                     break;
             }
 
-            // 帽子
+            // ---- 帽子 ----
             let hat = '';
             switch (o.hat) {
                 case 'newsboy':
-                    hat = `<path d="M38 62 Q40 34 80 32 Q120 34 122 62 Q80 52 38 62Z" fill="#8a7a63" ${st}/>
-                        <path d="M70 58 Q102 50 126 62 Q102 70 70 62Z" fill="#6f614e" ${st}/>
-                        <circle cx="80" cy="32" r="3" fill="#6f614e" ${st}/>`;
+                    hat = `<path d="M44 68 C44 38 64 30 82 30 C104 30 118 42 116 68 C100 58 60 56 44 68Z" fill="#7a7058" ${ol}/>
+                        <path d="M60 64 Q96 58 124 72 Q96 78 62 70Z" fill="#5d5543" ${ol}/>
+                        <circle cx="80" cy="30" r="2.6" fill="#5d5543" ${ol}/>`;
                     break;
                 case 'beret':
-                    hat = `<ellipse cx="88" cy="44" rx="38" ry="14" transform="rotate(-8 88 44)" fill="${A}" ${st}/>
-                        <circle cx="100" cy="31" r="3.5" fill="${A}" ${st}/>`;
+                    hat = `<ellipse cx="86" cy="46" rx="35" ry="12" transform="rotate(-9 86 46)" fill="${dark(A, 0.15)}" ${ol}/>
+                        <circle cx="98" cy="35" r="3" fill="${dark(A, 0.15)}" ${ol}/>`;
                     break;
                 case 'straw':
-                    hat = `<path d="M52 56 Q54 28 80 28 Q106 28 108 56Z" fill="#ecd08e" ${st}/>
-                        <path d="M52 52 Q80 58 108 52" stroke="${A}" stroke-width="5" fill="none"/>
-                        <ellipse cx="80" cy="57" rx="58" ry="10" fill="#e6c47a" ${st}/>
-                        <path d="M52 56 Q54 46 66 46" stroke="none" fill="none"/>`;
+                    hat = `<path d="M56 54 C56 30 70 26 80 26 C92 26 104 30 104 54Z" fill="#d8bf84" ${ol}/>
+                        <path d="M56 50 Q80 56 104 50" stroke="${A}" stroke-width="5" fill="none"/>
+                        <ellipse cx="80" cy="55" rx="52" ry="9" fill="#c9ad6e" ${ol}/>`;
                     break;
                 case 'flatcap':
-                    // 鴨舌帽
-                    hat = `<path d="M40 60 Q42 32 80 30 Q118 32 120 60 Q100 48 80 50 Q60 48 40 60Z" fill="${A}" ${st}/>
-                        <path d="M100 54 Q124 52 128 61 Q112 66 98 60Z" fill="${A}" ${st}/>
-                        <circle cx="80" cy="31" r="2.6" fill="${ink}" opacity="0.35"/>`;
+                    hat = `<path d="M46 66 C46 40 62 32 80 32 C100 32 116 40 114 66 C100 56 60 56 46 66Z" fill="${dark(A, 0.2)}" ${ol}/>
+                        <path d="M96 62 Q124 60 128 69 Q112 75 94 68Z" fill="${dark(A, 0.32)}" ${ol}/>`;
                     break;
             }
 
-            const glasses = o.glasses ? `<g fill="rgba(255,255,255,0.35)" stroke="${ink}" stroke-width="2.2">
-                    <circle cx="65" cy="84" r="10"/><circle cx="95" cy="84" r="10"/>
-                    <path d="M75 83 Q80 80 85 83" fill="none"/></g>` : '';
+            // ---- 眼鏡 ----
+            const glasses = o.glasses ? `<g fill="rgba(255,255,255,0.08)" stroke="#2a2420" stroke-width="1.7">
+                    <circle cx="65" cy="85" r="10"/><circle cx="95" cy="85" r="10"/>
+                    <path d="M75 84 Q80 81 85 84" fill="none"/></g>` : '';
+
+            // ---- 鬍子 ----
+            let beard = '';
+            switch (cfg.beard) {
+                case 'stubble':
+                    beard = `<path d="M52 96 Q56 118 80 124 Q104 118 108 96 Q104 108 92 110 Q80 106 68 110 Q56 108 52 96Z" fill="${hairD}" fill-opacity="0.38"/>`;
+                    break;
+                case 'mustache':
+                    beard = `<path d="M67 108 Q74 104 80 107 Q86 104 93 108 Q86 112 80 110 Q74 112 67 108Z" fill="${hairD}"/>`;
+                    break;
+                case 'full':
+                    beard = `<path d="M50 90 Q50 124 80 131 Q110 124 110 90 Q106 112 92 112 Q80 108 68 112 Q54 112 50 90Z" fill="${hairD}" ${ol}/>
+                        <path d="M67 108 Q74 104 80 107 Q86 104 93 108 Q86 112 80 110 Q74 112 67 108Z" fill="${hairD}"/>`;
+                    break;
+            }
+
+            const brow = isMasc
+                ? `<path d="M55 76 Q64 71 74 75 M86 75 Q96 71 105 76" fill="none" stroke="${hairD}" stroke-width="3.6" stroke-linecap="round"/>`
+                : `<path d="M56 76 Q65 71 74 75 M86 75 Q95 71 104 76" fill="none" stroke="${hairD}" stroke-width="2.2" stroke-linecap="round"/>`;
+            const eye = x => `<ellipse cx="${x}" cy="86" rx="10" ry="5.5" fill="${skinD}" opacity="0.32"/>
+                <path d="M${x - 6.5} 86 Q${x} 81.5 ${x + 6.5} 86 Q${x} 89.5 ${x - 6.5} 86Z" fill="#efe9de" stroke="${LN}" stroke-opacity="0.7" stroke-width="1"/>
+                <circle cx="${x}" cy="85.6" r="2.9" fill="#2a211c"/><circle cx="${x + 1.2}" cy="84.6" r="0.9" fill="#fff" opacity="0.8"/>
+                <path d="M${x - 7.5} 85.6 Q${x} 79.5 ${x + 7.5} 85.6" fill="none" stroke="${LN}" stroke-opacity="0.8" stroke-width="1.5" stroke-linecap="round"/>`;
+
+            const grain = size >= 80
+                ? `<filter id="${id}-gr" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="${(this.uid * 7) % 50}"/><feColorMatrix type="saturate" values="0"/></filter>`
+                : '';
+            const grainRect = size >= 80 ? `<rect x="4" y="4" width="152" height="182" filter="url(#${id}-gr)" opacity="0.1" style="mix-blend-mode:overlay"/>` : '';
 
             return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 190" width="${size}" height="${Math.round(size * 190 / 160)}" role="img" aria-label="${o.label}角色頭像">
                 <defs>
-                    <linearGradient id="${id}-bg" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0" stop-color="${bg1}"/><stop offset="1" stop-color="${bg2}"/>
-                    </linearGradient>
-                    <filter id="${id}-wob" x="-5%" y="-5%" width="110%" height="110%">
-                        <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="${(this.uid * 7) % 50}" result="n"/>
-                        <feDisplacementMap in="SourceGraphic" in2="n" scale="2.6"/>
-                    </filter>
+                    <linearGradient id="${id}-bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${bgTop}"/><stop offset="1" stop-color="${bgBot}"/></linearGradient>
+                    <radialGradient id="${id}-glow" cx="0.5" cy="0.36" r="0.55"><stop offset="0" stop-color="#fff" stop-opacity="0.3"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+                    <radialGradient id="${id}-vg" cx="0.5" cy="0.45" r="0.75"><stop offset="0.55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.55"/></radialGradient>
+                    <linearGradient id="${id}-ts" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0.12"/><stop offset="0.55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.4"/></linearGradient>
+                    <linearGradient id="${id}-fs" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0.14"/><stop offset="0.5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.32"/></linearGradient>
                     <clipPath id="${id}-clip"><rect x="4" y="4" width="152" height="182" rx="22"/></clipPath>
+                    ${grain}
                 </defs>
                 <rect x="4" y="4" width="152" height="182" rx="22" fill="url(#${id}-bg)"/>
                 <g clip-path="url(#${id}-clip)">
-                    <circle cx="26" cy="30" r="9" fill="#fff" opacity="0.45"/>
-                    <circle cx="136" cy="48" r="6" fill="#fff" opacity="0.4"/>
-                    <circle cx="124" cy="20" r="3.5" fill="#fff" opacity="0.5"/>
-                    <g filter="url(#${id}-wob)">
-                        ${body}
-                        ${hairBack}
-                        <rect x="69" y="108" width="22" height="26" rx="8" fill="${S}" ${st}/>
-                        <circle cx="41" cy="86" r="7" fill="${S}" ${st}/>
-                        <circle cx="119" cy="86" r="7" fill="${S}" ${st}/>
-                        <ellipse cx="80" cy="80" rx="40" ry="38" fill="${S}" ${st}/>
-                        ${jawOverlay}
-                        ${hairFront}
-                        ${hat}
-                        ${eyebrows}
-                        <circle cx="65" cy="85" r="5.2" fill="${ink}"/><circle cx="95" cy="85" r="5.2" fill="${ink}"/>
-                        <circle cx="66.8" cy="83.2" r="1.8" fill="#fff"/><circle cx="96.8" cy="83.2" r="1.8" fill="#fff"/>
-                        <ellipse cx="53" cy="98" rx="7" ry="4.5" fill="#f08a8a" opacity="0.45"/>
-                        <ellipse cx="107" cy="98" rx="7" ry="4.5" fill="#f08a8a" opacity="0.45"/>
-                        <path d="M79 92 Q77 96 80 97" fill="none" stroke="${ink}" stroke-width="2" stroke-linecap="round"/>
-                        <path d="M72 102 Q80 109 88 102" fill="none" stroke="${ink}" stroke-width="2.6" stroke-linecap="round"/>
-                        ${beard}
-                        ${glasses}
-                        ${outfit}
-                    </g>
+                    <rect x="4" y="4" width="152" height="182" fill="url(#${id}-glow)"/>
+                    ${hairBack}
+                    <path d="${torsoD}" fill="${baseFill}" ${ol}/>
+                    <path d="${torsoD}" fill="url(#${id}-ts)"/>
+                    <path d="M67 104 L67 132 Q80 146 93 132 L93 104Z" fill="${dark(S, 0.12)}" ${ol}/>
+                    <path d="M67 112 Q80 126 93 112 L93 126 Q80 136 67 126Z" fill="${skinD}" opacity="0.55"/>
+                    ${outfit}
+                    <ellipse cx="49" cy="87" rx="5.5" ry="9.5" fill="${S}" ${ol}/>
+                    <ellipse cx="111" cy="87" rx="5.5" ry="9.5" fill="${S}" ${ol}/>
+                    <path d="${headD}" fill="${S}" ${ol}/>
+                    <path d="${headD}" fill="url(#${id}-fs)"/>
+                    ${isMasc ? `<path d="M52 100 Q58 116 80 122 Q102 116 108 100 Q100 112 80 114 Q60 112 52 100Z" fill="${skinD}" opacity="0.32"/>` : ''}
+                    <ellipse cx="100" cy="100" rx="12" ry="14" fill="#000" opacity="0.05"/>
+                    ${brow}
+                    ${eye(65)}${eye(95)}
+                    <path d="M80 86 Q77 98 73 103 Q80 108 87 103" fill="none" stroke="${skinD}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.75"/>
+                    <circle cx="75.5" cy="104" r="1.1" fill="${LN}" opacity="0.4"/><circle cx="84.5" cy="104" r="1.1" fill="${LN}" opacity="0.4"/>
+                    ${beard}
+                    <path d="M69 112 Q80 116 91 112 Q80 121 69 112Z" fill="${lip}" ${ol}/>
+                    <path d="M69 112 Q80 115 91 112" fill="none" stroke="#3b1f1a" stroke-width="1.4" stroke-opacity="0.85" stroke-linecap="round"/>
+                    ${hairFront}
+                    ${hat}
+                    ${glasses}
+                    <rect x="4" y="4" width="152" height="182" fill="url(#${id}-vg)"/>
+                    ${grainRect}
                 </g>
-                <rect x="4" y="4" width="152" height="182" rx="22" fill="none" stroke="${frame}" stroke-width="5"/>
+                <rect x="4" y="4" width="152" height="182" rx="22" fill="none" stroke="${frame}" stroke-width="4" stroke-opacity="0.9"/>
             </svg>`;
         }
     };
@@ -1631,6 +1921,7 @@ const SceneArt = (function () {
     const FONT = `font-family="'Noto Sans TC','Microsoft JhengHei','PingFang TC',sans-serif"`;
     let uid = 0;
 
+    const blend = (a, b, t) => { const q = h => { if (h.length === 4) h = '#' + h[1] + h[1] + h[2] + h[2] + h[3] + h[3]; return [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16)); }; const u = q(a), v = q(b); return '#' + u.map((n, i) => Math.round(n + (v[i] - n) * t).toString(16).padStart(2, '0')).join(''); };
     // 色票
     const SK = '#f3d2b0', SK2 = '#e3b48a', SK3 = '#c98f63';
     const UG = '#7d8468', UGD = '#4d5348', LEATHER = '#3a3a3c', WHITE = '#f4f1e8';
@@ -1672,11 +1963,13 @@ const SceneArt = (function () {
     const sun = (x, y, r = 16) => `<circle cx="${x}" cy="${y}" r="${r + 10}" fill="#fff0a8" opacity=".35"/>` + circ(x, y, r, '#ffd96a');
     const cloud = (x, y, s = 1, col = '#fff') => g(x, y, ell(0, 0, 24, 9, col, 'stroke-opacity=".5"') + ell(-12, -6, 12, 9, col, 'stroke-opacity=".5"') + ell(10, -8, 14, 10, col, 'stroke-opacity=".5"'), `scale(${s})`);
 
-    // ---------- 人物 ----------
-    const arm = (x1, y1, x2, y2, col, skin) =>
-        `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${INK}" stroke-width="9" stroke-linecap="round"/>` +
-        `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col}" stroke-width="5.5" stroke-linecap="round"/>` +
-        `<circle cx="${x2}" cy="${y2}" r="3.6" fill="${skin}" stroke="${INK}" stroke-width="1.5"/>`;
+    // ---------- 人物（寫實比例的簡化輪廓，與角色頭像同一套畫法）----------
+    let cur = 'sv0';                       // 目前場景的 SVG id，供漸層引用
+    const PL = '#2a211b';                  // 人物輪廓線色
+    const OL = `stroke="${PL}" stroke-opacity=".62" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"`;
+    const shade = d => `<path d="${d}" fill="url(#${cur}sh)" stroke="none"/>`;
+    const P = (d, fill) => `<path d="${d}" fill="${fill}" ${OL}/>`;
+    const E = (cx, cy, rx, ry, fill, extra = '') => `<ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="${fill}" ${OL} ${extra}/>`;
     const POSE = {
         down: [[-16, -26], [16, -26]], up: [[-22, -74], [22, -74]], out: [[-32, -40], [32, -40]],
         hold: [[-6, -35], [6, -35]], face: [[-8, -56], [8, -56]], point: [[-16, -26], [36, -48]],
@@ -1684,67 +1977,120 @@ const SceneArt = (function () {
         head: [[-12, -70], [12, -70]], fwd: [[-24, -48], [24, -48]], reach: [[-16, -26], [38, -56]], reachL: [[-38, -56], [16, -26]],
         carry: [[-14, -32], [14, -32]], low: [[-18, -22], [18, -22]]
     };
-    function man(x, y, o = {}) {
-        const s = o.s || 1, fl = o.flip ? -1 : 1;
-        const skin = o.skin || SK, c = o.c || BLUE, p = o.p || '#5d5a66', hc = o.h || '#4a3426';
-        let b = '';
-        if (o.hair === 'long' || o.hair === 'braid') b += path('M-14 -62 Q-19 -40 -13 -37 L13 -37 Q19 -40 14 -62Z', hc);
-        if (o.dress) b += path('M-14 -32 L14 -32 L20 -2 Q0 3 -20 -2Z', o.dc || c);
-        else {
-            b += rect(-11, -32, 9, 30, p, 3) + rect(2, -32, 9, 30, p, 3);
-            b += ell(-7, -2, 8, 4, '#3b3430') + ell(7, -2, 8, 4, '#3b3430');
+    // 手臂：由「舊座標的手位置」換算成兩節手臂（上臂＋前臂），手肘自動選向外或向下的一側
+    function limb(side, hand, col, skin, fem, band) {
+        const sx = side * (fem ? 11.8 : 13.2), sy = -57.5, L = 33;
+        let vx = (hand[0] - side * 12) * 1.3, vy = (hand[1] + 47) * 1.3, d = Math.hypot(vx, vy) || 1;
+        if (d > L) { vx *= L / d; vy *= L / d; d = L; }
+        if (d < 9) { vx *= 9 / d; vy *= 9 / d; d = 9; }
+        const hx = sx + vx, hy = sy + vy;
+        let off = Math.sqrt(Math.max(0, (L / 2) * (L / 2) - (d / 2) * (d / 2)));
+        off = Math.min(off, vy > 10 ? 3.2 : 8);
+        const mx = sx + vx / 2, my = sy + vy / 2, nx = -vy / d, ny = vx / d;
+        const c1 = [mx + nx * off, my + ny * off], c2 = [mx - nx * off, my - ny * off];
+        const sc = e => side * e[0] + 0.6 * e[1];
+        const el = sc(c1) >= sc(c2) ? c1 : c2;
+        const pts = `${sx.toFixed(1)},${sy} ${el[0].toFixed(1)},${el[1].toFixed(1)} ${hx.toFixed(1)},${hy.toFixed(1)}`;
+        let s = `<polyline points="${pts}" fill="none" stroke="${PL}" stroke-opacity=".7" stroke-width="7.4" stroke-linejoin="round" stroke-linecap="round"/>` +
+            `<polyline points="${pts}" fill="none" stroke="${col}" stroke-width="5.6" stroke-linejoin="round" stroke-linecap="round"/>` +
+            `<polyline points="${pts}" fill="none" stroke="#000" stroke-opacity=".12" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" transform="translate(${side * 1.4} 0)"/>`;
+        if (band) {
+            const ux = el[0] - sx, uy = el[1] - sy, ul = Math.hypot(ux, uy) || 1;
+            const bx = sx + ux * .42, by = sy + uy * .42, px = -uy / ul * 3.6, py = ux / ul * 3.6;
+            s += `<line x1="${(bx + px).toFixed(1)}" y1="${(by + py).toFixed(1)}" x2="${(bx - px).toFixed(1)}" y2="${(by - py).toFixed(1)}" stroke="#a8322f" stroke-width="3.2" stroke-linecap="butt"/>`;
         }
-        const tl = o.coat ? -8 : -28;
-        b += rect(-15, -52, 30, tl + 52, c, 8);
-        if (o.coat) b += line(0, -46, 0, tl, 1.5, INK);
-        if (o.stripe) for (let i = -9; i <= 9; i += 6) b += line(i, -50, i, tl - 2, 1.6, '#69727e');
-        if (o.apron) b += rect(-10, -40, 20, 32, '#f2e8d0', 4);
-        if (o.tie) b += poly('0,-52 -3,-46 0,-36 3,-46', '#a8473f', 'stroke-width="1"');
-        if (o.collar) b += poly('-6,-52 0,-44 6,-52 3,-54 -3,-54', '#fff', 'stroke-width="1"');
-        if (o.medals) b += circ(-6, -42, 2, '#e3c46a', 'stroke-width="1"') + circ(0, -42, 2, '#e3c46a', 'stroke-width="1"') + circ(6, -42, 2, '#c0504d', 'stroke-width="1"');
-        if (o.star) b += star(-6, -40, 5);
+        s += `<ellipse cx="${hx.toFixed(1)}" cy="${hy.toFixed(1)}" rx="2.7" ry="3.3" fill="${skin}" ${OL}/>`;
+        return s;
+    }
+    function man(x, y, o = {}) {
+        const s = (o.s || 1) * 1.15, fl = o.flip ? -1 : 1;
+        const skin = o.skin || '#e6c3a0', c = o.c || BLUE, p = o.p || '#5d5a66', hc = o.h || '#3f2e23';
+        const hair = o.hair === undefined ? 'short' : o.hair;
+        const fem = !!o.dress || hair === 'long' || hair === 'braid' || hair === 'bun';
+        const skinD = blend(skin, '#000000', .22);
+        const sw = fem ? 12 : 14, wa = fem ? 9.2 : 11.4;   // 肩寬、腰寬
+        let b = '';
+        b += `<ellipse cx="0" cy="0" rx="17" ry="3" fill="#000" opacity=".2"/>`;       // 地面陰影
+        // 長髮背層
+        if (hair === 'long' || hair === 'braid') b += P('M-7.6 -76 Q-9 -66 -7.4 -55 L7.4 -55 Q9 -66 7.6 -76Z', blend(hc, '#000', .25));
+        // 腿與鞋
+        if (o.dress) {
+            b += P('M-9.5 -37 L9.5 -37 L16.5 -7 Q0 -3 -16.5 -7Z', o.dc || c) + shade('M-9.5 -37 L9.5 -37 L16.5 -7 Q0 -3 -16.5 -7Z');
+            b += `<rect x="-6.6" y="-7" width="4.2" height="6" fill="${skin}" ${OL}/><rect x="2.4" y="-7" width="4.2" height="6" fill="${skin}" ${OL}/>`;
+            b += E(-4.5, -.8, 4.6, 2.2, '#2c2724') + E(4.5, -.8, 4.6, 2.2, '#2c2724');
+        } else {
+            const lw = fem ? 4.2 : 5;
+            const L1 = `M${-wa} -35 L-1 -35 L-2.3 -3.5 L${-wa + 2.6} -3.5Z`, R1 = `M1 -35 L${wa} -35 L${wa - 2.6} -3.5 L2.3 -3.5Z`;
+            b += P(L1, p) + P(R1, p) + shade(L1) + shade(R1);
+            if (o.stripe) for (let i = -wa + 3; i < wa; i += 4) if (Math.abs(i) > 1.5) b += line(i * .9, -34, i * .8, -5, .9, '#69727e', 'opacity=".7"');
+            b += E(-6.4, -1.5, 6.4, 2.6, '#2c2724') + E(6.4, -1.5, 6.4, 2.6, '#2c2724');
+        }
+        // 頸
+        b += P('M-3 -68 L3 -68 L3.4 -61 L-3.4 -61Z', skin) + `<path d="M-3 -67.5 Q0 -64 3 -67.5 L3 -64.5 Q0 -61.5 -3 -64.5Z" fill="#000" opacity=".16"/>`;
+        // 軀幹
+        const hem = o.coat ? -11 : -33;
+        const bot = o.coat ? 15.4 : wa + .4;
+        const torso = `M-4.4 -65 Q${-sw} -62.5 ${-sw} -54 L${-wa} ${o.coat ? -33 : -33} ${o.coat ? `L${-bot} ${hem} Q0 ${hem + 3} ${bot} ${hem} L${wa} -33` : `Q0 -31 ${wa} -33`} L${sw} -54 Q${sw} -62.5 4.4 -65Z`;
+        b += P(torso, c) + shade(torso);
+        if (o.coat) b += line(0, -63, 0, hem + 1, 1, PL, 'stroke-opacity=".6"') + P('M-4.4 -65 L0 -55 L4.4 -65 L7 -62 L1.6 -50 L0 -52 L-1.6 -50 L-7 -62Z', blend(c, '#000', .15));
+        if (o.stripe) for (let i = -9; i <= 9; i += 4.5) b += line(i, -60, i * .85, -35, .9, '#69727e', 'opacity=".75"');
+        if (o.apron) b += P('M-7.4 -58 L7.4 -58 L10 -34 L11 -14 L-11 -14 L-10 -34Z', '#e9e0c9') + shade('M-7.4 -58 L7.4 -58 L10 -34 L11 -14 L-11 -14 L-10 -34Z');
+        if (o.collar) b += `<path d="M-5 -65 L0 -57 L5 -65 L3.2 -67 L-3.2 -67Z" fill="#f3efe4" ${OL}/>`;
+        if (o.tie) b += `<path d="M0 -62 L-2 -59 L-1.4 -47 L0 -45 L1.4 -47 L2 -59Z" fill="#8f2f2b" ${OL}/>`;
+        if (o.medals) b += circ(-6, -51, 1.5, '#d6b85e', 'stroke-width=".8"') + circ(-2.5, -51, 1.5, '#d6b85e', 'stroke-width=".8"') + circ(1, -51, 1.5, '#b04a45', 'stroke-width=".8"');
+        if (o.star) b += star(-6.4, -50, 3.6);
+        // 手臂（在軀幹之上）
         const pose = o.arms && typeof o.arms === 'object' ? o.arms : (POSE[o.arms || 'down']);
         const armCol = o.ac || c;
-        b += arm(-12, -47, pose[0][0], pose[0][1], armCol, skin) + arm(12, -47, pose[1][0], pose[1][1], armCol, skin);
-        if (o.band) b += rect(10, -46, 9, 7, '#b03a3a', 1, 'stroke-width="1"');
-        // 頭
-        b += circ(0, -63, 13.5, skin);
-        // 髮 / 帽
-        const hair = o.hair === undefined ? 'short' : o.hair;
-        if (hair === 'short' || hair === 'long' || hair === 'braid')
-            b += path(`M-14 -63 Q-14 -80 0 -80 Q14 -80 14 -63 Q9 -71 0 -69 Q-9 -71 -14 -63Z`, hc);
-        if (hair === 'braid') b += circ(-15, -48, 4.5, hc) + circ(15, -48, 4.5, hc) + circ(-15, -42, 4, '#c0504d', 'stroke-width="1"') + circ(15, -42, 4, '#c0504d', 'stroke-width="1"');
-        if (hair === 'bun') b += path(`M-14 -63 Q-14 -80 0 -80 Q14 -80 14 -63 Q9 -71 0 -69 Q-9 -71 -14 -63Z`, hc) + circ(0, -82, 6, hc);
-        if (hair === 'grey') b += path(`M-14 -63 Q-14 -80 0 -80 Q14 -80 14 -63 Q9 -71 0 -69 Q-9 -71 -14 -63Z`, '#cfcac0');
-        const h = o.hat;
-        if (h === 'peaked') b += path('M-15 -69 Q-14 -85 0 -85 Q14 -85 15 -69Z', UGD) + rect(-16, -70, 32, 5, '#33372f', 2) + path('M-8 -66 Q0 -61 8 -66Z', '#222', 'stroke-width="1"') + circ(0, -76, 2.2, '#d9c27a', 'stroke-width="1"');
-        if (h === 'peakedB') b += path('M-15 -69 Q-14 -85 0 -85 Q14 -85 15 -69Z', '#2f3033') + rect(-16, -70, 32, 5, '#1f2022', 2) + path('M-8 -66 Q0 -61 8 -66Z', '#111', 'stroke-width="1"') + circ(0, -76, 2.2, '#cfcfcf', 'stroke-width="1"');
-        if (h === 'cap') b += path('M-14 -68 Q-12 -82 4 -82 Q16 -80 14 -68Z', '#7a6a55') + path('M4 -69 Q20 -69 20 -65 L4 -65Z', '#5d4f3f');
-        if (h === 'fedora') b += ell(0, -71, 21, 5, '#4b4b4e') + rect(-12, -87, 24, 17, '#4b4b4e', 7) + rect(-12, -76, 24, 4, '#8a2f2f', 1, 'stroke-width="1"');
-        if (h === 'fedoraB') b += ell(0, -71, 21, 5, '#7a6a55') + rect(-12, -87, 24, 17, '#7a6a55', 7) + rect(-12, -76, 24, 4, '#3b3430', 1, 'stroke-width="1"');
-        if (h === 'helmet') b += path('M-15 -64 Q-15 -85 0 -85 Q15 -85 15 -64 Q0 -70 -15 -64Z', '#6b7278') + path('M-16 -65 Q0 -70 16 -65', 'none');
-        if (h === 'beret') b += ell(3, -76, 17, 8, o.hc || '#a8473f');
-        if (h === 'kerchief') b += path('M-15 -60 Q-17 -82 0 -82 Q17 -82 15 -60 Q10 -70 0 -69 Q-10 -70 -15 -60Z', o.hc || '#b3786b') + circ(14, -60, 4, o.hc || '#b3786b');
-        if (h === 'straw') b += ell(0, -72, 24, 6, '#e6c47a') + path('M-11 -72 Q-11 -88 0 -88 Q11 -88 11 -72Z', '#ecd08e');
-        if (h === 'white') b += path('M-14 -68 Q-14 -82 0 -82 Q14 -82 14 -68Z', '#fff') + rect(-14, -70, 28, 4, '#fff', 1) + `<line x1="-2" y1="-79" x2="-2" y2="-73" stroke="#c0504d" stroke-width="2"/>`;
-        if (h === 'kepi') b += path('M-14 -68 Q-12 -82 4 -82 Q14 -80 14 -68Z', '#4a6aa0') + rect(-14, -70, 28, 4, '#c0504d', 1, 'stroke-width="1"') + path('M4 -69 Q18 -69 18 -66 L4 -66Z', '#2f3f60');
-        if (h === 'bald') { /* 剃光頭 */ }
+        b += limb(-1, pose[0], armCol, skin, fem, false) + limb(1, pose[1], armCol, skin, fem, !!o.band);
+        // ---- 頭部（兒童略放大頭身比）----
+        let hd = '';
+        const head = 'M-6.4 -75 Q-6.6 -81.2 0 -81.4 Q6.6 -81.2 6.4 -75 Q6.6 -69 3.2 -66.2 Q0 -64.8 -3.2 -66.2 Q-6.6 -69 -6.4 -75Z';
+        hd += E(-6.5, -73, 1.2, 2.2, skin) + E(6.5, -73, 1.2, 2.2, skin);
+        hd += P(head, skin) + shade(head);
+        if (o.stripe) hd += `<ellipse cx="-3.7" cy="-70" rx="1.7" ry="2.4" fill="#000" opacity=".13"/><ellipse cx="3.7" cy="-70" rx="1.7" ry="2.4" fill="#000" opacity=".13"/>`;
+        // 髮
+        const hcol = hair === 'grey' ? '#c4c0b6' : hc;
+        const fr = `M-6.9 -74 Q-7.7 -82.2 0 -82.6 Q7.7 -82.2 6.9 -74 Q6.2 -78.4 3 -78.8 Q0 -77 -3.4 -78.6 Q-6.1 -78 -6.9 -74Z`;
+        if (hair === 'short' || hair === 'grey' || hair === 'long' || hair === 'braid' || hair === 'bun') hd += P(fr, hcol);
+        if (hair === 'bun') hd += circ(0, -85, 3.5, hcol, 'stroke-width="1"');
+        if (hair === 'braid') b += E(-8.2, -57, 2.1, 2.6, hcol) + E(-8.6, -52.5, 2, 2.5, hcol) + E(-8.8, -48, 1.9, 2.4, hcol) + circ(-8.8, -44.3, 1.5, '#a8473f', 'stroke-width=".7"') +
+            E(8.2, -57, 2.1, 2.6, hcol) + E(8.6, -52.5, 2, 2.5, hcol) + E(8.8, -48, 1.9, 2.4, hcol) + circ(8.8, -44.3, 1.5, '#a8473f', 'stroke-width=".7"');
         // 臉
-        const m = o.mood || 'neutral';
-        const ey = -63, eo = m === 'scared' ? 2.6 : 2;
-        b += circ(-5, ey, eo, INK, 'stroke="none"') + circ(5, ey, eo, INK, 'stroke="none"');
-        if (m === 'scared') b += circ(-5.8, ey - 1, .9, '#fff', 'stroke="none"') + circ(4.2, ey - 1, .9, '#fff', 'stroke="none"');
-        b += ell(-9, -58, 3.4, 2.2, '#f08a8a', 'stroke="none" opacity=".4"') + ell(9, -58, 3.4, 2.2, '#f08a8a', 'stroke="none" opacity=".4"');
-        if (m === 'sad') b += path('M-8 -69 L-3 -67 M8 -69 L3 -67', 'none', 'stroke-width="1.6"') + path('M-3.5 -55 Q0 -58 3.5 -55', 'none', 'stroke-width="1.8"');
-        else if (m === 'angry') b += path('M-8 -67 L-2 -65 M8 -67 L2 -65', 'none', 'stroke-width="2"') + path('M-3.5 -55 Q0 -57 3.5 -55', 'none', 'stroke-width="1.8"');
-        else if (m === 'scared') b += path('M-8 -69 L-3 -68 M8 -69 L3 -68', 'none', 'stroke-width="1.6"') + ell(0, -54.5, 2.2, 2.8, '#7a3b36', 'stroke-width="1.4"');
-        else if (m === 'happy') b += path('M-4 -57 Q0 -52 4 -57', 'none', 'stroke-width="1.8"');
-        else if (m === 'stern') b += path('M-8 -67 L-2 -66.5 M8 -67 L2 -66.5', 'none', 'stroke-width="2"') + line(-3, -55, 3, -55, 1.8);
-        else b += path('M-3 -56 Q0 -54 3 -56', 'none', 'stroke-width="1.6"');
-        if (o.glasses) b += circ(-5.5, ey, 4.6, 'rgba(255,255,255,.35)', 'stroke-width="1.5"') + circ(5.5, ey, 4.6, 'rgba(255,255,255,.35)', 'stroke-width="1.5"') + line(-1, ey, 1, ey, 1.4);
-        if (o.beard) b += path('M-11 -58 Q0 -40 11 -58 Q6 -49 0 -49 Q-6 -49 -11 -58Z', o.beard, 'stroke-width="1.5"');
-        if (o.sweat) b += path('M16 -72 Q19 -66 16 -64 Q13 -66 16 -72Z', '#bfe3f2', 'stroke-width="1"');
-        if (o.eyepatch) b += line(-9, -68, 9, -58, 1.5) + ell(-5, ey, 3.6, 3, '#222');
+        const m = o.mood || 'neutral', SC = '#2b211c';
+        const ew = m === 'scared';
+        const eye = ex => ew
+            ? `<ellipse cx="${ex}" cy="-74.2" rx="1.7" ry="1.55" fill="#f2ede2" stroke="${SC}" stroke-width=".5"/><circle cx="${ex}" cy="-74.2" r=".85" fill="${SC}"/>`
+            : `<ellipse cx="${ex}" cy="-74.1" rx="1.45" ry=".95" fill="#f0eadf" stroke="${SC}" stroke-width=".45"/><circle cx="${ex}" cy="-74.1" r=".72" fill="${SC}"/>`;
+        hd += eye(-2.9) + eye(2.9);
+        const brow = (a, b2, c2, d2, wd = .95) => `<path d="M-5.1 ${a} L-1.3 ${b2} M5.1 ${a} L1.3 ${b2}" fill="none" stroke="${blend(hcol, '#000', .25)}" stroke-width="${wd}" stroke-linecap="round"/>`;
+        let mouth;
+        if (m === 'sad') { hd += `<path d="M-5.1 -75.7 L-1.3 -77.2 M5.1 -75.7 L1.3 -77.2" fill="none" stroke="${blend(hcol, '#000', .25)}" stroke-width=".95" stroke-linecap="round"/>`; mouth = `<path d="M-1.9 -67.6 Q0 -69.2 1.9 -67.6" fill="none" stroke="${SC}" stroke-width=".85" stroke-linecap="round"/>`; }
+        else if (m === 'angry') { hd += `<path d="M-5.2 -77.4 L-1.2 -75.8 M5.2 -77.4 L1.2 -75.8" fill="none" stroke="${blend(hcol, '#000', .25)}" stroke-width="1.15" stroke-linecap="round"/>`; mouth = `<path d="M-2.1 -68.2 L2.1 -68.2" fill="none" stroke="${SC}" stroke-width="1" stroke-linecap="round"/><path d="M-2.1 -68.2 L-2.6 -67.4 M2.1 -68.2 L2.6 -67.4" stroke="${SC}" stroke-width=".6" fill="none"/>`; }
+        else if (m === 'scared') { hd += `<path d="M-5 -77.2 Q-3 -78.5 -1.3 -77.4 M5 -77.2 Q3 -78.5 1.3 -77.4" fill="none" stroke="${blend(hcol, '#000', .25)}" stroke-width=".9" stroke-linecap="round"/>`; mouth = `<ellipse cx="0" cy="-67.9" rx="1.2" ry="1.5" fill="#6a2f2b" stroke="${SC}" stroke-width=".5"/>`; }
+        else if (m === 'happy') { hd += brow(-76.4, -76.9); mouth = `<path d="M-2.3 -68.6 Q0 -66.4 2.3 -68.6" fill="none" stroke="${SC}" stroke-width=".85" stroke-linecap="round"/>`; }
+        else if (m === 'stern') { hd += `<path d="M-5.2 -76.6 L-1.3 -75.9 M5.2 -76.6 L1.3 -75.9" fill="none" stroke="${blend(hcol, '#000', .25)}" stroke-width="1.1" stroke-linecap="round"/>`; mouth = `<path d="M-1.9 -68 L1.9 -68" fill="none" stroke="${SC}" stroke-width=".95" stroke-linecap="round"/>`; }
+        else { hd += brow(-76.5, -76.9); mouth = `<path d="M-1.8 -68 Q0 -67.4 1.8 -68" fill="none" stroke="${SC}" stroke-width=".8" stroke-linecap="round"/>`; }
+        hd += `<path d="M0 -73.6 L-.9 -70.4 Q0 -69.7 1 -70.4" fill="none" stroke="${skinD}" stroke-width=".7" stroke-linecap="round"/>`;
+        if (o.beard) hd += `<path d="M-6.4 -72 Q-6.2 -64.6 0 -64.2 Q6.2 -64.6 6.4 -72 Q4.4 -67.6 0 -67.4 Q-4.4 -67.6 -6.4 -72Z" fill="${o.beard}" ${OL}/>` + `<path d="M-2.8 -69.2 Q0 -70.2 2.8 -69.2 Q0 -68.4 -2.8 -69.2Z" fill="${o.beard}"/>`;
+        hd += mouth;
+        if (o.glasses) hd += `<g fill="rgba(255,255,255,.14)" stroke="${SC}" stroke-width=".6"><circle cx="-2.9" cy="-74.1" r="2.4"/><circle cx="2.9" cy="-74.1" r="2.4"/><path d="M-.5 -74.3 Q0 -74.8 .5 -74.3" fill="none"/></g>`;
+        if (o.eyepatch) hd += `<path d="M-6.4 -77 L5.8 -70.6" stroke="${SC}" stroke-width=".8"/><ellipse cx="-2.9" cy="-74.1" rx="2.3" ry="2" fill="#1c1917"/>`;
+        // 帽
+        const h = o.hat;
+        if (h === 'peaked') hd += P('M-7.7 -77.3 Q-8 -87.4 0 -87.4 Q8 -87.4 7.7 -77.3Z', UGD) + `<rect x="-7.9" y="-79.3" width="15.8" height="2.8" fill="#2c2f28" ${OL}/>` + P('M-6 -76.6 Q0 -73.8 6 -76.6 L5.6 -77.8 Q0 -76.1 -5.6 -77.8Z', '#1c1d1a') + circ(0, -83, 1.1, '#d6bd72', 'stroke-width=".5"');
+        if (h === 'peakedB') hd += P('M-7.7 -77.3 Q-8 -87.4 0 -87.4 Q8 -87.4 7.7 -77.3Z', '#2b2c2e') + `<rect x="-7.9" y="-79.3" width="15.8" height="2.8" fill="#18191a" ${OL}/>` + P('M-6 -76.6 Q0 -73.8 6 -76.6 L5.6 -77.8 Q0 -76.1 -5.6 -77.8Z', '#101112') + circ(0, -83, 1.1, '#cfcfcf', 'stroke-width=".5"');
+        if (h === 'cap') hd += P('M-7.2 -77 Q-6.4 -84.6 1.6 -84.6 Q8 -83.6 7.4 -77Z', '#7a6a55') + P('M1.8 -77.4 Q10.6 -77.4 10.8 -75.4 L2 -75.8Z', '#5d4f3f') + shade('M-7.2 -77 Q-6.4 -84.6 1.6 -84.6 Q8 -83.6 7.4 -77Z');
+        if (h === 'fedora') hd += E(0, -78.4, 11, 2.4, '#4b4b4e') + P('M-6.2 -78.5 Q-6.6 -88.4 0 -88.4 Q6.6 -88.4 6.2 -78.5Z', '#4b4b4e') + `<rect x="-6.3" y="-81.4" width="12.6" height="2.2" fill="#7a2a28" ${OL}/>`;
+        if (h === 'fedoraB') hd += E(0, -78.4, 11, 2.4, '#7a6a55') + P('M-6.2 -78.5 Q-6.6 -88.4 0 -88.4 Q6.6 -88.4 6.2 -78.5Z', '#7a6a55') + `<rect x="-6.3" y="-81.4" width="12.6" height="2.2" fill="#3b3430" ${OL}/>`;
+        if (h === 'helmet') hd += P('M-8.2 -75.4 Q-8.8 -87 0 -87 Q8.8 -87 8.2 -75.4 Q0 -78.4 -8.2 -75.4Z', '#6b7278') + shade('M-8.2 -75.4 Q-8.8 -87 0 -87 Q8.8 -87 8.2 -75.4 Q0 -78.4 -8.2 -75.4Z') + `<path d="M-7.2 -75.6 Q0 -77.8 7.2 -75.6" fill="none" stroke="#2f3438" stroke-width=".8"/>`;
+        if (h === 'beret') hd += `<ellipse cx="1.6" cy="-82.4" rx="8.8" ry="3.8" fill="${o.hc || '#8f3a35'}" ${OL}/>` + circ(2, -86.2, .9, o.hc || '#8f3a35', 'stroke-width=".5"');
+        if (h === 'kerchief') hd += P('M-7.5 -71.6 Q-8.2 -83.6 0 -83.6 Q8.2 -83.6 7.5 -71.6 Q5 -77.6 0 -77.8 Q-5 -77.6 -7.5 -71.6Z', o.hc || '#a6685d') + circ(6.8, -71.5, 2, o.hc || '#a6685d', 'stroke-width=".8"');
+        if (h === 'straw') hd += E(0, -79, 12.4, 2.8, '#dcbc74') + P('M-6.2 -79 Q-6.2 -88.6 0 -88.6 Q6.2 -88.6 6.2 -79Z', '#e5cd8a');
+        if (h === 'white') hd += P('M-6.9 -78 Q-6.9 -84.6 0 -84.6 Q6.9 -84.6 6.9 -78Z', '#f3f0e8') + `<line x1="0" y1="-83.4" x2="0" y2="-79.4" stroke="#b03a35" stroke-width="1.1"/><line x1="-2" y1="-81.4" x2="2" y2="-81.4" stroke="#b03a35" stroke-width="1.1"/>`;
+        if (h === 'kepi') hd += P('M-7.2 -77 Q-6.4 -84.6 1.6 -84.6 Q8 -83.6 7.4 -77Z', '#3f5c8a') + `<rect x="-7.3" y="-79" width="14.6" height="2.2" fill="#a8473f" ${OL}/>` + P('M1.8 -77.4 Q11 -77.4 11 -75.8 L2 -75.8Z', '#26385a');
+        if (o.sweat) hd += `<path d="M8 -80 Q9.6 -76.4 8 -75.2 Q6.4 -76.4 8 -80Z" fill="#bfe3f2" stroke="#6f9aae" stroke-width=".5"/>`;
+        b += o.kidProp ? `<g transform="translate(0 -64) scale(1.28) translate(0 64)">${hd}</g>` : hd;
         return `<g transform="translate(${x} ${y}) scale(${s * fl} ${s})">${b}</g>`;
     }
     // 角色預設
@@ -1755,9 +2101,9 @@ const SceneArt = (function () {
     const prisoner = (x, y, o = {}) => man(x, y, Object.assign({ c: '#c9cfd8', p: '#c9cfd8', stripe: true, hair: 'bald', hat: 'bald', star: false, mood: 'sad', skin: '#e9c7a2' }, o));
     const jew = (x, y, o = {}) => man(x, y, Object.assign({ c: '#6b6a74', p: '#4d4b55', coat: true, star: true, mood: 'sad' }, o));
     const woman = (x, y, o = {}) => man(x, y, Object.assign({ dress: true, hair: 'long', c: RED }, o));
-    const kid = (x, y, o = {}) => man(x, y, Object.assign({ s: .62 }, o));
-    const silhouette = (x, y, s = 1, col = '#2b2a30') => g(x, y, rect(-8, -34, 16, 28, col, 6, 'stroke="none"') + circ(0, -42, 8, col, 'stroke="none"') + rect(-7, -10, 5, 10, col, 2, 'stroke="none"') + rect(2, -10, 5, 10, col, 2, 'stroke="none"'), `scale(${s})`);
-    const crowd = (x, y, n, dx = 16, col = '#3b3a42', s = 1) => { let r = ''; for (let i = 0; i < n; i++) r += g(x + i * dx, y + (i % 2) * 3, circ(0, -14, 7, col, 'stroke="none"') + path('M-11 0 Q-11 -9 0 -9 Q11 -9 11 0Z', col, 'stroke="none"'), `scale(${s})`); return r; };
+    const kid = (x, y, o = {}) => man(x, y, Object.assign({ s: .64, kidProp: true }, o));
+    const silhouette = (x, y, s = 1, col = '#2b2a30') => g(x, y, `<ellipse cx="0" cy="-46" rx="4.8" ry="5.8" fill="${col}"/><rect x="-2" y="-41" width="4" height="4" fill="${col}"/><path d="M-3.4 -38 Q-10 -37 -10 -30 L-8 -16 L8 -16 L10 -30 Q10 -37 3.4 -38Z" fill="${col}"/><rect x="-7" y="-17" width="5.4" height="17" fill="${col}"/><rect x="1.6" y="-17" width="5.4" height="17" fill="${col}"/>`, `scale(${s})`);
+    const crowd = (x, y, n, dx = 16, col = '#3b3a42', s = 1) => { let r = ''; for (let i = 0; i < n; i++) r += g(x + i * dx, y + (i % 2) * 3, `<ellipse cx="0" cy="-17" rx="4.6" ry="5.6" fill="${col}"/><path d="M-11 0 Q-11 -9.5 -3 -10.5 L3 -10.5 Q11 -9.5 11 0Z" fill="${col}"/>`, `scale(${s})`); return r; };
 
     // ---------- 道具 ----------
     const win = (x, y, w, h, lit = false, night = false) => rect(x, y, w, h, lit ? '#f7de8a' : (night ? '#33405e' : '#a9c4d6'), 2) + line(x + w / 2, y, x + w / 2, y + h, 1.5) + line(x, y + h / 2, x + w, y + h / 2, 1.5);
@@ -1777,8 +2123,8 @@ const SceneArt = (function () {
     const books = (x, y, n = 6) => { const cols = ['#8a5a48', '#4d6b8a', '#7a8a58', '#a8473f', '#6b5a8a', '#c9a24f']; let s = '', cx = x; for (let i = 0; i < n; i++) { const w = 7 + (i * 3) % 5, h = 22 + (i * 7) % 10; s += book(cx, y, w, h, cols[i % 6]); cx += w; } return s; };
     const lamp = (x, y, glow = true) => (glow ? `<circle cx="${x}" cy="${y - 64}" r="34" fill="#ffe9a0" opacity=".28"/>` : '') + rect(x - 2, y - 60, 4, 60, '#3b3a3a', 1) + path(`M${x - 8} ${y - 60} L${x + 8} ${y - 60} L${x + 5} ${y - 72} L${x - 5} ${y - 72}Z`, '#f7de8a');
     const fire = (x, y, s = 1) => g(x, y, path('M-16 0 Q-20 -22 -6 -36 Q-6 -24 2 -28 Q0 -46 10 -52 Q10 -32 20 -22 Q22 -8 14 0Z', '#e8743c') + path('M-8 0 Q-10 -14 -2 -22 Q0 -12 6 -16 Q10 -8 6 0Z', '#ffd25a', 'stroke-width="1.2"'), `scale(${s})`);
-    const bubble = (x, y, w, h, t, tail = 'l', size = 13) => rect(x, y, w, h, '#fff', 8) + (tail === 'l' ? poly(`${x + 10},${y + h - 1} ${x + 4},${y + h + 10} ${x + 22},${y + h - 1}`, '#fff', 'stroke-width="2"') : tail === 'r' ? poly(`${x + w - 10},${y + h - 1} ${x + w - 4},${y + h + 10} ${x + w - 22},${y + h - 1}`, '#fff', 'stroke-width="2"') : '') + txt(x + w / 2, y + h / 2 + size * .36, t, size);
-    const thought = (x, y, w, h, inner, dx = -14) => circ(x + w * .15 + dx, y + h + 14, 3, '#fff', 'stroke-width="1.5"') + circ(x + w * .15 + dx + 7, y + h + 6, 5, '#fff', 'stroke-width="1.5"') + ell(x + w / 2, y + h / 2, w / 2, h / 2, '#fff') + inner;
+    const bubble = (x, y, w, h, t, tail = 'l', size = 13) => `<g class="bub" data-b="${x},${y},${w},${h},${tail}">` + (rect(x, y, w, h, '#fff', 8) + (tail === 'l' ? poly(`${x + 10},${y + h - 1} ${x + 4},${y + h + 10} ${x + 22},${y + h - 1}`, '#fff', 'stroke-width="2"') : tail === 'r' ? poly(`${x + w - 10},${y + h - 1} ${x + w - 4},${y + h + 10} ${x + w - 22},${y + h - 1}`, '#fff', 'stroke-width="2"') : '') + txt(x + w / 2, y + h / 2 + size * .36, t, size)) + '</g>';
+    const thought = (x, y, w, h, inner, dx = -14) => `<g class="bub" data-b="${x - 10},${y},${w + 10},${h + 12},thought">` + (circ(x + w * .15 + dx, y + h + 14, 3, '#fff', 'stroke-width="1.5"') + circ(x + w * .15 + dx + 7, y + h + 6, 5, '#fff', 'stroke-width="1.5"') + ell(x + w / 2, y + h / 2, w / 2, h / 2, '#fff') + inner) + '</g>';
     const sign = (x, y, w, h, t, size = 12, fill = '#f3e7c4') => rect(x, y, w, h, fill, 3) + txt(x + w / 2, y + h / 2 + size * .36, t, size);
     const clock = (x, y, r, hh = 12, mm = 0) => { const ha = ((hh % 12) + mm / 60) / 12 * 6.283 - 1.5708, ma = mm / 60 * 6.283 - 1.5708; return circ(x, y, r, '#fbf6e8') + line(x, y, x + Math.cos(ha) * r * .5, y + Math.sin(ha) * r * .5, 2) + line(x, y, x + Math.cos(ma) * r * .8, y + Math.sin(ma) * r * .8, 1.4) + circ(x, y, 1.6, INK); };
     const table = (x, y, w, h = 34, col = '#9a7650') => rect(x, y - h, w, 6, col, 2) + rect(x + 6, y - h + 6, 6, h - 6, col, 1) + rect(x + w - 12, y - h + 6, 6, h - 6, col, 1);
@@ -1814,8 +2160,9 @@ const SceneArt = (function () {
         const id = 'sv' + (uid++);
         return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 220" preserveAspectRatio="xMidYMid slice" role="img" aria-label="${alt}">
   <defs>
+    <linearGradient id="${id}sh" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".13"/><stop offset=".5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".34"/></linearGradient>
     <radialGradient id="${id}v" cx="50%" cy="50%" r="75%"><stop offset=".62" stop-color="#3b2a1a" stop-opacity="0"/><stop offset="1" stop-color="#3b2a1a" stop-opacity=".34"/></radialGradient>
-    <filter id="${id}w" x="-2%" y="-2%" width="104%" height="104%"><feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="${uid % 40}" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="2"/></filter>
+    <filter id="${id}w" x="-2%" y="-2%" width="104%" height="104%"><feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="${uid % 40}" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.2"/></filter>
   </defs>
   <g filter="url(#${id}w)">${inner}</g>
   <rect width="400" height="220" fill="url(#${id}v)"/>
@@ -1826,11 +2173,59 @@ const SceneArt = (function () {
     const add = (id, cap, draw) => { S[id] = { cap, draw }; };
     const H = { sky, ground, room, stars, moon, sun, cloud, man, soldier, officer, gestapo, doctor, prisoner, jew, woman, kid, silhouette, crowd, win, door, house, tree, pine, smoke, chimney, wire, tower, rails, boxcar, engine, paper, book, books, lamp, fire, bubble, thought, sign, clock, table, desk, bed, bottle, bag, suitcase, loaf, coin, stamp, sparkle, shock, drops, shard, banner, col: col_, plane, tank, globe, camera, bars, cross, crossX, snowfall, glow, heart, roofTiles, mug, rect, circ, ell, poly, path, line, txt, g, star, SK, SK2, SK3, UG, UGD, LEATHER, WHITE, BLUE, RED, GREEN, MUST, PURP, ORNG, GREY, INK };
 
+    // ---------- 對話框自動避讓：不蓋住人物頭部、其他文字與其他對話框 ----------
+    function avoidBubbles(inner) {
+        const bubRe = /<g class="bub" data-b="([^"]+)">([\s\S]*?)<\/g>/g;
+        if (!bubRe.test(inner)) return inner;
+        bubRe.lastIndex = 0;
+        const hit = (a, b, pad) => a.x < b.x + b.w + pad && b.x < a.x + a.w + pad && a.y < b.y + b.h + pad && b.y < a.y + a.h + pad;
+        const heads = [], bodies = [], texts = [];
+        const figRe = /<g transform="translate\(([-\d.]+) ([-\d.]+)\) scale\(([-\d.]+) ([-\d.]+)\)">/g;
+        let f;
+        while ((f = figRe.exec(inner))) {
+            const x = +f[1], y = +f[2], k = +f[4];
+            heads.push({ x: x - 11 * k, y: y - 91 * k, w: 22 * k, h: 29 * k });
+            bodies.push({ x: x - 16 * k, y: y - 62 * k, w: 32 * k, h: 62 * k });
+        }
+        const rest = inner.replace(bubRe, '');
+        const txtRe = /<text x="([-\d.]+)" y="([-\d.]+)" font-size="([-\d.]+)"[^>]*>([\s\S]*?)<\/text>/g;
+        let t;
+        while ((t = txtRe.exec(rest))) {
+            const fs = +t[3]; let w = 0;
+            for (const ch of t[4].replace(/<[^>]+>/g, '')) w += /[　-鿿＀-￯]/.test(ch) ? fs : fs * .6;
+            texts.push({ x: +t[1] - w / 2, y: +t[2] - fs, w: w, h: fs * 1.15 });
+        }
+        const placed = [];
+        return inner.replace(bubRe, function (all, data, content) {
+            const q = data.split(','), bx = +q[0], by = +q[1], bw = +q[2], bh = +q[3];
+            const ex = q[4] === 'thought' ? 0 : 10;   // 想法泡泡的範圍已含小圓點，不必再加尾巴高度
+            const box = { x: bx, y: by, w: bw, h: bh + ex };
+            if (!heads.some(h => hit(box, h, 3))) { placed.push(box); return all; }
+            const cands = [];
+            for (let dx = -240; dx <= 240; dx += 6) for (let dy = -170; dy <= 40; dy += 4)
+                cands.push({ dx: dx, dy: dy, d: Math.hypot(dx * 1.25, dy) });
+            cands.sort((a, b) => a.d - b.d);
+            const sets = [[heads, bodies, texts, placed], [heads, bodies, placed], [heads, placed]];
+            for (const obs of sets) {
+                for (const c of cands) {
+                    const nb = { x: bx + c.dx, y: by + c.dy, w: bw, h: bh + ex };
+                    if (nb.x < 3 || nb.x + nb.w > 397 || nb.y < 3 || nb.y + nb.h > 217) continue;
+                    if (obs.some(list => list === heads ? list.some(o => hit(nb, o, 5)) : list.some(o => hit(nb, o, 2)))) continue;
+                    placed.push(nb);
+                    return `<g transform="translate(${c.dx} ${c.dy})">${all}</g>`;
+                }
+            }
+            placed.push(box);
+            return all;
+        });
+    }
+
     function render(id) {
         const sc = S[id];
         if (!sc) return '';
         let inner;
-        try { inner = sc.draw(H); } catch (e) { console.warn('scene error', id, e); return ''; }
+        cur = 'sv' + uid;
+        try { inner = avoidBubbles(sc.draw(H)); } catch (e) { console.warn('scene error', id, e); return ''; }
         return `<figure class="scene-wrap">${frame(inner, sc.cap)}<figcaption class="scene-cap">${sc.cap}</figcaption></figure>`;
     }
     return { add, render, H, ids: () => Object.keys(S), has: id => !!S[id] };
@@ -1964,8 +2359,8 @@ const SceneArt = (function () {
         sky('grey') + ground('#9a968c', 160) + rect(0, 70, 130, 90, '#bdb6a2', 2) + chimney(105, 70, 50) + smoke(105, 18, 3, '#b8b4ac') + win(14, 90, 30, 24) + win(56, 90, 30, 24) +
         path('M170 160 Q172 124 210 120 Q250 120 254 160Z', '#d9604f') + circ(188, 162, 12, '#444') + circ(238, 162, 12, '#444') + rect(196, 128, 28, 14, '#a9d3e0', 2) +
         rect(280, 100, 100, 62, '#fbf6e8', 3) + `<g opacity=".8">${tank(332, 150, .85, '#9aa0a8')}</g>` + line(290, 110, 370, 110, 1.2) + line(290, 118, 340, 118, 1.2) +
-        man(262, 208, { s: 1.4, c: '#6b7a8a', tie: true, mood: 'neutral', arms: 'face', glasses: true }) + thought(222, 60, 60, 36, circ(252, 78, 5, INK), -6) +
-        line(252, 66, 252, 74, 2) + txt(252, 86, '?', 14));
+        man(262, 208, { s: 1.4, c: '#6b7a8a', tie: true, mood: 'neutral', arms: 'face', glasses: true }) + thought(222, 8, 60, 36, circ(252, 26, 5, INK), -6) +
+        line(252, 14, 252, 22, 2) + txt(252, 34, '?', 14));
 })();
 /* SCENE-ART-G-END */
 
@@ -2194,10 +2589,13 @@ const SceneArt = (function () {
         kid(150, 210, { s: .95, hair: 'short', mood: 'scared', arms: 'face' }) + bubble(170, 50, 90, 30, '交出牙套!', 'l', 11) +
         prisoner(90, 206, { s: 1.15, mood: 'sad', arms: 'low' }));
 
-    add('J20', '飢餓的父親，望著兒子手中僅有的廁所請求', () =>
-        room('#4a433a', '#55504a') + door(300, 150, 30, 56, '#2c2c2e') + sign(295, 140, 40, 14, 'WC', 10) +
-        jew(130, 206, { s: 1.25, c: '#8a8884', mood: 'sad', arms: [[-16, -20], [20, -26]] }) +
-        soldier(210, 206, { s: 1.2, arms: 'hips', mood: 'angry' }) + shock(130, 120, 1.1));
+    add('J20', '兩碗熱湯，換一個「協助執行」的機會', () =>
+        sky('grey') + ground('#8e897a', 160) + wire(0, 400, 160, 40) + tower(360, 160) +
+        officer(270, 206, { s: 1.3, arms: [[-16, -26], [30, -44]], mood: 'stern' }) +
+        prisoner(110, 206, { s: 1.15, mood: 'sad', arms: 'low' }) +
+        prisoner(160, 206, { s: 1.1, mood: 'scared', arms: 'face' }) +
+        ell(212, 182, 13, 6, '#e9e1cd') + ell(238, 182, 13, 6, '#e9e1cd') +
+        drops(212, 166) + drops(238, 166) + bubble(40, 50, 110, 30, '兩碗湯…', 'r', 12));
 
     add('J21', '警衛打量著肚子痛的父親，一記耳光隨即落下', () =>
         room('#4a433a', '#55504a') + door(300, 150, 30, 56, '#2c2c2e') + sign(292, 140, 46, 14, 'WC', 10) +
@@ -2205,7 +2603,7 @@ const SceneArt = (function () {
         soldier(220, 206, { s: 1.2, arms: [[-16, -26], [32, -36]], mood: 'angry' }) + shock(165, 150, 1));
 
     add('J22', '偽造的文件，讓她躲過了被送走的命運', () =>
-        room('#d9d3c0', '#9a8466') + desk(60, 198, 220) + stamp(170, 150, '亞') + paper(150, 146, 24, 16, -4, 2) +
+        room('#d9d3c0', '#9a8466') + desk(60, 198, 220) + stamp(170, 150, '雅利安') + paper(150, 146, 24, 16, -4, 2) +
         woman(120, 180, { s: 1.15, hair: 'braid', h: '#d9b560', c: '#8a6a58', dc: '#8a6a58', mood: 'neutral', arms: 'hold' }) +
         man(300, 206, { s: 1.1, c: '#6b6a74', mood: 'neutral', arms: 'hold', glasses: true }) + bubble(260, 56, 90, 28, '她的身分?', 'l', 11));
 
@@ -2294,7 +2692,7 @@ const SceneArt = (function () {
         },
         submit: function() {
             const count = parseInt(document.getElementById('player-count').value);
-            GameState.players = [];
+            GameState.players = []; GameState.lastSacrifice = null;
             GameState.initCardPools();
 
             let roles = [];
@@ -2311,7 +2709,8 @@ const SceneArt = (function () {
             for (let i = 0; i < count; i++) {
                 const nameInput = document.getElementById(`p-name-${i}`).value.trim() || `玩家${i+1}`;
                 GameState.players.push({ 
-                    name: nameInput, 
+                    rawName: nameInput,
+                    name: nameInput.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),
                     role: roles[i], 
                     survival: START_STATS.survival, 
                     moral: START_STATS.moral, 
@@ -2332,6 +2731,7 @@ const SceneArt = (function () {
             const roleName = p.role === 'A' ? '雅利安人 (A)' : '猶太人 (J)';
             const roleColor = p.role === 'A' ? 'var(--accent-blue)' : 'var(--accent-red)';
             return `
+                <div class="dossier-no">檔案 NO.${String(i + 1).padStart(3, '0')}</div>
                 ${AvatarFactory.render(p.avatar, 150)}
                 <div class="avatar-name">${p.name}</div>
                 <div class="avatar-occ">「${p.avatar.occ.label}」</div>
@@ -2368,17 +2768,49 @@ const SceneArt = (function () {
         MAX_PER_PLAYER: 2,
 
         quips: {
-            dying:   ['全班請注意！【瀕死邊緣】的 {n} 還有救嗎？快替他想想辦法！', '【瀕死邊緣】的 {n} 看起來快撐不住了，大家要不要伸出援手？'],
-            cold:    ['小心！【冷血無情】的 {n} 又要出手了，大家要不要盯緊他？', '【冷血無情】的 {n}：「別怪我，這是時代的選擇。」——全班請表態！'],
-            turtle:  ['【苟且偷生】的 {n} 輪到你了，這次還想繼續躲嗎？', '大家看看【苟且偷生】的 {n}，這麼會活命，是不是有什麼祕訣？'],
-            saint:   ['【道德標竿】的 {n} 登場！請全班監督：這次他還能守住嗎？', '【道德標竿】的 {n} 頭頂光環閃閃發亮，大家猜他這回會不會破功？'],
-            silent:  ['【事不關己】的 {n} 這回還要當旁觀者嗎？全班喊他一聲！', '【事不關己】的 {n}，你的沉默，歷史都記得——這次要說話嗎？'],
-            deserter:['【見死不救】的 {n} 這回會救人嗎？全班請盯著他的選擇。', '【見死不救】的 {n}，大家都看到你上次的選擇了，這次想怎麼做？'],
-            cog:     ['【忠誠齒輪】的 {n} 要聽誰的命令？全班一起問他！', '【忠誠齒輪】的 {n} 又要乖乖服從了嗎？大家來給點壓力！'],
-            rebel:   ['【星火反抗軍】的 {n} 來了！全班請鼓掌，看他這次敢不敢！', '【星火反抗軍】的 {n} 一路反抗過來，這回還撐得住嗎？'],
-            hero:    ['【義無反顧】的 {n} 出場！大家猜他會不會又挺身而出？', '【義無反顧】的 {n} 又要當英雄了嗎？全班打賭看看！'],
-            lucky:   ['【幸運兒】{n} 運氣爆棚，這次還能被命運眷顧嗎？', '【幸運兒】{n} 摸到好運了，大家快沾沾運氣！'],
+            // {t} 會在顯示時換成該玩家實際抽到的稱號
+            dying:   ['全班請注意！【{t}】的 {n} 還有救嗎？快替他想想辦法！', '【{t}】的 {n} 看起來快撐不住了，大家要不要伸出援手？'],
+            cold:    ['小心！【{t}】的 {n} 又要出手了，大家要不要盯緊他？', '【{t}】的 {n}：「別怪我，這是時代的選擇。」——全班請表態！'],
+            turtle:  ['【{t}】的 {n} 輪到你了，這次還想繼續躲嗎？', '大家看看【{t}】的 {n}，這麼會活命，是不是有什麼祕訣？'],
+            saint:   ['【{t}】的 {n} 登場！請全班監督：這次他還能守住嗎？', '【{t}】的 {n} 頭頂光環閃閃發亮，大家猜他這回會不會破功？'],
+            silent:  ['【{t}】的 {n} 這回還要當旁觀者嗎？全班喊他一聲！', '【{t}】的 {n}，你的沉默，歷史都記得——這次要說話嗎？'],
+            deserter:['【{t}】的 {n} 這回會救人嗎？全班請盯著他的選擇。', '【{t}】的 {n}，大家都看到你上次的選擇了，這次想怎麼做？'],
+            cog:     ['【{t}】的 {n} 要聽誰的命令？全班一起問他！', '【{t}】的 {n} 又要乖乖服從了嗎？大家來給點壓力！'],
+            rebel:   ['【{t}】的 {n} 來了！全班請鼓掌，看他這次敢不敢！', '【{t}】的 {n} 一路反抗過來，這回還撐得住嗎？'],
+            hero:    ['【{t}】的 {n} 出場！大家猜他會不會又挺身而出？', '【{t}】的 {n} 又要當英雄了嗎？全班打賭看看！'],
+            lucky:   ['【{t}】{n} 運氣爆棚，這次還能被命運眷顧嗎？', '【{t}】{n} 摸到好運了，大家快沾沾運氣！'],
             dead:    ['{n} 已退出這段歷史，請以旁觀者身分替下一位同學出主意。']
+        },
+
+        // ===== 學生版（中二）稱號詞庫：每次出現時從詞庫隨機抽一個 =====
+        LABEL_POOLS: {
+            dying:    ['塔位預購中', '閻羅王 VIP', '奈米血量', '風中殘燭', '孟婆湯已上桌', '隨時準備拔管'],
+            cold:     ['專業獻祭大師', '人間閻羅王', '良心被狗啃了', '路過的無情機器', 'VVIP 級看戲仔'],
+            silent:   ['專業獻祭大師', '人間閻羅王', '良心被狗啃了', '路過的無情機器', 'VVIP 級看戲仔'],
+            deserter: ['專業獻祭大師', '人間閻羅王', '良心被狗啃了', '路過的無情機器', 'VVIP 級看戲仔'],
+            turtle:   ['躺平宗師', '生存點滿的辣個男人', '逃跑可恥但有用', '戰術性撤退大師', '物理級絕對迴避'],
+            saint:    ['站在道德聖母峰的男人', '終極好人卡 VVIP', '純度100%的王道男主', '大愛電視台榮譽台長', '行走的諾貝爾和平獎'],
+            rebel:    ['這個男人太狠了', '專治各種極權', '反派眼中的毒瘤', '全場唯一真神', '地獄難度玩家'],
+            hero:     ['這個男人太狠了', '專治各種極權', '反派眼中的毒瘤', '全場唯一真神', '地獄難度玩家'],
+            cog:      ['極權第一舔狗', '黨的乖寶寶', '沒有靈魂的 NPC', '求生慾拉滿的男人', '膝蓋特別軟'],
+            lucky:    ['祖墳冒青煙', '自帶主角光環', '命運的漏網之魚', '上輩子拯救世界']
+        },
+
+        // 同一位玩家同一個稱號只抽一次（避免畫面重繪時一直跳動）；稱號消失後再出現會重新抽
+        // 全班玩家的稱號盡量不重複（同義的稱號會換成不同的中二說法）
+        pickLabel: function(p, key) {
+            p._tl = p._tl || {};
+            if (p._tl[key]) return p._tl[key];
+            const pool = this.LABEL_POOLS[key];
+            if (!pool) return null;
+            // 先避開全體玩家已用過的稱號；詞庫不夠時，才退而只避開自己身上的
+            const mine = Object.keys(p._tl).map(k => p._tl[k]);
+            const everyone = [];
+            GameState.players.forEach(q => { if (q._tl) Object.keys(q._tl).forEach(k => everyone.push(q._tl[k])); });
+            let cand = pool.filter(x => everyone.indexOf(x) === -1);
+            if (!cand.length) cand = pool.filter(x => mine.indexOf(x) === -1);
+            if (!cand.length) cand = pool;
+            return (p._tl[key] = cand[Math.floor(Math.random() * cand.length)]);
         },
 
         // 依優先順序判定每位玩家的稱號（相對排名 + 行為紀錄）
@@ -2394,7 +2826,7 @@ const SceneArt = (function () {
 
             players.forEach((p, i) => {
                 const list = result[i];
-                const push = (key, icon, label, cls) => list.push({ key: key, icon: icon, label: label, cls: cls });
+                const push = (key, icon, label, cls) => list.push({ key: key, icon: icon, label: this.pickLabel(p, key) || label, cls: cls });
 
                 if (p.isDead) { push('dead', '💀', '歷史見證者', 't-dead'); return; }
 
@@ -2420,6 +2852,12 @@ const SceneArt = (function () {
                 if ((p.chanceCount || 0) >= 1) push('lucky', '🍀', '幸運兒', 't-good');
             });
 
+            // 只保留目前仍有效的稱號抽籤結果
+            players.forEach((p, i) => {
+                const keep = {};
+                result[i].forEach(t => { if (p._tl && p._tl[t.key]) keep[t.key] = p._tl[t.key]; });
+                p._tl = keep;
+            });
             return result.map(list => list.slice(0, this.MAX_PER_PLAYER));
         },
 
@@ -2455,7 +2893,7 @@ const SceneArt = (function () {
                 const ck = GameState.currentRound + ':' + pick.key;
                 if (!curP._quipCache[ck] && arr.length) curP._quipCache[ck] = arr[Math.floor(Math.random() * arr.length)];
                 if (curP._quipCache[ck]) {
-                    const line = curP._quipCache[ck].replace(/\{n\}/g, curP.name).replace(/【([^】]+)】/g, '<span class="pp-tag">【$1】</span>');
+                    const line = curP._quipCache[ck].replace(/\{t\}/g, pick.label).replace(/\{n\}/g, curP.name).replace(/【([^】]+)】/g, '<span class="pp-tag">【$1】</span>');
                     prompt = `<div class="party-prompt">🎉 ${line}</div>`;
                 }
             }
@@ -2478,14 +2916,68 @@ const SceneArt = (function () {
             GameState.currentPlayerIndex = 0;
             GameState.currentRound = 1;
             this._finalBell = false;
+            this._handoff = false;
             GameUtils.switchStep(3);
+            this.beginTurn(null);
+        },
+
+        // ==========================================================
+        // 回合交接：換人時先顯示全螢幕過場，按下「我準備好了」才顯示卡牌
+        // 只有同一位玩家連續行動（其他人都已退出，或單人遊戲）時才略過
+        // ==========================================================
+        _handoff: false,
+        _handoffTimer: null,
+        beginTurn: function(prevIdx) {
+            const needHandoff = GameState.players.length > 1 && prevIdx !== GameState.currentPlayerIndex;
+            if (needHandoff) this.showHandoff(); else this.loadQuestion();
+        },
+        showHandoff: function() {
+            const idx = GameState.currentPlayerIndex;
+            const player = GameState.getCurrentPlayer();
+            const nm = player.rawName || player.name;
+            const seat = '玩家 ' + (idx + 1);
+            document.getElementById('handoff-avatar').innerHTML = AvatarFactory.render(player.avatar, 120);
+            document.getElementById('handoff-name').textContent = nm;
+            document.getElementById('handoff-sub').textContent = (nm === ('玩家' + (idx + 1)) ? seat : seat + ' ｜ ' + nm) + ' ｜ 第 ' + GameState.currentRound + ' / ' + this.MAX_ROUND + ' 回合';
+            document.getElementById('handoff-instruct').textContent = '請將裝置交給「' + nm + '」';
+
+            const step3 = document.getElementById('step-3');
+            step3.setAttribute('inert', ''); step3.setAttribute('aria-hidden', 'true');
+            const ov = document.getElementById('handoff-overlay');
+            ov.classList.add('active'); ov.scrollTop = 0;
+            try { window.scrollTo(0, 0); } catch (e) {}
+            this._handoff = true;
+
+            // 短暫鎖定按鈕：避免上一位玩家連點，直接按掉「我準備好了」
+            const btn = document.getElementById('handoff-ready-btn');
+            clearInterval(this._handoffTimer);
+            let left = 2;
+            btn.disabled = true; btn.textContent = '請先交給 ' + nm + '（' + left + '）';
+            this._handoffTimer = setInterval(() => {
+                left--;
+                if (left > 0) { btn.textContent = '請先交給 ' + nm + '（' + left + '）'; return; }
+                clearInterval(this._handoffTimer);
+                btn.disabled = false; btn.textContent = '我準備好了';
+                try { btn.focus({ preventScroll: true }); } catch (e) {}
+            }, 800);
+        },
+        confirmHandoff: function() {
+            if (!this._handoff) return;
+            const btn = document.getElementById('handoff-ready-btn');
+            if (btn.disabled) return;
+            this._handoff = false;
+            clearInterval(this._handoffTimer);
+            document.getElementById('handoff-overlay').classList.remove('active');
+            const step3 = document.getElementById('step-3');
+            step3.removeAttribute('inert'); step3.removeAttribute('aria-hidden');
+            AudioController.playConfirmSound();
             this.loadQuestion();
         },
 
         // 以文字描述處境，不顯示任何數字
         statusOf: function(survival) {
-            if (survival >= 6) return { text: '尚算安穩', cls: 's-safe' };
-            if (survival >= 4) return { text: '令人不安', cls: 's-uneasy' };
+            if (survival >= 5) return { text: '尚算安穩', cls: 's-safe' };
+            if (survival >= 3) return { text: '令人不安', cls: 's-uneasy' };
             if (survival >= 2) return { text: '岌岌可危', cls: 's-danger' };
             return { text: '命懸一線', cls: 's-critical' };
         },
@@ -2509,7 +3001,7 @@ const SceneArt = (function () {
         loadQuestion: function() {
             const player = GameState.getCurrentPlayer();
 
-            document.getElementById('current-player-turn').innerText = `玩家：${player.name}`;
+            document.getElementById('current-player-turn').innerHTML = `玩家：${player.name}`;
             document.getElementById('current-player-role').innerText = `身分：${player.role === 'A' ? '雅利安人' : '猶太人'}`;
             document.getElementById('current-player-avatar').innerHTML = AvatarFactory.render(player.avatar, 56);
             const st = this.statusOf(player.survival);
@@ -2548,6 +3040,7 @@ const SceneArt = (function () {
                 `;
             }
 
+            cardDisplay.setAttribute('data-id', card.id);
             cardDisplay.classList.add('flip-anim');
             optionsDiv.classList.add('fade-in');
             AudioController.playFlipSound();
@@ -2560,6 +3053,7 @@ const SceneArt = (function () {
         },
 
         showFeedback: function(optIndex, sChange, mChange) {
+            if (this._handoff) return;   // 交接過場期間不接受選擇
             AudioController.playConfirmSound();
             const player = GameState.getCurrentPlayer();
             const card = GameState.currentCard;
@@ -2602,6 +3096,23 @@ const SceneArt = (function () {
             player.moral += mChange;
             if (player.survival < 0) player.survival = 0;
 
+            // 新版計分「@」題卡：選擇會同時牽動另一位猶太玩家（表中的 J+1／J-1），由做選擇的玩家指定對象
+            // 只有一位候選人時直接套用；沒有其他猶太玩家時，連動不生效
+            let crossHtml = '';
+            this._pendingCross = null;
+            const xChange = (optIndex === 1 ? card.x1 : card.x2) || 0;
+            if (xChange !== 0) {
+                // 限制：「J-1」不能連續兩次指定同一位玩家（上一次被扣的人這次不能再選）
+                const targets = GameState.players.filter(q => q !== player && q.role === 'J' && !q.isDead
+                    && !(xChange < 0 && q === GameState.lastSacrifice));
+                if (targets.length === 1) {
+                    crossHtml = this.applyCross(targets[0], xChange);
+                } else if (targets.length > 1) {
+                    this._pendingCross = { x: xChange, targets: targets };
+                    crossHtml = this.crossPickerHtml(xChange, targets);
+                }
+            }
+
             let feedbackText = "";
             if (optIndex === 1 && card.fb1) {
                 feedbackText = card.fb1;
@@ -2632,14 +3143,46 @@ const SceneArt = (function () {
                 AudioController.playResultSound('neutral');
             }
 
-            document.getElementById('fb-player-title').innerText = card.type === 'chance' ? `【 ${player.name} 的機會 】` : `【 ${player.name} 的抉擇 】`;
+            document.getElementById('fb-player-title').innerHTML = card.type === 'chance' ? `【 ${player.name} 的機會 】` : `【 ${player.name} 的抉擇 】`;
             document.getElementById('fb-text').innerHTML = GameUtils.highlightKeywords(feedbackText.replace(/\n/g, '<br>'));
-            document.getElementById('fb-stats').innerHTML = hintHtml;
+            this._baseHint = hintHtml;
+            document.getElementById('fb-stats').innerHTML = crossHtml ? hintHtml + '<br>' + crossHtml : hintHtml;
 
             const btn = document.getElementById('fb-next-btn');
             btn.innerText = player.isDead ? '確認 ➔' : '繼續下一回合 ➔';
+            btn.disabled = !!this._pendingCross;
             document.getElementById('feedback-overlay').classList.add('active');
             btn.focus({ preventScroll: true });
+            this.renderRoster();
+        },
+
+        applyCross: function(t, xChange) {
+            if (xChange < 0) GameState.lastSacrifice = t;
+            t.survival += xChange;
+            if (t.survival <= 0) {
+                t.survival = 0; t.isDead = true; t.deathRound = GameState.currentRound;
+                return `<span class="fb-hint dead">💀 因為你的選擇，【${t.name}】退出了這段歷史</span>`;
+            }
+            if (xChange > 0) return `<span class="fb-hint up">🤝 你的選擇讓【${t.name}】暫時喘了一口氣</span>`;
+            return `<span class="fb-hint down">⚠ 你的選擇讓【${t.name}】的處境更危險了</span>`;
+        },
+
+        crossPickerHtml: function(xChange, targets) {
+            const q = xChange > 0 ? '🤝 這個選擇也牽動了另一位猶太人的命運——你要幫助誰？' : '⚠ 這個選擇也牽動了另一位猶太人的命運——你要犧牲誰？';
+            const btns = targets.map((t, i) => `<button class="btn" style="margin: 6px 4px 0; padding: 6px 14px; font-size: 1.1rem;" onclick="Page3_Gameplay.pickCross(${i})">${t.name}</button>`).join('');
+            return `<span class="fb-hint">${q}</span><br>${btns}`;
+        },
+
+        pickCross: function(i) {
+            const pc = this._pendingCross;
+            if (!pc || !pc.targets[i]) return;
+            this._pendingCross = null;
+            AudioController.playConfirmSound();
+            const html = this.applyCross(pc.targets[i], pc.x);
+            // 保留原本的處境提示，只替換選人區塊
+            document.getElementById('fb-stats').innerHTML = this._baseHint + '<br>' + html;
+            const btn = document.getElementById('fb-next-btn');
+            btn.disabled = false; btn.focus({ preventScroll: true });
             this.renderRoster();
         },
 
@@ -2652,14 +3195,16 @@ const SceneArt = (function () {
             // 只有一人退出時，音效結束後接回背景音樂；全員退出由結局頁接手
             gameOverSound.onended = () => {
                 const stillPlaying = document.getElementById('step-3').classList.contains('active');
-                if (wasOn && stillPlaying) AudioController.safePlay(bgMusic);
+                if (wasOn && stillPlaying && !AudioController.muted) AudioController.safePlay(bgMusic);
             };
+            if (AudioController.muted) return;
             AudioController.safePlay(gameOverSound, null, e => console.log("無法自動播放死亡音效:", e));
         },
 
         nextTurn: function() {
             const overlay = document.getElementById('feedback-overlay');
             if (!overlay.classList.contains('active')) return;
+            if (this._pendingCross) return;   // 尚未指定連動對象
             overlay.classList.remove('active');
 
             const players = GameState.players;
@@ -2670,7 +3215,8 @@ const SceneArt = (function () {
             }
 
             // 找下一位仍在遊戲中的玩家；繞回第一位時回合數 +1
-            let idx = GameState.currentPlayerIndex;
+            const prevIdx = GameState.currentPlayerIndex;
+            let idx = prevIdx;
             do {
                 idx = (idx + 1) % players.length;
                 if (idx === 0) GameState.currentRound++;
@@ -2681,7 +3227,7 @@ const SceneArt = (function () {
                 Page4_Ending.init(false);
                 return;
             }
-            this.loadQuestion();
+            this.beginTurn(prevIdx);
         }
     };
 
@@ -2833,9 +3379,8 @@ const SceneArt = (function () {
                 icon: '⚖️', name: '掙扎的靈魂',
                 desc: '生存與道德都沒有走向極端，勉強撐過這段歷史——這是當年多數人的樣子。',
                 test: function(p, log, all) {
-                    if (p.isDead) return false;
-                    const key = Page4_Ending.getEndingKey(p);
-                    return key === 'midHi' || key === 'midLo';
+                    // 存活，但生存指數沒有高到 8 以上（附錄二的高生存門檻）
+                    return !p.isDead && p.survival < 8;
                 }
             },
             {
@@ -2854,7 +3399,243 @@ const SceneArt = (function () {
         }
     };
 
+    // ==========================================================
+    // 歷史檔案卡：用 Canvas 繪製 1080×1350（IG 4:5）圖片，不依賴任何外部套件
+    // 內容：頭像、稱號、成就徽章、結局人物
+    // ==========================================================
+    const ShareCard = {
+        W: 1080, H: 1350,
+        FONT: '"Special Elite","Courier Prime","Noto Sans TC","PingFang TC","Microsoft JhengHei","Heiti TC",monospace',
+        _url: null, _blob: null, _name: '',
+
+        // 依寬度逐字換行，超過最大行數時以「…」結尾
+        wrap: function(ctx, text, maxW, maxLines) {
+            const lines = []; let cur = '';
+            for (const ch of Array.from(text)) {
+                if (ctx.measureText(cur + ch).width > maxW && cur) { lines.push(cur); cur = ch; } else { cur += ch; }
+            }
+            if (cur) lines.push(cur);
+            if (lines.length > maxLines) {
+                const kept = lines.slice(0, maxLines);
+                let last = kept[maxLines - 1];
+                while (last.length > 0 && ctx.measureText(last + '…').width > maxW) last = last.slice(0, -1);
+                kept[maxLines - 1] = last + '…';
+                return kept;
+            }
+            return lines;
+        },
+        rr: function(ctx, x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.closePath();
+        },
+        // 結局人物簡介：取第一段的第一、二句，約 70 字內
+        summaryOf: function(e) {
+            const raw = (e.paras && e.paras[0]) ? e.paras[0] : (e.desc || '');
+            const parts = raw.split('。').filter(Boolean);
+            let s = parts[0] + '。';
+            if (parts[1] && (s + parts[1]).length < 60) s += parts[1] + '。';
+            return s;
+        },
+        loadAvatar: function(p) {
+            return new Promise(resolve => {
+                try {
+                    const svg = AvatarFactory.render(p.avatar, 360);
+                    const img = new Image();
+                    img.onload = () => resolve(img);
+                    img.onerror = () => resolve(null);
+                    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+                } catch (e) { resolve(null); }
+            });
+        },
+
+        draw: async function(data) {
+            const p = data.player, e = data.ending;
+            const W = this.W, H = this.H, F = this.FONT;
+            const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+            const ctx = cv.getContext('2d');
+            try { await Promise.all([document.fonts.load('900 40px "Noto Sans TC"'), document.fonts.load('400 28px "Noto Sans TC"'), document.fonts.load('400 28px "Special Elite"')]); } catch (x) {}
+            const img = await this.loadAvatar(p);
+
+            const isJ = p.role === 'J', dead = p.isDead;
+            const ink = '#ddd7c4', brown = '#9a9480', red = '#e0584b', blue = '#86aed1', green = '#82c48d', amber = '#e0b84f', muted = '#a39d89';
+
+            // 背景
+            let g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#171512'); g.addColorStop(1, '#070706');
+            ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+            // 深色檔案紙
+            g = ctx.createRadialGradient(W / 2, H / 2, 100, W / 2, H / 2, 900);
+            g.addColorStop(0, '#2a2823'); g.addColorStop(1, '#1a1815');
+            this.rr(ctx, 40, 40, W - 80, H - 80, 6); ctx.fillStyle = g; ctx.fill();
+            ctx.lineWidth = 4; ctx.strokeStyle = '#5b5646'; ctx.stroke();
+            this.rr(ctx, 58, 58, W - 116, H - 116, 3); ctx.lineWidth = 1.5; ctx.stroke();
+            // 掃描線
+            ctx.save(); ctx.globalAlpha = 0.12; ctx.fillStyle = '#000';
+            for (let y = 42; y < H - 42; y += 4) ctx.fillRect(42, y, W - 84, 1);
+            ctx.restore();
+
+            ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'center';
+            // 標題
+            ctx.fillStyle = '#ece6d2'; ctx.font = `900 58px ${F}`;
+            ctx.fillText('1940：誰能活下去？', W / 2, 150);
+            ctx.font = `400 26px ${F}`; ctx.fillStyle = muted;
+            ctx.fillText('檔案編號 1940-DE ｜ 個人結算報告', W / 2, 188);
+            // 左上角機密印章
+            ctx.save(); ctx.translate(168, 98); ctx.rotate(-0.07);
+            ctx.strokeStyle = red; ctx.fillStyle = red; ctx.globalAlpha = 0.85; ctx.lineWidth = 4;
+            this.rr(ctx, -88, -24, 176, 48, 5); ctx.stroke();
+            ctx.font = `900 22px ${F}`; ctx.fillText('機密 TOP SECRET', 0, 8);
+            ctx.restore();
+            ctx.strokeStyle = brown; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(100, 205); ctx.lineTo(W - 100, 205); ctx.stroke();
+
+            // 頭像
+            const ax = 110, ay = 250, aw = 350, ah = 416;
+            ctx.fillStyle = '#cfc9b6'; ctx.fillRect(ax - 10, ay - 10, aw + 20, ah + 20);
+            if (img) {
+                ctx.save();
+                try { ctx.filter = dead ? 'grayscale(1) brightness(0.85)' : 'grayscale(0.35) sepia(0.25) contrast(1.06) brightness(0.98)'; } catch (x) {}
+                ctx.drawImage(img, ax, ay, aw, ah);
+                ctx.restore();
+            } else {
+                ctx.fillStyle = '#3a372d'; ctx.fillRect(ax, ay, aw, ah);
+            }
+
+            // 資料欄
+            const tx = 500;
+            ctx.textAlign = 'left';
+            ctx.fillStyle = ink; ctx.font = `900 76px ${F}`;
+            ctx.fillText(p.rawName || p.name, tx, 320);
+            ctx.font = `900 40px ${F}`; ctx.fillStyle = isJ ? red : blue;
+            ctx.fillText('身分：' + (isJ ? '猶太人' : '雅利安人'), tx, 392);
+            ctx.font = `400 36px ${F}`; ctx.fillStyle = muted;
+            ctx.fillText('職業：「' + p.avatar.occ.label + '」', tx, 450);
+            ctx.fillText('生存 ' + p.survival + '　道德 ' + p.moral, tx, 508);
+            ctx.font = `900 36px ${F}`; ctx.fillStyle = dead ? red : green;
+            ctx.fillText(dead ? ('第 ' + p.deathRound + ' 回合退出歷史') : '撐過了這段歷史', tx, 566);
+
+            // 印章
+            ctx.save();
+            ctx.translate(W - 190, 640); ctx.rotate(-0.2);
+            ctx.strokeStyle = dead ? red : green; ctx.fillStyle = dead ? red : green;
+            ctx.globalAlpha = 0.82; ctx.lineWidth = 7;
+            this.rr(ctx, -110, -48, 220, 96, 10); ctx.stroke();
+            ctx.textAlign = 'center'; ctx.font = `900 58px ${F}`;
+            ctx.fillText(dead ? '已退出' : '倖存', 0, 20);
+            ctx.restore();
+
+            // 稱號
+            const titles = TitleSystem.compute(GameState.players)[GameState.players.indexOf(p)] || [];
+            ctx.textAlign = 'left'; ctx.fillStyle = brown; ctx.font = `900 28px ${F}`;
+            ctx.fillText('✦ 本局稱號', 100, 725);
+            let cx = 100;
+            const chipCol = { 't-bad': red, 't-good': green, 't-neutral': amber, 't-dead': '#999' };
+            if (!titles.length) {
+                ctx.font = `400 28px ${F}`; ctx.fillStyle = muted; ctx.fillText('（沒有特別的稱號——低調走完這一段）', cx, 775);
+            }
+            // 稱號較長時自動縮小字級，避免兩枚稱號超出卡片寬度
+            let chipPx = 34;
+            const chipTotal = px => { ctx.font = `900 ${px}px ${F}`; return titles.reduce((a, t) => a + ctx.measureText(t.icon + ' ' + t.label).width + 40 + 18, 0); };
+            while (chipPx > 20 && chipTotal(chipPx) > W - 200) chipPx--;
+            titles.forEach(t => {
+                ctx.font = `900 ${chipPx}px ${F}`;
+                const label = t.icon + ' ' + t.label, w = ctx.measureText(label).width + 40;
+                this.rr(ctx, cx, 745, w, 58, 8); ctx.fillStyle = '#1b1a17'; ctx.fill();
+                ctx.lineWidth = 3; ctx.strokeStyle = chipCol[t.cls] || brown; ctx.stroke();
+                ctx.fillStyle = chipCol[t.cls] || ink; ctx.fillText(label, cx + 20, 786);
+                cx += w + 18;
+            });
+
+            // 成就徽章
+            ctx.fillStyle = brown; ctx.font = `900 28px ${F}`;
+            ctx.fillText('🎖️ 成就徽章', 100, 860);
+            const badges = data.badges || [];
+            if (!badges.length) {
+                ctx.font = `400 28px ${F}`; ctx.fillStyle = muted; ctx.fillText('（本局未解鎖徽章——下次挑戰看看）', 100, 915);
+            } else {
+                const show = badges.slice(0, 4);
+                show.forEach((b, i) => {
+                    const by = 880 + i * 52;
+                    ctx.fillStyle = 'rgba(255,255,255,0.06)'; this.rr(ctx, 100, by, W - 200, 44, 6); ctx.fill();
+                    ctx.strokeStyle = '#5b5646'; ctx.lineWidth = 2; ctx.stroke();
+                    ctx.font = `400 30px ${F}`; ctx.fillStyle = ink; ctx.fillText(b.icon, 116, by + 32);
+                    ctx.font = `900 30px ${F}`; ctx.fillStyle = amber; ctx.fillText(b.name, 168, by + 32);
+                });
+                if (badges.length > 4) {
+                    ctx.font = `400 24px ${F}`; ctx.fillStyle = muted; ctx.textAlign = 'right';
+                    ctx.fillText('…另有 ' + (badges.length - 4) + ' 枚', W - 110, 862); ctx.textAlign = 'left';
+                }
+            }
+
+            // 結局人物
+            const by0 = 1084, bh = 174;
+            ctx.fillStyle = '#22201c'; this.rr(ctx, 100, by0, W - 200, bh, 6); ctx.fill();
+            ctx.lineWidth = 2.5; ctx.strokeStyle = '#5b5646'; ctx.stroke();
+            ctx.fillStyle = brown; ctx.font = `900 24px ${F}`; ctx.fillText('我在歷史上對應的人物', 124, by0 + 36);
+            ctx.fillStyle = ink; ctx.font = `900 38px ${F}`;
+            const nm = (e.title || '').replace(/^[GJ]\d+\s+/, '');
+            ctx.fillText(this.wrap(ctx, nm, W - 250, 1)[0] || '', 124, by0 + 84);
+            ctx.font = `400 25px ${F}`; ctx.fillStyle = muted;
+            this.wrap(ctx, this.summaryOf(e), W - 250, 2).forEach((ln, i) => ctx.fillText(ln, 124, by0 + 128 + i * 32));
+
+            // 頁尾
+            ctx.textAlign = 'center'; ctx.fillStyle = muted; ctx.font = `400 24px ${F}`;
+            ctx.fillText('歷史不是遊戲——記住，才能不重演', W / 2, 1278);
+            return cv;
+        },
+
+        open: async function(idx) {
+            const data = Page4_Ending.cardData && Page4_Ending.cardData[idx];
+            if (!data) return;
+            const modal = document.getElementById('share-modal');
+            const imgEl = document.getElementById('share-img');
+            const msg = document.getElementById('share-msg');
+            modal.classList.add('active');
+            imgEl.removeAttribute('src'); imgEl.style.display = 'none';
+            msg.textContent = '檔案卡製作中…';
+            ['share-dl-btn', 'share-send-btn'].forEach(id => document.getElementById(id).disabled = true);
+            try {
+                const cv = await this.draw(data);
+                const blob = await new Promise(res => cv.toBlob(res, 'image/png'));
+                if (!blob) throw new Error('toBlob failed');
+                if (this._url) URL.revokeObjectURL(this._url);
+                this._blob = blob; this._url = URL.createObjectURL(blob);
+                this._name = '1940-歷史檔案卡-' + (data.player.rawName || 'player') + '.png';
+                imgEl.src = this._url; imgEl.style.display = 'block';
+                msg.textContent = '手機：長按圖片即可儲存；也可按下方按鈕下載或分享到 LINE／IG。';
+                document.getElementById('share-dl-btn').disabled = false;
+                document.getElementById('share-send-btn').disabled = false;
+            } catch (e) {
+                console.log('檔案卡產生失敗', e);
+                msg.textContent = '檔案卡產生失敗，請改用截圖，或換 Chrome／Safari 再試一次。';
+            }
+        },
+        download: function() {
+            if (!this._url) return;
+            const a = document.createElement('a');
+            a.href = this._url; a.download = this._name;
+            document.body.appendChild(a); a.click(); a.remove();
+        },
+        share: async function() {
+            if (!this._blob) return;
+            try {
+                const file = new File([this._blob], this._name, { type: 'image/png' });
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({ files: [file], title: '1940：誰能活下去？' });
+                    return;
+                }
+            } catch (e) { if (e && e.name === 'AbortError') return; }
+            this.download();
+            document.getElementById('share-msg').textContent = '這個瀏覽器不支援直接分享，已改為下載圖片，再從相簿傳到 LINE／IG。';
+        },
+        close: function() {
+            document.getElementById('share-modal').classList.remove('active');
+        }
+    };
+
     const Page4_Ending = {
+        cardData: [],
         init: function(allDead = false) {
             GameUtils.switchStep(4);
             const bgMusic = document.getElementById('bg-music');
@@ -2876,6 +3657,10 @@ const SceneArt = (function () {
                     this.showEndingCards();
                 };
                 gameOverSound.onended = triggerEnding;
+                // 死亡音效若已播完、被靜音或無法播放，就不會再有 ended 事件，直接進結局
+                if (AudioController.muted || gameOverSound.ended || gameOverSound.paused) {
+                    setTimeout(triggerEnding, 1200);
+                }
 
                 setTimeout(() => {
                     if (!this.isEndedState) {
@@ -2905,36 +3690,56 @@ const SceneArt = (function () {
         },
 
         // ==========================================================
-        // 結局門檻（經數十萬場模擬校準，可用 simulate_balance.js 重跑驗證）
-        // 卡片設計上「生存」與「道德」互為取捨，兩者高度負相關，
-        // 因此「道德高低」不能用單一固定值，而是在各生存層級內各自切分：
-        //   dead  ：生存歸零。道德 ≥ deadMoral → 義人殉難，否則 → 共謀者的下場
-        //   mid   ：生存 ≤ midMax 的倖存者。道德 ≥ midMoral 為「高」
-        //   high  ：生存 >  midMax 的倖存者。道德 ≥ highMoral 為「高」
+        // 結局卡分配（1101 版・6 人局模擬平衡後的規則，與附錄二不同處見下）
+        //   第一步【生存指數】：0（退出歷史）／中層／高  三層
+        //        雅利安人：中層 1~3、高 ≥4　　猶太人：中層 1~4、高 ≥5
+        //   第二步【道德指數】：≥5（不低於起始值）→ 道德高；≤4 → 道德低
+        //
+        //   雅利安人：  生存 0   ＆道德高 → G51\52
+        //               生存 0   ＆道德低 → G57\58\59
+        //               生存中層 ＆道德高 → G53\54\55\56
+        //               生存高   ＆道德高 → G60\61\62\63
+        //               存活(中層或高) ＆道德低 → G57\58\59\64\65\66\67\68\69（合併池）
+        //   猶太人：    生存 0   ＆道德高 → J51\52\53
+        //               生存 0   ＆道德低 → J57\58\59
+        //               生存中層 ＆道德高 → J54\55\56
+        //               生存高   ＆道德高 → J60\61\62\63\64
+        //               存活(中層或高) ＆道德低 → J57\58\59\65\66\67\68（合併池）
+        //
+        // 調整原因：存活玩家的生存與道德高度反向（相關約 -0.8），附錄二「生存中層＆道德低」
+        // 一格幾乎沒人抵達，使 57~59 號卡極少出現；合併後每張結局卡每場出現機率約 14~20%。
+        // 要再微調，只需改下面的 ENDING_RULES 數字與 ENDING_POOLS 卡號。
         // ==========================================================
         ENDING_RULES: {
-            A: { midMax: 7, deadMoral: 16, midMoral: 12, highMoral: 4 },
-            J: { midMax: 8, deadMoral: 17, midMoral: 13, highMoral: 6 }
+            A: { lifeHigh: 4, highMoral: 5 },   // 雅利安人
+            J: { lifeHigh: 5, highMoral: 5 }    // 猶太人
         },
 
         ENDING_POOLS: {
             A: {
-                deadHi: ['G51', 'G52', 'G57'], deadLo: ['G53', 'G54'],
-                midHi:  ['G56', 'G64'],        midLo:  ['G55', 'G58', 'G59', 'G60', 'G61'],
-                highHi: ['G62', 'G63', 'G65'], highLo: ['G66', 'G67', 'G68']
+                deadHi: ['G51', 'G52'],
+                deadLo: ['G57', 'G58', 'G59'],
+                midHi:  ['G53', 'G54', 'G55', 'G56'],
+                midLo:  ['G57', 'G58', 'G59', 'G64', 'G65', 'G66', 'G67', 'G68', 'G69'],
+                highHi: ['G60', 'G61', 'G62', 'G63'],
+                highLo: ['G57', 'G58', 'G59', 'G64', 'G65', 'G66', 'G67', 'G68', 'G69']
             },
             J: {
-                deadHi: ['J51'],               deadLo: ['J52'],
-                midHi:  ['J53', 'J59'],         midLo:  ['J54', 'J55'],
-                highHi: ['J56', 'J57', 'J58', 'J59'], highLo: ['J60', 'J61', 'J62']
+                deadHi: ['J51', 'J52', 'J53'],
+                deadLo: ['J57', 'J58', 'J59'],
+                midHi:  ['J54', 'J55', 'J56'],
+                midLo:  ['J57', 'J58', 'J59', 'J65', 'J66', 'J67', 'J68'],
+                highHi: ['J60', 'J61', 'J62', 'J63', 'J64'],
+                highLo: ['J57', 'J58', 'J59', 'J65', 'J66', 'J67', 'J68']
             }
         },
 
         getEndingKey: function(p) {
-            const r = this.ENDING_RULES[p.role];
-            if (p.survival <= 0) return p.moral >= r.deadMoral ? 'deadHi' : 'deadLo';
-            if (p.survival <= r.midMax) return p.moral >= r.midMoral ? 'midHi' : 'midLo';
-            return p.moral >= r.highMoral ? 'highHi' : 'highLo';
+            const R = this.ENDING_RULES[p.role];
+            const hi = p.moral >= R.highMoral;
+            const life = p.survival <= 0 ? 'dead'
+                       : (p.survival >= R.lifeHigh ? 'high' : 'mid');
+            return life + (hi ? 'Hi' : 'Lo');
         },
 
         getEndingPool: function(p) {
@@ -2943,7 +3748,8 @@ const SceneArt = (function () {
 
         renderFinalResults: function(container) {
             const usedEndings = new Set();
-            GameState.players.forEach(p => {
+            this.cardData = [];
+            GameState.players.forEach((p, idx) => {
                 const possibleEndingIds = this.getEndingPool(p);
 
                 let availableEndings = possibleEndingIds.filter(id => !usedEndings.has(id));
@@ -3002,6 +3808,8 @@ const SceneArt = (function () {
                     </div>
                 ` : '';
 
+                this.cardData[idx] = { player: p, ending: chosenEnding, badges: badges };
+
                 container.innerHTML += `
                     <div class="ending-card">
                         <div class="ending-avatar ${p.survival === 0 ? 'dead' : ''}">${AvatarFactory.render(p.avatar, 110)}</div>
@@ -3014,6 +3822,7 @@ const SceneArt = (function () {
                         <h4>${GameUtils.highlightKeywords(chosenEnding.title)}</h4>
                         ${endingBodyHtml}
                         ${historyHtml}
+                        <button class="btn share-card-btn" onclick="ShareCard.open(${idx})">📸 產生我的「歷史檔案卡」（可存圖分享）</button>
                     </div>
                 `;
             });
