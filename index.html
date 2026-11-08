@@ -966,6 +966,25 @@
             .card-content.flip-anim, .card-content.flip-anim { animation: none !important; }
             .options-group.fade-in { animation: none !important; opacity: 1; }
         }
+
+        /* --- 稱號等級與「升級！」提示 --- */
+        .lv-tag { display: inline-block; font-size: 0.75em; font-weight: 900; padding: 0 6px; margin-left: 2px;
+            border-radius: 3px; background: var(--amber); color: #140f0d; letter-spacing: 1px; vertical-align: 1px; }
+        #levelup-toast {
+            position: fixed; left: 50%; top: 22%; z-index: 9400; transform: translate(-50%, -20px) scale(0.85);
+            opacity: 0; pointer-events: none; transition: opacity 0.25s, transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            width: min(88vw, 460px); text-align: center; padding: 18px 20px; box-sizing: border-box;
+            background: #2a2410; border: 3px solid var(--amber); border-radius: 6px;
+            box-shadow: 0 0 0 4px #14130f, 0 0 40px rgba(224,184,79,0.55), 0 12px 40px rgba(0,0,0,0.8);
+        }
+        #levelup-toast.show { opacity: 1; transform: translate(-50%, 0) scale(1); pointer-events: auto; }
+        #levelup-toast .lu-head { font-size: clamp(2rem, 8vw, 2.8rem); font-weight: 900; color: var(--amber);
+            letter-spacing: 6px; text-shadow: 0 0 16px rgba(224,184,79,0.7); animation: luPulse 0.6s ease-in-out 2; }
+        #levelup-toast .lu-line { margin-top: 8px; font-size: clamp(1rem, 4vw, 1.25rem); color: #eadfba; line-height: 1.6; }
+        #levelup-toast .lu-name { font-weight: 900; color: #fff; }
+        #levelup-toast .lu-title { font-weight: 900; color: #ffd76a; font-size: 1.15em; }
+        @keyframes luPulse { 50% { transform: scale(1.12); } }
+        @media (prefers-reduced-motion: reduce) { #levelup-toast, #levelup-toast .lu-head { transition: none; animation: none; } }
     </style>
 </head>
 <body>
@@ -1573,6 +1592,14 @@ window.addEventListener('error', function (e) {
             }
         },
         // 🏷 稱號跳出：清脆小鈴「叮」
+        // ⬆ 稱號升級：快速上行琶音＋閃亮收尾
+        playLevelUpSound: function() {
+            [523.25, 659.25, 783.99, 1046.5].forEach((f, i) =>
+                this._tone({ type: 'square', f: f, dur: 0.12, vol: 0.06, attack: 0.004, delay: i * 0.07 }));
+            this._tone({ type: 'sine', f: 1568, dur: 0.6, vol: 0.1, attack: 0.004, delay: 0.3 });
+            this._tone({ type: 'sine', f: 2093, dur: 0.5, vol: 0.06, attack: 0.004, delay: 0.32 });
+            this._noise({ f: 6000, ftype: 'highpass', q: 0.7, dur: 0.25, vol: 0.06, delay: 0.3 });
+        },
         playTitleSound: function() {
             this._tone({ type: 'sine', f: 1568, dur: 0.7, vol: 0.09, attack: 0.004 });
             this._tone({ type: 'sine', f: 2349, dur: 0.5, vol: 0.05, attack: 0.004, delay: 0.01 });
@@ -2782,35 +2809,45 @@ const SceneArt = (function () {
             dead:    ['{n} 已退出這段歷史，請以旁觀者身分替下一位同學出主意。']
         },
 
-        // ===== 學生版（中二）稱號詞庫：每次出現時從詞庫隨機抽一個 =====
-        LABEL_POOLS: {
-            dying:    ['塔位預購中', '閻羅王 VIP', '奈米血量', '風中殘燭', '孟婆湯已上桌', '隨時準備拔管'],
-            cold:     ['專業獻祭大師', '人間閻羅王', '良心被狗啃了', '路過的無情機器', 'VVIP 級看戲仔'],
-            silent:   ['專業獻祭大師', '人間閻羅王', '良心被狗啃了', '路過的無情機器', 'VVIP 級看戲仔'],
-            deserter: ['專業獻祭大師', '人間閻羅王', '良心被狗啃了', '路過的無情機器', 'VVIP 級看戲仔'],
-            turtle:   ['躺平宗師', '生存點滿的辣個男人', '逃跑可恥但有用', '戰術性撤退大師', '物理級絕對迴避'],
-            saint:    ['站在道德聖母峰的男人', '終極好人卡 VVIP', '純度100%的王道男主', '大愛電視台榮譽台長', '行走的諾貝爾和平獎'],
-            rebel:    ['這個男人太狠了', '專治各種極權', '反派眼中的毒瘤', '全場唯一真神', '地獄難度玩家'],
-            hero:     ['這個男人太狠了', '專治各種極權', '反派眼中的毒瘤', '全場唯一真神', '地獄難度玩家'],
-            cog:      ['極權第一舔狗', '黨的乖寶寶', '沒有靈魂的 NPC', '求生慾拉滿的男人', '膝蓋特別軟'],
-            lucky:    ['祖墳冒青煙', '自帶主角光環', '命運的漏網之魚', '上輩子拯救世界']
+        // ===== 學生版（中二）稱號詞庫：分成 Lv1／Lv2／Lv3 三個等級，同一等級內隨機抽一個 =====
+        LEVEL_POOLS: {
+            dying:    [['風中殘燭', '奈米血量'], ['孟婆湯已上桌', '隨時準備拔管'], ['塔位預購中', '閻羅王 VIP']],
+            cold:     [['路過的無情機器', 'VVIP 級看戲仔'], ['良心被狗啃了'], ['專業獻祭大師', '人間閻羅王']],
+            silent:   [['路過的無情機器', 'VVIP 級看戲仔'], ['良心被狗啃了'], ['專業獻祭大師', '人間閻羅王']],
+            deserter: [['路過的無情機器', 'VVIP 級看戲仔'], ['良心被狗啃了'], ['專業獻祭大師', '人間閻羅王']],
+            turtle:   [['逃跑可恥但有用', '戰術性撤退大師'], ['躺平宗師', '物理級絕對迴避'], ['生存點滿的辣個男人']],
+            saint:    [['終極好人卡 VVIP', '大愛電視台榮譽台長'], ['純度100%的王道男主', '站在道德聖母峰的男人'], ['行走的諾貝爾和平獎']],
+            rebel:    [['反派眼中的毒瘤', '專治各種極權'], ['這個男人太狠了', '地獄難度玩家'], ['全場唯一真神']],
+            hero:     [['反派眼中的毒瘤', '專治各種極權'], ['這個男人太狠了', '地獄難度玩家'], ['全場唯一真神']],
+            cog:      [['黨的乖寶寶', '膝蓋特別軟'], ['求生慾拉滿的男人', '沒有靈魂的 NPC'], ['極權第一舔狗']],
+            lucky:    [['命運的漏網之魚', '自帶主角光環'], ['祖墳冒青煙'], ['上輩子拯救世界']]
         },
 
-        // 同一位玩家同一個稱號只抽一次（避免畫面重繪時一直跳動）；稱號消失後再出現會重新抽
-        // 全班玩家的稱號盡量不重複（同義的稱號會換成不同的中二說法）
-        pickLabel: function(p, key) {
+        // 本次畫面更新時發生的升級（由 renderPanel 取出並顯示「升級！」提示）
+        _upgrades: [],
+
+        // 同一位玩家同一個稱號在同一等級只抽一次（避免畫面重繪時一直跳動）；等級改變時才重新抽
+        // 全班玩家的稱號盡量不重複
+        pickLabel: function(p, key, lv) {
             p._tl = p._tl || {};
-            if (p._tl[key]) return p._tl[key];
-            const pool = this.LABEL_POOLS[key];
-            if (!pool) return null;
-            // 先避開全體玩家已用過的稱號；詞庫不夠時，才退而只避開自己身上的
-            const mine = Object.keys(p._tl).map(k => p._tl[k]);
+            const old = p._tl[key];
+            if (old && old.lv === lv) return old.label;
+            const tiers = this.LEVEL_POOLS[key];
+            if (!tiers) return null;
+            const pool = tiers[Math.min(lv, tiers.length) - 1];
+            const mine = Object.keys(p._tl).filter(k => k !== key).map(k => p._tl[k].label);
             const everyone = [];
-            GameState.players.forEach(q => { if (q._tl) Object.keys(q._tl).forEach(k => everyone.push(q._tl[k])); });
+            GameState.players.forEach(q => { if (q._tl) Object.keys(q._tl).forEach(k => { if (!(q === p && k === key)) everyone.push(q._tl[k].label); }); });
             let cand = pool.filter(x => everyone.indexOf(x) === -1);
             if (!cand.length) cand = pool.filter(x => mine.indexOf(x) === -1);
             if (!cand.length) cand = pool;
-            return (p._tl[key] = cand[Math.floor(Math.random() * cand.length)]);
+            const label = cand[Math.floor(Math.random() * cand.length)];
+            // 只有「第一次達到」更高等級才算升級（數值上下起伏時不重複提示）
+            p._tlMax = p._tlMax || {};
+            if (old && lv > old.lv && lv > (p._tlMax[key] || 0)) this._upgrades.push({ player: p, key: key, lv: lv, label: label });
+            p._tlMax[key] = Math.max(p._tlMax[key] || 0, lv);
+            p._tl[key] = { lv: lv, label: label };
+            return label;
         },
 
         // 依優先順序判定每位玩家的稱號（相對排名 + 行為紀錄）
@@ -2826,30 +2863,31 @@ const SceneArt = (function () {
 
             players.forEach((p, i) => {
                 const list = result[i];
-                const push = (key, icon, label, cls) => list.push({ key: key, icon: icon, label: this.pickLabel(p, key) || label, cls: cls });
+                const push = (key, icon, label, cls, lv) => { lv = lv || 1; list.push({ key: key, icon: icon, lv: lv, label: this.pickLabel(p, key, lv) || label, cls: cls }); };
+                const lvCount = c => c >= 4 ? 3 : (c >= 3 ? 2 : 1);
 
-                if (p.isDead) { push('dead', '💀', '歷史見證者', 't-dead'); return; }
+                if (p.isDead) { list.push({ key: 'dead', icon: '💀', lv: 0, label: '歷史見證者', cls: 't-dead' }); return; }
 
                 // 生存最低 → 瀕死邊緣
                 if ((multi && p.survival === minS && minS < maxS && p.survival <= 5) || p.survival <= 2)
-                    push('dying', '🔥', '瀕死邊緣', 't-bad');
+                    push('dying', '🔥', '瀕死邊緣', 't-bad', p.survival <= 1 ? 3 : (p.survival === 2 ? 2 : 1));
                 // 道德極低 → 冷血無情
                 if ((multi && p.moral === minM && minM < maxM && p.moral <= START.moral - 2) || p.moral <= START.moral - 5)
-                    push('cold', '😈', '冷血無情', 't-bad');
+                    push('cold', '😈', '冷血無情', 't-bad', p.moral <= 0 ? 3 : (p.moral <= 2 ? 2 : 1));
                 // 生存最高 → 苟且偷生
                 if ((multi && p.survival === maxS && minS < maxS && p.survival >= START.survival) ||
                     (!multi && p.survival >= START.survival + 2))
-                    push('turtle', '🐢', '苟且偷生', 't-neutral');
+                    push('turtle', '🐢', '苟且偷生', 't-neutral', p.survival >= 9 ? 3 : (p.survival >= 7 ? 2 : 1));
                 // 道德最高 → 道德標竿
                 if ((multi && p.moral === maxM && minM < maxM && p.moral >= START.moral + 2) || p.moral >= START.moral + 6)
-                    push('saint', '😇', '道德標竿', 't-good');
+                    push('saint', '😇', '道德標竿', 't-good', p.moral >= 11 ? 3 : (p.moral >= 9 ? 2 : 1));
                 // 行為模式稱號
-                if (cnt(p, e => !e.isMoralChoice && e.category === 'indifferent') >= 2) push('silent', '🙈', '事不關己', 't-bad');
-                if (cnt(p, e => e.cardMoralCat === 'rescue' && !e.isMoralChoice) >= 2) push('deserter', '🧊', '見死不救', 't-bad');
-                if (cnt(p, e => !e.isMoralChoice && e.category === 'comply') >= 2) push('cog', '⚙️', '忠誠齒輪', 't-neutral');
-                if (cnt(p, e => e.isMoralChoice && e.category === 'resist') >= 2) push('rebel', '🔥', '星火反抗軍', 't-good');
-                if (cnt(p, e => e.isMoralChoice && e.category === 'rescue') >= 2) push('hero', '🦸', '義無反顧', 't-good');
-                if ((p.chanceCount || 0) >= 1) push('lucky', '🍀', '幸運兒', 't-good');
+                { const c = cnt(p, e => !e.isMoralChoice && e.category === 'indifferent'); if (c >= 2) push('silent', '🙈', '事不關己', 't-bad', lvCount(c)); }
+                { const c = cnt(p, e => e.cardMoralCat === 'rescue' && !e.isMoralChoice); if (c >= 2) push('deserter', '🧊', '見死不救', 't-bad', lvCount(c)); }
+                { const c = cnt(p, e => !e.isMoralChoice && e.category === 'comply'); if (c >= 2) push('cog', '⚙️', '忠誠齒輪', 't-neutral', lvCount(c)); }
+                { const c = cnt(p, e => e.isMoralChoice && e.category === 'resist'); if (c >= 2) push('rebel', '🔥', '星火反抗軍', 't-good', lvCount(c)); }
+                { const c = cnt(p, e => e.isMoralChoice && e.category === 'rescue'); if (c >= 2) push('hero', '🦸', '義無反顧', 't-good', lvCount(c)); }
+                if ((p.chanceCount || 0) >= 1) push('lucky', '🍀', '幸運兒', 't-good', p.chanceCount >= 3 ? 3 : (p.chanceCount >= 2 ? 2 : 1));
             });
 
             // 只保留目前仍有效的稱號抽籤結果
@@ -2859,6 +2897,22 @@ const SceneArt = (function () {
                 p._tl = keep;
             });
             return result.map(list => list.slice(0, this.MAX_PER_PLAYER));
+        },
+
+        // 「升級！」提示：畫面中央跳出，約 3 秒後自動消失，點一下也可關閉
+        showLevelUp: function(ups) {
+            let box = document.getElementById('levelup-toast');
+            if (!box) {
+                box = document.createElement('div'); box.id = 'levelup-toast';
+                box.setAttribute('role', 'status'); box.setAttribute('aria-live', 'polite');
+                box.onclick = () => box.classList.remove('show');
+                document.body.appendChild(box);
+            }
+            box.innerHTML = '<div class="lu-head">⬆ 升級！</div>' + ups.map(u =>
+                `<div class="lu-line"><span class="lu-name">${u.player.name}</span> 的稱號升級為<br><span class="lu-title">【${u.label}】</span> <span class="lv-tag">Lv.${u.lv}</span></div>`).join('');
+            box.classList.remove('show'); void box.offsetWidth; box.classList.add('show');
+            clearTimeout(this._luTimer);
+            this._luTimer = setTimeout(() => box.classList.remove('show'), 3200);
         },
 
         isActive: function() { return GameState.currentRound >= this.START_ROUND; },
@@ -2879,7 +2933,7 @@ const SceneArt = (function () {
 
             const rows = players.map((p, i) => {
                 if (!titles[i].length) return '';
-                const chips = titles[i].map(t => `<span class="title-chip ${t.cls}">${t.icon} ${t.label}</span>`).join('');
+                const chips = titles[i].map(t => `<span class="title-chip ${t.cls}">${t.icon} ${t.label}${t.lv ? ` <span class="lv-tag">Lv.${t.lv}</span>` : ''}</span>`).join('');
                 return `<div class="title-row ${(i === cur && !p.isDead) ? 'current' : ''} ${p.isDead ? 'dead' : ''}"><span class="tr-name">${p.name}</span>${chips}</div>`;
             }).join('');
 
@@ -2901,7 +2955,9 @@ const SceneArt = (function () {
             const sigNow = players.map((p, i) => titles[i].map(t => i + ':' + t.key));
             const flat = [].concat(...sigNow);
             const prev = this._prevSig || [];
-            if (flat.some(k => !prev.includes(k))) AudioController.playTitleSound();
+            const ups = this._upgrades.splice(0).filter(u => { const i = players.indexOf(u.player); return i >= 0 && titles[i].some(t => t.key === u.key); });
+            if (ups.length) { this.showLevelUp(ups); AudioController.playLevelUpSound(); }
+            else if (flat.some(k => !prev.includes(k))) AudioController.playTitleSound();
             this._prevSig = flat;
 
             box.className = 'player-titles show';
