@@ -3425,10 +3425,10 @@ const SceneArt = (function () {
             },
             {
                 icon: '⚖️', name: '掙扎的靈魂',
-                desc: '生存與道德都沒有走向極端，勉強撐過這段歷史——這是當年多數人的樣子。',
+                desc: '勉強撐過這段歷史，道德也沒有走向極端——這是當年多數人的樣子。',
                 test: function(p, log, all) {
-                    // 存活，但生存指數沒有高到 8 以上（附錄二的高生存門檻）
-                    return !p.isDead && p.survival < 8;
+                    // 存活，生存指數 1–4（勉強活下來），且道德指數 4–7（不偏好也不偏壞）
+                    return !p.isDead && p.survival >= 1 && p.survival <= 4 && p.moral >= 4 && p.moral <= 7;
                 }
             },
             {
