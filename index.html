@@ -3576,7 +3576,7 @@ const SceneArt = (function () {
             ctx.strokeStyle = brown; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(100, 205); ctx.lineTo(W - 100, 205); ctx.stroke();
 
             // 頭像
-            const ax = 110, ay = 250, aw = 350, ah = 416;
+            const ax = 110, ay = 250, aw = 311, ah = 370;
             ctx.fillStyle = '#cfc9b6'; ctx.fillRect(ax - 10, ay - 10, aw + 20, ah + 20);
             if (img) {
                 ctx.save();
@@ -3588,7 +3588,7 @@ const SceneArt = (function () {
             }
 
             // 資料欄
-            const tx = 500;
+            const tx = 470;
             ctx.textAlign = 'left';
             ctx.fillStyle = ink; ctx.font = `900 76px ${F}`;
             ctx.fillText(p.rawName || p.name, tx, 320);
@@ -3602,7 +3602,7 @@ const SceneArt = (function () {
 
             // 印章
             ctx.save();
-            ctx.translate(W - 190, 640); ctx.rotate(-0.2);
+            ctx.translate(W - 190, 600); ctx.rotate(-0.2);
             ctx.strokeStyle = dead ? red : green; ctx.fillStyle = dead ? red : green;
             ctx.globalAlpha = 0.82; ctx.lineWidth = 7;
             this.rr(ctx, -110, -48, 220, 96, 10); ctx.stroke();
@@ -3613,11 +3613,11 @@ const SceneArt = (function () {
             // 稱號
             const titles = TitleSystem.compute(GameState.players)[GameState.players.indexOf(p)] || [];
             ctx.textAlign = 'left'; ctx.fillStyle = brown; ctx.font = `900 28px ${F}`;
-            ctx.fillText('✦ 本局稱號', 100, 725);
+            ctx.fillText('✦ 本局稱號', 100, 680);
             let cx = 100;
             const chipCol = { 't-bad': red, 't-good': green, 't-neutral': amber, 't-dead': '#999' };
             if (!titles.length) {
-                ctx.font = `400 28px ${F}`; ctx.fillStyle = muted; ctx.fillText('（沒有特別的稱號——低調走完這一段）', cx, 775);
+                ctx.font = `400 28px ${F}`; ctx.fillStyle = muted; ctx.fillText('（沒有特別的稱號——低調走完這一段）', cx, 730);
             }
             // 稱號較長時自動縮小字級，避免兩枚稱號超出卡片寬度
             let chipPx = 34;
@@ -3626,47 +3626,68 @@ const SceneArt = (function () {
             titles.forEach(t => {
                 ctx.font = `900 ${chipPx}px ${F}`;
                 const label = t.icon + ' ' + t.label, w = ctx.measureText(label).width + 40;
-                this.rr(ctx, cx, 745, w, 58, 8); ctx.fillStyle = '#1b1a17'; ctx.fill();
+                this.rr(ctx, cx, 700, w, 58, 8); ctx.fillStyle = '#1b1a17'; ctx.fill();
                 ctx.lineWidth = 3; ctx.strokeStyle = chipCol[t.cls] || brown; ctx.stroke();
-                ctx.fillStyle = chipCol[t.cls] || ink; ctx.fillText(label, cx + 20, 786);
+                ctx.fillStyle = chipCol[t.cls] || ink; ctx.fillText(label, cx + 20, 741);
                 cx += w + 18;
             });
 
             // 成就徽章
             ctx.fillStyle = brown; ctx.font = `900 28px ${F}`;
-            ctx.fillText('🎖️ 成就徽章', 100, 860);
+            ctx.fillText('🎖️ 成就徽章', 100, 810);
             const badges = data.badges || [];
             if (!badges.length) {
-                ctx.font = `400 28px ${F}`; ctx.fillStyle = muted; ctx.fillText('（本局未解鎖徽章——下次挑戰看看）', 100, 915);
+                ctx.font = `400 28px ${F}`; ctx.fillStyle = muted; ctx.fillText('（本局未解鎖徽章——下次挑戰看看）', 100, 862);
             } else {
-                const show = badges.slice(0, 4);
+                const show = badges.slice(0, 3);
                 show.forEach((b, i) => {
-                    const by = 880 + i * 52;
+                    const by = 828 + i * 50;
                     ctx.fillStyle = 'rgba(255,255,255,0.06)'; this.rr(ctx, 100, by, W - 200, 44, 6); ctx.fill();
                     ctx.strokeStyle = '#5b5646'; ctx.lineWidth = 2; ctx.stroke();
                     ctx.font = `400 30px ${F}`; ctx.fillStyle = ink; ctx.fillText(b.icon, 116, by + 32);
                     ctx.font = `900 30px ${F}`; ctx.fillStyle = amber; ctx.fillText(b.name, 168, by + 32);
                 });
-                if (badges.length > 4) {
+                if (badges.length > 3) {
                     ctx.font = `400 24px ${F}`; ctx.fillStyle = muted; ctx.textAlign = 'right';
-                    ctx.fillText('…另有 ' + (badges.length - 4) + ' 枚', W - 110, 862); ctx.textAlign = 'left';
+                    ctx.fillText('…另有 ' + (badges.length - 3) + ' 枚', W - 110, 812); ctx.textAlign = 'left';
                 }
             }
 
+            // 🎞️ 人生跑馬燈：依回合順序列出卡號（機會卡以金色標示）
+            ctx.textAlign = 'left'; ctx.fillStyle = brown; ctx.font = `900 28px ${F}`;
+            ctx.fillText('🎞️ 人生跑馬燈', 100, 1016);
+            ctx.font = `400 20px ${F}`; ctx.fillStyle = muted;
+            ctx.fillText('依回合順序｜金框為機會卡', 300, 1014);
+            const log = ((p.choiceLog && p.choiceLog.length) ? p.choiceLog : (p.history || []).map(id => ({ cardId: id }))).slice(0, 10);
+            if (!log.length) {
+                ctx.font = `400 26px ${F}`; ctx.fillStyle = muted; ctx.fillText('（尚未經歷任何情境）', 100, 1064);
+            } else {
+                const gap = 8, cw = Math.floor((W - 200 - gap * 9) / 10);
+                ctx.textAlign = 'center';
+                log.forEach((e, i) => {
+                    const x = 100 + i * (cw + gap), y = 1032, isChance = e.tag === 'chance';
+                    this.rr(ctx, x, y, cw, 46, 5); ctx.fillStyle = '#1b1a17'; ctx.fill();
+                    ctx.lineWidth = 2.5; ctx.strokeStyle = isChance ? amber : '#5b5646'; ctx.stroke();
+                    ctx.font = `900 24px ${F}`; ctx.fillStyle = isChance ? amber : ink;
+                    ctx.fillText(e.cardId || '', x + cw / 2, y + 32);
+                });
+                ctx.textAlign = 'left';
+            }
+
             // 結局人物
-            const by0 = 1084, bh = 174;
+            const by0 = 1098, bh = 160;
             ctx.fillStyle = '#22201c'; this.rr(ctx, 100, by0, W - 200, bh, 6); ctx.fill();
             ctx.lineWidth = 2.5; ctx.strokeStyle = '#5b5646'; ctx.stroke();
             ctx.fillStyle = brown; ctx.font = `900 24px ${F}`; ctx.fillText('我在歷史上對應的人物', 124, by0 + 36);
             ctx.fillStyle = ink; ctx.font = `900 38px ${F}`;
             const nm = (e.title || '').replace(/^[GJ]\d+\s+/, '');
-            ctx.fillText(this.wrap(ctx, nm, W - 250, 1)[0] || '', 124, by0 + 84);
+            ctx.fillText(this.wrap(ctx, nm, W - 250, 1)[0] || '', 124, by0 + 80);
             ctx.font = `400 25px ${F}`; ctx.fillStyle = muted;
-            this.wrap(ctx, this.summaryOf(e), W - 250, 2).forEach((ln, i) => ctx.fillText(ln, 124, by0 + 128 + i * 32));
+            this.wrap(ctx, this.summaryOf(e), W - 250, 2).forEach((ln, i) => ctx.fillText(ln, 124, by0 + 118 + i * 30));
 
             // 頁尾
             ctx.textAlign = 'center'; ctx.fillStyle = muted; ctx.font = `400 24px ${F}`;
-            ctx.fillText('歷史不是遊戲——記住，才能不重演', W / 2, 1278);
+            ctx.fillText('歷史不是遊戲——記住，才能不重演', W / 2, 1286);
             return cv;
         },
 
