@@ -436,6 +436,31 @@
             line-height: 1.6;
             margin-bottom: 20px;
         }
+        .hist-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; text-align: left; }
+        .hist-item { background: var(--card-bg); border: 1px solid var(--border-color); border-left: 4px solid var(--accent-blue); padding: 10px 14px; }
+        .hist-item.is-chance { border-left-color: var(--amber, #e0b84f); }
+        .hist-head { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; margin-bottom: 4px; }
+        .hist-round { font-weight: 900; color: var(--accent-blue); font-size: 1.05rem; }
+        .hist-id { color: var(--text-muted); font-size: 0.95rem; letter-spacing: 1px; }
+        .hist-q { font-size: 1.15rem; line-height: 1.6; color: var(--text-main); }
+        .hist-a { font-size: 1.1rem; line-height: 1.6; color: var(--text-muted); margin-top: 2px; }
+        .hist-a strong { color: var(--text-main); }
+        .rescuer-section { margin-top: 22px; padding: 18px 20px; border: 2px solid #5f8f6a; background: rgba(95,143,106,0.10); text-align: left; }
+        .rescuer-title { font-weight: 900; font-size: 1.4rem; color: #82c48d; margin-bottom: 12px; }
+        .rescuer-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+        .rescuer-item { background: var(--card-bg); border: 1px solid var(--border-color); padding: 10px 14px; }
+        .rescuer-head { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .rescuer-name { font-weight: 900; font-size: 1.2rem; color: var(--text-main); }
+        .rescuer-tag { font-size: 0.9rem; padding: 2px 8px; border: 1px solid var(--border-color); color: var(--text-muted); }
+        .rescuer-tag.is-righteous { border-color: #82c48d; color: #82c48d; }
+        .rescuer-note { font-size: 1.05rem; line-height: 1.6; color: var(--text-main); margin-top: 4px; }
+        .rescuer-extra { font-size: 0.95rem; line-height: 1.6; color: var(--text-muted); margin-top: 4px; }
+        .rescuer-empty { font-size: 1.05rem; color: var(--text-muted); }
+        .rescuer-foot { font-size: 0.9rem; line-height: 1.6; color: var(--text-muted); margin-top: 12px; }
+        @media (max-width: 600px) {
+            .hist-q { font-size: 1rem; } .hist-a { font-size: 0.98rem; }
+            .rescuer-section { padding: 12px; } .rescuer-title { font-size: 1.15rem; }
+        }
         .worst-decision {
             margin-top: 15px;
             padding-top: 15px;
@@ -1184,6 +1209,16 @@ window.addEventListener('error', function (e) {
         { id: "J34", text: "J34 機會卡\n英國曾啟動「兒童救援」計畫，允許未滿17歲的猶太小孩到英國避難。\n溫頓在英國尋找願意收養小孩的家庭，並用8列火車，將669名兒童從捷克送往英國。這些「溫頓兒童」及其子孫，約有6000人因溫頓而得以存活。\n你是位15歲的猶太男孩，幸運獲得溫頓的協助得以前往英國。", type: "chance", opt1: "領受這份幸運", s1: 1, m1: 0, fb1: "火車駛離布拉格的那一刻，你回頭望了一眼。你在英國的新家庭裡，重新開始了生活。" },
         { id: "J35", text: "J35 機會卡\n德勒斯基是德國雅利安女孩，但她不願意在軍工廠工作，因此用相當低的價格賣掉了工作證。\n你身為猶太人，買到這一張假造的工作證，上方還印有納粹老鷹徽章。\n你因此擁有基本的收入與工作機會，在戰爭期間的柏林幸運存活下來。", type: "chance", opt1: "領受這份幸運", s1: 1, m1: 0, fb1: "那張印著老鷹徽章的工作證成了你的護身符。你靠它在柏林熬過了一個又一個艱難的日子。" }
     ];
+
+    // 機會卡中的救援者（國際義人身分依 Yad Vashem 認定）
+    const RESCUERS = {
+        J31: { name: '何鳳山', righteous: true, note: '中國駐維也納總領事，發放「生命簽證」，讓猶太人得以逃往中國。' },
+        J32: { name: '布姆一家（荷蘭哈林鐘錶店）', righteous: true, note: '在鐘錶店樓上的密室藏匿猶太人與地下反抗成員。' },
+        J33: { name: '杉原千畝', righteous: true, note: '日本駐立陶宛領事，違反外交部指示，簽發數千張過境簽證。' },
+        J34: { name: '溫頓', righteous: false, note: '以 8 列火車將 669 名捷克猶太兒童送往英國。',
+               extra: '溫頓的父母是猶太人，不符合「非猶太人」的資格，因此沒有獲頒國際義人；但他同樣冒險救了許多人。' },
+        J35: { name: '德勒斯基', righteous: false, note: '德國雅利安女孩，把自己的工作證低價賣出，讓猶太人得以在柏林生存。' }
+    };
 
     const endingsDB = {
         "G51": {"title": "G51 卡爾·馮·奧西茨基 (1889-1938)", "paras": ["德國記者，擔任週刊《世界舞台》總編輯，曾因揭露政府秘密建軍而被處以叛國罪，後獲特赦。希特勒上台後，仍持續批評德國的軍國主義和納粹主義。", "1933年，他再次被捕並送往關押政治異議人士的埃斯特韋根集中營，遭受殘酷的折磨與勞動。", "1936年獲得諾貝爾和平獎。納粹迫於國際壓力釋放他，但他在集中營時感染肺結核，兩年後病逝，享年48歲。"], "url": "https://pse.is/9rrbec"},
@@ -3116,6 +3151,8 @@ const SceneArt = (function () {
             }
             player.choiceLog.push({
                 cardId: card.id, tag: choiceTag, sChange: sChange, mChange: mChange,
+                round: GameState.currentRound, choice: choiceText,
+                summary: String(card.text || '').split('\n').filter(Boolean).pop() || '',
                 isMoralChoice: isMoralChoice,
                 // 選到的那個選項所屬的細分類：
                 //   若選了道德選項 → category 為該卡的 moral 類別（rescue／resist／brave）
@@ -3813,32 +3850,43 @@ const SceneArt = (function () {
                 }
                 const statusText = p.survival === 0 ? `<span style="color: var(--accent-red); font-weight: 900;">[第 ${p.deathRound} 回合退出]</span>` : '<span style="color: var(--accent-green); font-weight: 900;">[存活]</span>';
 
-                let worstDecisionHtml = '';
-                if (p.worstDecision.deduction < 0) {
-                    worstDecisionHtml = `
-                        <div class="worst-decision">
-                            <div class="worst-title">⚠️ 最重大抉擇 (生存指數 ${p.worstDecision.deduction})：</div>
-                            <div class="worst-content">
-                                <strong>【${p.worstDecision.cardId}】</strong><br>
-                                ${GameUtils.highlightKeywords(p.worstDecision.cardText)}<br><br>
-                                <strong style="color: var(--accent-red);">您的選擇：${GameUtils.highlightKeywords(p.worstDecision.choice)}</strong>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    worstDecisionHtml = `
-                        <div class="worst-decision">
-                            <div class="worst-title" style="color: var(--accent-green);">🌟 完美求生：未曾因任何抉擇扣除生存指數！</div>
-                        </div>
-                    `;
-                }
-
+                // 🎞️ 人生跑馬燈：逐回合列出「卡號＋題目摘要＋我的選擇」
+                const logRows = (p.choiceLog || []).map((e, k) => {
+                    const isChance = e.tag === 'chance';
+                    return `
+                        <li class="hist-item ${isChance ? 'is-chance' : ''}">
+                            <div class="hist-head"><span class="hist-round">第 ${e.round || (k + 1)} 回合</span><span class="hist-id">${e.cardId}${isChance ? '・機會卡' : ''}</span></div>
+                            <div class="hist-q">${GameUtils.highlightKeywords(e.summary || '')}</div>
+                            <div class="hist-a">➔ 我的選擇：<strong>${GameUtils.highlightKeywords(e.choice || '')}</strong></div>
+                        </li>`;
+                }).join('');
                 let historyHtml = `
                     <div class="history-section">
                         <div class="history-title">🎞️ 人生跑馬燈</div>
-                        <div class="history-cards">經歷情境：${p.history.length > 0 ? p.history.join(' ➔ ') : '無'}</div>
+                        ${logRows ? `<ol class="hist-list">${logRows}</ol>` : '<div class="history-cards">尚未經歷任何情境。</div>'}
                     </div>
                 `;
+
+                // 🕊️ 遇到的國際義人與救援者（只有猶太人會抽到機會卡）
+                let rescuerHtml = '';
+                if (p.role === 'J') {
+                    const met = (p.choiceLog || []).filter(e => e.tag === 'chance' && RESCUERS[e.cardId]);
+                    const items = met.map(e => {
+                        const R = RESCUERS[e.cardId];
+                        return `
+                            <li class="rescuer-item">
+                                <div class="rescuer-head"><span class="rescuer-name">${R.name}</span><span class="rescuer-tag ${R.righteous ? 'is-righteous' : ''}">${R.righteous ? '🕊️ 國際義人' : '🤝 救援者'}</span></div>
+                                <div class="rescuer-note">${R.note}（第 ${e.round} 回合・${e.cardId}）</div>
+                                ${R.extra ? `<div class="rescuer-extra">${R.extra}</div>` : ''}
+                            </li>`;
+                    }).join('');
+                    rescuerHtml = `
+                        <div class="rescuer-section">
+                            <div class="rescuer-title">🕊️ 你在遊戲中遇到的國際義人與救援者</div>
+                            ${items ? `<ul class="rescuer-list">${items}</ul>` : '<div class="rescuer-empty">這一局沒有抽到機會卡，沒有遇到伸出援手的人。</div>'}
+                            <div class="rescuer-foot">「國際義人」是以色列猶太大屠殺紀念館（Yad Vashem）頒給在大屠殺期間冒著生命危險拯救猶太人的「非猶太人」的稱號。</div>
+                        </div>`;
+                }
 
                 const badges = Achievements.compute(p, GameState.players);
                 const badgesHtml = badges.length > 0 ? `
@@ -3869,6 +3917,7 @@ const SceneArt = (function () {
                         <h4>${GameUtils.highlightKeywords(chosenEnding.title)}</h4>
                         ${endingBodyHtml}
                         ${historyHtml}
+                        ${rescuerHtml}
                         <button class="btn share-card-btn" onclick="ShareCard.open(${idx})">📸 產生我的「歷史檔案卡」（可存圖分享）</button>
                     </div>
                 `;
