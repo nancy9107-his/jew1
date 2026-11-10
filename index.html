@@ -1040,6 +1040,13 @@
             padding: 10px 18px; border-radius: 3px; font-weight: 900; opacity: 0; pointer-events: none; transition: opacity 0.3s; max-width: 90vw; text-align: center; }
         .net-toast.show { opacity: 1; }
         #net-roles-note { display: none; text-align: center; color: var(--text-muted); font-size: 1.05rem; line-height: 1.7; }
+        .player-input-group.sub { margin-top: -8px; }
+        .player-input-group.sub label { font-size: 1.1rem; font-weight: 400; color: var(--text-muted); }
+        .ns-cls { color: var(--text-muted); font-weight: 400; margin-left: 6px; }
+        .record-status { text-align: center; margin-top: 22px; font-size: 1rem; color: var(--text-muted); min-height: 1.4em; }
+        .record-status.ok { color: var(--accent-green); }
+        .record-status.bad { color: var(--accent-red); }
+        .record-status button { font-family: inherit; margin-left: 8px; padding: 2px 10px; background: #2b2824; color: var(--amber); border: 1px solid var(--border-color); cursor: pointer; }
         @media (max-width: 768px) { .net-code { font-size: 3.2rem; letter-spacing: 8px; } .mode-card { max-width: none; } }
 =======
         /* --- 稱號等級與「升級！」提示 --- */
@@ -1127,7 +1134,8 @@ window.addEventListener('error', function (e) {
             </button>
         </div>
         <div id="net-panel">
-            <div class="player-input-group"><label>我的名字</label><input type="text" id="net-name" placeholder="輸入名字(3字內)" maxlength="3"></div>
+            <div class="player-input-group"><label>我的暱稱</label><input type="text" id="net-name" placeholder="暱稱(6字內)" maxlength="6"></div>
+            <div class="player-input-group"><label>班級座號</label><input type="text" id="net-cls" placeholder="例：資三A12" maxlength="6"></div>
             <div class="net-row"><button class="btn" onclick="Net.create()">＋ 建立新房間</button></div>
             <div class="net-row" style="margin-top: 22px;">
                 <input type="text" id="net-join-code" inputmode="numeric" maxlength="4" placeholder="房間碼">
@@ -1147,7 +1155,8 @@ window.addEventListener('error', function (e) {
             <div id="net-link"></div>
         </div>
         <div id="net-lobby-list"></div>
-        <div class="player-input-group"><label>我的名字</label><input type="text" id="net-my-name" maxlength="3" onchange="Net.renameMe(this.value)"></div>
+        <div class="player-input-group"><label>我的暱稱</label><input type="text" id="net-my-name" maxlength="6" onchange="Net.updateMe()"></div>
+        <div class="player-input-group"><label>班級座號</label><input type="text" id="net-my-cls" maxlength="6" placeholder="例：資三A12" onchange="Net.updateMe()"></div>
         <p id="net-lobby-hint"></p>
         <button id="net-start-btn" class="btn" onclick="Net.startGame()">開始遊戲（抽籤身分）</button>
         <button class="btn" style="font-size: 1.1rem; padding: 8px 20px; margin-top: 14px;" onclick="Net.leave()">離開房間</button>
@@ -1155,7 +1164,7 @@ window.addEventListener('error', function (e) {
 
     <div id="step-1" class="step-section">
         <h2>步驟一：設定玩家人數與姓名</h2>
-        <p style="text-align: center; color: var(--text-muted);">請選擇遊戲人數（1至6人），並輸入玩家姓名（限三個字內）。</p>
+        <p style="text-align: center; color: var(--text-muted);">請選擇遊戲人數（1至6人），並輸入玩家暱稱（限六個字內）；班級座號為選填（限六個字內，供老師後台紀錄）。</p>
         <div style="text-align: center; margin: 40px 0;">
             <label for="player-count" style="font-size: 1.6rem; font-weight: 900;">遊戲人數 (1-6)：</label>
             <select id="player-count" onchange="Page1_Setup.renderPlayerInputs()">
@@ -1169,10 +1178,10 @@ window.addEventListener('error', function (e) {
         </div>
         <div id="player-inputs-container">
             <!-- 後備輸入欄位：即使腳本尚未載入也看得到，載入後由程式依人數重新產生 -->
-            <div class="player-input-group"><label>玩家 1</label><input type="text" id="p-name-0" placeholder="輸入名字(3字內)" maxlength="3" value="玩家1"></div>
-            <div class="player-input-group"><label>玩家 2</label><input type="text" id="p-name-1" placeholder="輸入名字(3字內)" maxlength="3" value="玩家2"></div>
-            <div class="player-input-group"><label>玩家 3</label><input type="text" id="p-name-2" placeholder="輸入名字(3字內)" maxlength="3" value="玩家3"></div>
-            <div class="player-input-group"><label>玩家 4</label><input type="text" id="p-name-3" placeholder="輸入名字(3字內)" maxlength="3" value="玩家4"></div>
+            <div class="player-input-group"><label>玩家 1</label><input type="text" id="p-name-0" placeholder="暱稱(6字內)" maxlength="6" value="玩家1"></div>
+            <div class="player-input-group"><label>玩家 2</label><input type="text" id="p-name-1" placeholder="暱稱(6字內)" maxlength="6" value="玩家2"></div>
+            <div class="player-input-group"><label>玩家 3</label><input type="text" id="p-name-2" placeholder="暱稱(6字內)" maxlength="6" value="玩家3"></div>
+            <div class="player-input-group"><label>玩家 4</label><input type="text" id="p-name-3" placeholder="暱稱(6字內)" maxlength="6" value="玩家4"></div>
         </div>
         <noscript><p style="text-align:center;color:#8b0000;font-weight:900;">此遊戲需要啟用 JavaScript。請改用 Safari、Chrome 等瀏覽器直接開啟，不要用檔案預覽（例如「檔案」App 的快速預覽或 LINE／雲端硬碟的內建檢視）。</p></noscript>
         <button class="btn" onclick="Page1_Setup.submit()">確認並抽籤身分</button>
@@ -1222,6 +1231,7 @@ window.addEventListener('error', function (e) {
         <h2>歷史審判與結局</h2>
         <p style="text-align: center; color: var(--text-muted);">歷史的洪流無情吞噬，以下是最終統計與結局：</p>
         <div id="final-results-container"></div>
+        <div id="record-status" class="record-status"></div>
         <button class="btn" onclick="Net.restart()">重新開始遊戲</button>
     </div>
 </div>
@@ -2866,13 +2876,18 @@ const SceneArt = (function () {
                 container.innerHTML += `
                     <div class="player-input-group">
                         <label>玩家 ${i+1}</label>
-                        <input type="text" id="p-name-${i}" placeholder="輸入名字(3字內)" maxlength="3" value="玩家${i+1}">
+                        <input type="text" id="p-name-${i}" placeholder="暱稱(6字內)" maxlength="6" value="玩家${i+1}">
+                    </div>
+                    <div class="player-input-group sub">
+                        <label>班級座號</label>
+                        <input type="text" id="p-cls-${i}" placeholder="選填，例：資三A12" maxlength="6">
                     </div>
                 `;
             }
         },
         // 依名單建立所有玩家（單機與多機共用）
-        buildPlayers: function(names) {
+        buildPlayers: function(names, classes) {
+            classes = classes || [];
             const count = names.length;
             GameState.players = []; GameState.lastSacrifice = null;
             GameState.initCardPools();
@@ -2892,6 +2907,7 @@ const SceneArt = (function () {
                 const nameInput = (names[i] || '').trim() || `玩家${i+1}`;
                 GameState.players.push({
                     rawName: nameInput,
+                    cls: String(classes[i] || '').trim().slice(0, 6),
                     name: nameInput.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),
                     role: roles[i],
                     survival: START_STATS.survival,
@@ -2907,9 +2923,13 @@ const SceneArt = (function () {
         },
         submit: function() {
             const count = parseInt(document.getElementById('player-count').value);
-            const names = [];
-            for (let i = 0; i < count; i++) names.push(document.getElementById(`p-name-${i}`).value);
-            this.buildPlayers(names);
+            const names = [], classes = [];
+            for (let i = 0; i < count; i++) {
+                names.push(document.getElementById(`p-name-${i}`).value);
+                const c = document.getElementById(`p-cls-${i}`);
+                classes.push(c ? c.value : '');
+            }
+            this.buildPlayers(names, classes);
             Page2_RoleResult.init();
         }
     };
@@ -3792,8 +3812,12 @@ const SceneArt = (function () {
             // 資料欄
             const tx = 470;
             ctx.textAlign = 'left';
-            ctx.fillStyle = ink; ctx.font = `900 76px ${F}`;
-            ctx.fillText(p.rawName || p.name, tx, 320);
+            const shareName = p.rawName || p.name;
+            let namePx = 76;
+            ctx.font = `900 ${namePx}px ${F}`;
+            while (namePx > 40 && ctx.measureText(shareName).width > W - tx - 50) { namePx -= 2; ctx.font = `900 ${namePx}px ${F}`; }
+            ctx.fillStyle = ink;
+            ctx.fillText(shareName, tx, 320);
             ctx.font = `900 40px ${F}`; ctx.fillStyle = isJ ? red : blue;
             ctx.fillText('身分：' + (isJ ? '猶太人' : '雅利安人'), tx, 392);
             ctx.font = `400 36px ${F}`; ctx.fillStyle = muted;
@@ -3995,6 +4019,7 @@ const SceneArt = (function () {
             AudioController.switchToEndingMusic();
             AudioController.playEndingSound();
             this.renderFinalResults(container);
+            try { Records.upload(); } catch (e) { console.log(e); }
         },
 
         // ==========================================================
@@ -4126,7 +4151,7 @@ const SceneArt = (function () {
                     </div>
                 ` : '';
 
-                this.cardData[idx] = { player: p, ending: chosenEnding, badges: badges };
+                this.cardData[idx] = { player: p, ending: chosenEnding, badges: badges, endingId: randId };
 
                 container.innerHTML += `
                     <div class="ending-card">
@@ -4219,6 +4244,8 @@ const SceneArt = (function () {
             const code = (params.get('room') || '').replace(/\D/g, '').slice(0, 4);
             const nameEl = document.getElementById('net-name');
             if (nameEl) nameEl.value = this.store('1940name') || '';
+            const clsEl = document.getElementById('net-cls');
+            if (clsEl) clsEl.value = this.store('1940cls') || '';
             if (code) { this.chooseMulti(); document.getElementById('net-join-code').value = code; }
             // 上次的房間（6 小時內）
             try {
@@ -4226,7 +4253,7 @@ const SceneArt = (function () {
                 if (s && s.room && Date.now() - s.t < 6 * 3600 * 1000) {
                     const b = document.getElementById('net-rejoin-btn');
                     b.style.display = 'block'; b.textContent = '↩ 回到上次的房間（' + s.room + '）';
-                    b.onclick = () => this.run(() => this.joinRoom(s.room, s.name || ''));
+                    b.onclick = () => this.run(() => this.joinRoom(s.room, s.name || '', s.cls || ''));
                 }
             } catch (e) {}
         },
@@ -4238,8 +4265,13 @@ const SceneArt = (function () {
             } else this.msg('');
         },
         getName: function() {
-            const v = (document.getElementById('net-name').value || '').trim().slice(0, 3);
+            const v = (document.getElementById('net-name').value || '').trim().slice(0, 6);
             this.store('1940name', v);
+            return v;
+        },
+        getCls: function() {
+            const v = (document.getElementById('net-cls').value || '').trim().slice(0, 6);
+            this.store('1940cls', v);
             return v;
         },
         busy: false,
@@ -4256,15 +4288,15 @@ const SceneArt = (function () {
             }
             this.busy = false;
         },
-        create: function() { this.run(() => this.createRoom(this.getName())); },
+        create: function() { this.run(() => this.createRoom(this.getName(), this.getCls())); },
         join: function() {
             const code = (document.getElementById('net-join-code').value || '').replace(/\D/g, '');
             if (code.length !== 4) { this.msg('請輸入 4 位數的房間碼', true); return; }
-            this.run(() => this.joinRoom(code, this.getName()));
+            this.run(() => this.joinRoom(code, this.getName(), this.getCls()));
         },
 
         // ---------- 建立／加入房間 ----------
-        createRoom: async function(name) {
+        createRoom: async function(name, cls) {
             await this.connect(); this.cid = this.getCid();
             for (let tries = 0; tries < 10; tries++) {
                 const code = String(Math.floor(1000 + Math.random() * 9000));
@@ -4274,12 +4306,12 @@ const SceneArt = (function () {
                 }, undefined, false);
                 if (res.committed) {
                     await this.db.ref('rooms/' + code).set({ meta: { t: Date.now(), host: this.cid } });   // 清掉舊資料
-                    return this.joinRoom(code, name);
+                    return this.joinRoom(code, name, cls);
                 }
             }
             throw new Error('暫時無法建立房間，請再試一次');
         },
-        joinRoom: async function(code, name) {
+        joinRoom: async function(code, name, cls) {
             await this.connect(); this.cid = this.getCid(); this.room = code;
             const meta = await this.R('meta').once('value');
             if (!meta.exists()) { this.room = null; throw new Error('找不到房間 ' + code + '，請確認房間碼'); }
@@ -4292,16 +4324,16 @@ const SceneArt = (function () {
             } else {
                 const res = await this.R('lobby').transaction(cur => {
                     cur = cur || {};
-                    for (const k in cur) if (cur[k] && cur[k].cid === this.cid) { if (name) cur[k].name = name; return cur; }
+                    for (const k in cur) if (cur[k] && cur[k].cid === this.cid) { if (name) cur[k].name = name; if (cls) cur[k].cls = cls; return cur; }
                     for (let i = 0; i < this.MAX; i++) {
                         const k = 's' + i;
-                        if (!cur[k]) { cur[k] = { cid: this.cid, name: name || ('玩家' + (i + 1)), t: Date.now() }; return cur; }
+                        if (!cur[k]) { cur[k] = { cid: this.cid, name: name || ('玩家' + (i + 1)), cls: cls || '', t: Date.now() }; return cur; }
                     }
                     return;
                 });
                 if (!res.committed) { this.room = null; throw new Error('房間已滿（最多 ' + this.MAX + ' 人）'); }
             }
-            this.name = name;
+            this.name = name; this.cls = cls || '';
             this.attach();
         },
         attach: function() {
@@ -4317,7 +4349,7 @@ const SceneArt = (function () {
             const conn = this.db.ref('.info/connected');
             const cf = s => { if (s.val() === true) { me.onDisconnect().remove(); me.set(true); } };
             conn.on('value', cf); this._refs.push([conn, cf]);
-            this.store('1940session', JSON.stringify({ room: this.room, name: this.name, t: Date.now() }));
+            this.store('1940session', JSON.stringify({ room: this.room, name: this.name, cls: this.cls || '', t: Date.now() }));
             clearInterval(this._timer); this._timer = setInterval(() => this.tick(), 2000);
         },
         detach: function() {
@@ -4366,21 +4398,26 @@ const SceneArt = (function () {
                 const p = this.lobby['s' + i];
                 if (!p) return `<div class="net-slot empty"><span class="ns-no">${i + 1}</span><span class="ns-name">等待加入…</span></div>`;
                 const on = this.presLoaded ? !!this.online[p.cid] : true;
-                return `<div class="net-slot ${p.cid === this.cid ? 'me' : ''}"><span class="ns-no">${i + 1}</span><span class="ns-name">${this.esc(p.name)}${p.cid === this.cid ? '（你）' : ''}</span><span class="ns-dot ${on ? 'on' : 'off'}">${on ? '在線' : '離線'}</span></div>`;
+                return `<div class="net-slot ${p.cid === this.cid ? 'me' : ''}"><span class="ns-no">${i + 1}</span><span class="ns-name">${this.esc(p.name)}${p.cid === this.cid ? '（你）' : ''}${p.cls ? ` <small class="ns-cls">${this.esc(p.cls)}</small>` : ''}</span><span class="ns-dot ${on ? 'on' : 'off'}">${on ? '在線' : '離線'}</span></div>`;
             }).join('');
             const nameEl = document.getElementById('net-my-name');
-            if (document.activeElement !== nameEl && this.slot >= 0 && this.lobby['s' + this.slot]) nameEl.value = this.lobby['s' + this.slot].name;
+            const clsEl2 = document.getElementById('net-my-cls');
+            if (this.slot >= 0 && this.lobby['s' + this.slot]) {
+                if (document.activeElement !== nameEl) nameEl.value = this.lobby['s' + this.slot].name;
+                if (document.activeElement !== clsEl2) clsEl2.value = this.lobby['s' + this.slot].cls || '';
+            }
             const btn = document.getElementById('net-start-btn');
             btn.disabled = slots.length < 2;
             document.getElementById('net-lobby-hint').textContent = slots.length < 2
                 ? '至少需要 2 位玩家才能開始。請其他人輸入房間碼或掃描 QR Code 加入。'
                 : '目前 ' + slots.length + ' 人。確認所有人都到齊後，任何一位玩家按下「開始」即可（開始後無法再加入）。';
         },
-        renameMe: function(v) {
-            v = String(v || '').trim().slice(0, 3);
-            if (!v || this.slot < 0) return;
-            this.store('1940name', v);
-            this.R('lobby/s' + this.slot + '/name').set(v);
+        updateMe: function() {
+            if (this.slot < 0) return;
+            const n = String(document.getElementById('net-my-name').value || '').trim().slice(0, 6);
+            const c = String(document.getElementById('net-my-cls').value || '').trim().slice(0, 6);
+            if (n) { this.store('1940name', n); this.R('lobby/s' + this.slot + '/name').set(n); }
+            this.store('1940cls', c); this.R('lobby/s' + this.slot + '/cls').set(c);
         },
         startGame: function() {
             if (this.gameStarted || this.phase !== 'lobby') return;
@@ -4388,7 +4425,7 @@ const SceneArt = (function () {
             if (slots.length < 2) return;
             this.cids = slots.map(k => this.lobby[k].cid);
             this.seed = Math.random().toString(36).slice(2, 10);
-            Page1_Setup.buildPlayers(slots.map(k => this.lobby[k].name));
+            Page1_Setup.buildPlayers(slots.map(k => this.lobby[k].name), slots.map(k => this.lobby[k].cls || ''));
             this.myIdx = this.cids.indexOf(this.cid);
             this.gameStarted = true;
             this.publish('roles');
@@ -4542,6 +4579,63 @@ const SceneArt = (function () {
             if (Date.now() - this._offSince > 15000) {
                 sk.style.display = 'block';
                 sk.textContent = '⏭ 「' + GameState.players[cur].name + '」已離線，跳過他這一回合';
+            }
+        }
+    };
+
+    // ==========================================================
+    // 成績記錄：遊戲結束時，把本場結果寫進 Firebase 的 records，供老師後台（teacher.html）查看
+    // 學生的裝置只能「新增」紀錄，不能讀取或修改（由 Firebase 規則限制）
+    // ==========================================================
+    const Records = {
+        sent: false,
+        build: function() {
+            const P = GameState.players;
+            let titles = [];
+            try { titles = TitleSystem.compute(P); } catch (e) { titles = P.map(() => []); }
+            return {
+                v: 1, t: Date.now(),
+                mode: Net.on ? 'multi' : 'single', room: Net.on ? Net.room : '',
+                rounds: Math.min(GameState.currentRound, Page3_Gameplay.MAX_ROUND),
+                allDead: P.every(p => p.isDead),
+                players: P.map((p, i) => {
+                    const cd = (Page4_Ending.cardData && Page4_Ending.cardData[i]) || {};
+                    return {
+                        nick: p.rawName || p.name, cls: p.cls || '', role: p.role,
+                        survival: p.survival, moral: p.moral, dead: !!p.isDead, deathRound: p.deathRound || 0,
+                        chance: p.chanceCount || 0,
+                        ending: cd.endingId || '', endingTitle: cd.ending ? (cd.ending.title || '') : '',
+                        titles: (titles[i] || []).map(t => ({ k: t.key, l: t.label, lv: t.lv || 0 })),
+                        badges: (cd.badges || []).map(b => b.name),
+                        log: (p.choiceLog || []).map(e => ({
+                            c: e.cardId, r: e.round || 0, m: e.isMoralChoice === null || e.isMoralChoice === undefined ? -1 : (e.isMoralChoice ? 1 : 0),
+                            cat: e.category || '', s: e.sChange || 0, d: e.mChange || 0, x: e.choice || ''
+                        }))
+                    };
+                })
+            };
+        },
+        setStatus: function(html, cls) {
+            const el = document.getElementById('record-status');
+            if (el) { el.className = 'record-status ' + (cls || ''); el.innerHTML = html; }
+        },
+        upload: async function() {
+            if (this.sent) return;
+            this.sent = true;
+            try {
+                if (!Net.configured()) { this.setStatus('（尚未設定 Firebase，本場成績未記錄）'); return; }
+                this.setStatus('正在記錄本場成績…');
+                const gid = Net.on ? (Net.room + '_' + Net.seed) : ('S_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6));
+                const data = this.build();
+                const job = (async () => { await Net.connect(); await Net.db.ref('records/' + gid).set(data); })();
+                await Promise.race([job, new Promise((_, rej) => setTimeout(() => rej(new Error('TIMEOUT')), 15000))]);
+                this.setStatus('✔ 本場成績已記錄到老師後台', 'ok');
+            } catch (e) {
+                console.log('成績記錄失敗：', e);
+                const m = String((e && e.message) || e);
+                if (Net.on && /permission/i.test(m)) { this.setStatus('✔ 本場成績已記錄（由其他裝置送出）', 'ok'); return; }
+                this.sent = false;
+                this.setStatus((/TIMEOUT/.test(m) ? '⚠ 網路連線逾時，本場成績尚未記錄' : '⚠ 本場成績未能記錄') + '<button onclick="Records.upload()">重新送出</button>', 'bad');
             }
         }
     };

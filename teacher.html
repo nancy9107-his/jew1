@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>1940 老師後台</title>
+<style>
+  :root { --bg:#14130f; --panel:#1d1b17; --panel2:#24221e; --line:#4a4637; --text:#ddd7c4; --muted:#a39d89; --amber:#e0b84f; --red:#e0584b; --green:#82c48d; --blue:#86aed1; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif; line-height:1.6; }
+  header { display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:2px solid var(--line); background:#191712; position:sticky; top:0; z-index:10; }
+  h1 { margin:0; font-size:1.25rem; letter-spacing:2px; color:var(--amber); }
+  .who { color:var(--muted); font-size:.9rem; }
+  button, select, input { font:inherit; color:var(--text); background:var(--panel2); border:1px solid var(--line); border-radius:3px; padding:6px 12px; }
+  button { cursor:pointer; } button:hover { border-color:var(--amber); color:var(--amber); }
+  button.primary { background:var(--amber); color:#14130f; border-color:var(--amber); font-weight:700; }
+  button.danger:hover { border-color:var(--red); color:var(--red); }
+  main { padding:16px 18px 60px; max-width:1300px; margin:0 auto; }
+  #login { max-width:520px; margin:12vh auto; text-align:center; padding:28px 20px; border:2px dashed var(--line); border-radius:4px; }
+  #login p { color:var(--muted); }
+  #msg { margin-top:14px; min-height:1.4em; color:var(--muted); }
+  #msg.bad { color:var(--red); font-weight:700; }
+  .filters { display:flex; flex-wrap:wrap; gap:10px; align-items:end; margin-bottom:14px; }
+  .filters label { display:flex; flex-direction:column; font-size:.85rem; color:var(--muted); gap:2px; }
+  .tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-bottom:16px; }
+  .tile { background:var(--panel); border:1px solid var(--line); border-radius:4px; padding:10px 14px; }
+  .tile b { display:block; font-size:1.7rem; color:var(--amber); line-height:1.2; }
+  .tile span { color:var(--muted); font-size:.85rem; }
+  .tabs { display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap; align-items:center; }
+  .tabs button.on { background:var(--amber); color:#14130f; border-color:var(--amber); font-weight:700; }
+  .spacer { flex:1; }
+  .wrap { overflow-x:auto; border:1px solid var(--line); border-radius:4px; }
+  table { border-collapse:collapse; width:100%; font-size:.92rem; }
+  th, td { padding:7px 10px; text-align:left; border-bottom:1px solid #2c2a23; vertical-align:top; }
+  th { background:#201e19; color:var(--muted); font-weight:600; white-space:nowrap; position:sticky; top:0; cursor:default; }
+  th.sort { cursor:pointer; } th.sort:hover { color:var(--amber); }
+  tbody tr:hover { background:#25231d; }
+  tr.click { cursor:pointer; }
+  .tag { display:inline-block; padding:0 7px; border:1px solid var(--line); border-radius:3px; margin:1px 3px 1px 0; font-size:.82rem; white-space:nowrap; }
+  .A { color:var(--blue); } .J { color:var(--red); } td.A, td.J { white-space:nowrap; }
+  .ok { color:var(--green); } .bad { color:var(--red); } .muted { color:var(--muted); }
+  .bar { display:inline-block; width:90px; height:9px; background:#2c2a23; border-radius:2px; vertical-align:middle; margin-right:6px; overflow:hidden; }
+  .bar i { display:block; height:100%; background:var(--green); }
+  .empty { padding:30px; text-align:center; color:var(--muted); }
+  dialog { background:var(--panel); color:var(--text); border:2px solid var(--amber); border-radius:4px; max-width:820px; width:94vw; padding:0; }
+  dialog::backdrop { background:rgba(0,0,0,.7); }
+  .dhead { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:12px 16px; border-bottom:1px solid var(--line); position:sticky; top:0; background:var(--panel); }
+  .dbody { padding:12px 16px 18px; max-height:72vh; overflow:auto; }
+  .ch { border-left:4px solid var(--line); background:var(--panel2); padding:8px 12px; margin-bottom:8px; }
+  .ch.m1 { border-left-color:var(--green); } .ch.m0 { border-left-color:var(--amber); }
+  .ch small { color:var(--muted); }
+  @media (max-width:700px) { main { padding:12px 10px 50px; } th, td { padding:6px 7px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>1940 ：誰能活下去？｜老師後台</h1>
+  <div><span class="who" id="who"></span> <button id="reload" style="display:none">重新整理</button> <button id="logout" style="display:none">登出</button></div>
+</header>
+<main>
+  <div id="login">
+    <h2 style="margin-top:0">老師登入</h2>
+    <p>請使用已被授權的 Google 帳號登入，才能查看學生的作答紀錄。</p>
+    <button class="primary" id="loginBtn">使用 Google 登入</button>
+    <div id="msg"></div>
+  </div>
+
+  <div id="app" style="display:none">
+    <div class="filters">
+      <label>起始日期<input type="date" id="fFrom"></label>
+      <label>結束日期<input type="date" id="fTo"></label>
+      <label>班級／座號含有<input type="text" id="fCls" placeholder="例：資三A"></label>
+      <label>房間碼<input type="text" id="fRoom" placeholder="例：4821" size="6"></label>
+      <label>模式<select id="fMode"><option value="">全部</option><option value="multi">多機連線</option><option value="single">單機同台</option></select></label>
+      <button id="fClear">清除篩選</button>
+    </div>
+    <div class="tiles" id="tiles"></div>
+    <div class="tabs">
+      <button data-tab="students" class="on">學生名單</button>
+      <button data-tab="cards">題目統計</button>
+      <button data-tab="games">場次</button>
+      <span class="spacer"></span>
+      <button id="csvStudents">匯出學生名單 CSV</button>
+      <button id="csvChoices">匯出逐題作答 CSV</button>
+    </div>
+    <div class="wrap" id="view"></div>
+    <p class="muted" style="font-size:.85rem">「道德選擇率」＝該學生（或全部學生）在非機會卡中，選擇道德選項的比例。點選任一列可看詳細內容。</p>
+  </div>
+</main>
+<dialog id="dlg"><div class="dhead"><b id="dtitle"></b><button id="dclose">關閉</button></div><div class="dbody" id="dbody"></div></dialog>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+<script>
+const FIREBASE_CONFIG = {
+  "apiKey": "AIzaSyCMhylNI8X5Pc8AF_aV4wRp2jCzNidA3jA",
+  "authDomain": "jew1-21ffb.firebaseapp.com",
+  "databaseURL": "https://jew1-21ffb-default-rtdb.asia-southeast1.firebasedatabase.app",
+  "projectId": "jew1-21ffb",
+  "storageBucket": "jew1-21ffb.firebasestorage.app",
+  "messagingSenderId": "284932916231",
+  "appId": "1:284932916231:web:4825e7d901a467625016a2"
+};
+const CARDS_LIST = [{"id":"G01","type":"","text":"凡穆勒醫生認為精神病患者和殘疾兒童是「浪費糧食的人」、「無用之人只是國家負擔」，將其安樂死是正當的行為。 你是否會將劇毒調換為無害藥劑，並協助病童逃離醫院？","o1":"暗中替換藥劑，協助病童逃離","o2":"遵照命令執行安樂死","s1":-1,"m1":2,"s2":1,"m2":-2},{"id":"G02","type":"","text":"戈林將軍在一戰時創下擊落22架敵機的紀錄，因此被希特勒任命為德國空軍總司令。但是，完善空軍設備的經費卻是他強搶猶太人的財產而來。 若你是戈林，是否會用猶太人財產來完備德國空軍？","o1":"動用猶太人財產壯大空軍","o2":"拒絕侵吞他人財產","s1":1,"m1":-1,"s2":-1,"m2":1},{"id":"G03","type":"","text":"「萊茵哈德行動」負責處理猶太人的財產。官員通過柏林的當舖、瑞士的珠寶市場來出售這些財物。然而，巨額財富也引發盜竊、貪腐等行為。 若你沒收了大量猶太人的財物，你會如何處置？","o1":"全數上繳，充實國庫","o2":"私藏珍貴物品變賣","s1":1,"m1":-1,"s2":-1,"m2":-2},{"id":"G04","type":"","text":"普呂福在日記強烈批評屠殺猶太人的相關政策。但很可惜，普呂福日記的內容是在1946年（二戰結束後）加上去，就是刻意留下紀錄給將來的人閱讀。 若你有書寫日記的習慣，你是否會像普呂福這樣做？","o1":"刪改日記中歧視的言論","o2":"保留原稿，不竄改過往言論","s1":1,"m1":-1,"s2":-1,"m2":1},{"id":"G05","type":"","text":"1940年維也納科學會議裡，專家決議將「問題兒童」進行集中監管，但不少醫生反對，認為鼓勵、建立信任才能促進心理健康。 若你是與會的精神科醫生，你會堅持反對監管嗎？","o1":"堅持反對，即便高層會派人關切","o2":"接受專家決議，以求升遷","s1":-1,"m1":2,"s2":1,"m2":-2},{"id":"G06","type":"","text":"博斯成立小成衣廠，1930年代初因經濟不景氣，工廠面臨破產。於是，他加入納粹黨，接下黨與軍方的制服訂單，替工廠帶來豐厚利潤。戰爭期間軍服需求大增，工廠業績大幅成長。 若你是博斯，你願意成為納粹軍服的供應商嗎？","o1":"接下訂單，挽救破產危機","o2":"拒絕訂單，不與納粹掛勾","s1":1,"m1":-1,"s2":-1,"m2":1},{"id":"G07","type":"","text":"醫生培育病毒，然後注射到犯人身上觀察效果，並沒有採取任何措施來減少疼痛。在實驗室裡，許多人蜷縮在角落，恐懼尖叫。 執行實驗時，你是否願意為猶太人注射麻藥以減輕他們的痛苦？","o1":"協助注射麻藥，減輕痛苦","o2":"不予理會，他人痛苦與我無關","s1":-1,"m1":1,"s2":1,"m2":-1},{"id":"G08","type":"","text":"全國報社派出記者，每天都聚集在「宣傳部」接受納粹政權的指示。隨著希特勒地位持續上升，反納粹記者都遭驅離。野蠻指責猶太人的內容出現在所有的報紙之中。 身為記者，你是否會配合納粹對猶太人醜化攻擊？","o1":"配合宣傳，加入醜化行列","o2":"堅持就事論事、眼見為憑","s1":1,"m1":-2,"s2":-1,"m2":2},{"id":"G09","type":"","text":"「生命源泉計畫」勸說年輕、種族純淨的女人和黨衛軍官結合，以產下純種雅利安後代，甚至鼓勵軍官與多名女人保持性關係。第一所「生命源泉之家」於1936年開設，計畫存在的九年間，約有七千名嬰兒在這些機構出生，母親多為未婚。在政府推動下，無需結婚且孩子是合法的。 你是否願意出於愛國心，與黨衛軍官未婚懷孕？","o1":"出於愛國心，加入這項計畫","o2":"拒絕加入，不願因此犧牲真愛","s1":1,"m1":-1,"s2":-1,"m2":1},{"id":"G10","type":"","text":"德國學校老師都須加入教師聯盟，宣誓效忠希特勒。「種族科學」課程被引入教學，並展示雅利安人特徵的圖像，藉此讓學生鄙視猶太人，而神化希特勒。 身為納粹德國的老師，是否願意在課堂裡對猶太學生釋出善意？","o1":"在課堂上對猶太學生釋出善意","o2":"照章行事，不多付出關注","s1":-1,"m1":1,"s2":1,"m2":-1},{"id":"G11","type":"","text":"1940年代，德國勞改場收押大量妓女、小偷、流浪漢、酒鬼等，並請鑑定專家判定價值。專家們宣稱「沒有生存價值」，一致同意將這些人處死。 若你有認識「符合勞改犯定義」的親屬朋友，你是否會配合政策向警察舉報？","o1":"向警察舉報，配合淨化政策","o2":"隱瞞下落，維護家人朋友安危","s1":1,"m1":-2,"s2":-1,"m2":2},{"id":"G12","type":"","text":"女記者費德利希建立反抗組織，來照顧許多身處危險的猶太人。他們還從事破壞工廠、毀損納粹象徵、向國外報導集中營真實情況等激進行為。 若你意外得知了這個組織的存在，你會怎麼做呢？","o1":"加入組織並提供協助","o2":"向蓋世太保告密，領取賞金","s1":-1,"m1":2,"s2":1,"m2":-2},{"id":"G13","type":"","text":"儘管納粹政權秘密進行處置猶太人的最終方案，然而消息卻四處流傳。你聽聞有人參與射殺3000名猶太人行動，而且逼迫猶太人挖掘足球場大小的墳墓。 若你聽聞不合理的大規模猶太屠殺事件，你是否會將事件上報高層？","o1":"將屠殺事件上報高層","o2":"保持沉默，他人之行為與我無關","s1":0,"m1":1,"s2":0,"m2":-1},{"id":"G14","type":"","text":"當時社會日漸流行安樂死的觀點，特別是不少父母願意讓孩子得到解脫。同時為了減輕父母親良心負擔，醫生必須承擔解決問題兒童的責任。 若你的後代是身心障礙病童，且從未聽聞治癒案例，你仍會配合政策，將孩子送入國家經營療養院？","o1":"配合政策，送孩子進療養院","o2":"拒絕送走，自行撫養孩子","s1":0,"m1":-1,"s2":0,"m2":1},{"id":"G15","type":"","text":"隆美爾將軍在二戰時建立彪炳戰功，曾俘虜「自由法國第一旅」，這是由眾多猶太人所組成的部隊。希特勒因此向隆美爾下令，將其成員處決。 如果你是隆美爾，是否會遵照希特勒指示，處決這些人呢？","o1":"忠誠地執行處決命令","o2":"違抗命令，不執行處決","s1":1,"m1":-2,"s2":-1,"m2":2},{"id":"G16","type":"","text":"約翰的猶太員工顫抖說著自己收到了「產物清單」，這代表即將被送到集中營。約翰為保全員工性命，向蓋世太保爭取：「你們把員工都帶走了，我該怎麼執行國防部的訂單呢？」 如果是你，你是否願意向蓋世太保爭取留下員工？","o1":"向蓋世太保爭取留下員工","o2":"不出面爭取，各人有其命運","s1":-1,"m1":2,"s2":1,"m2":-2},{"id":"G17","type":"","text":"約書亞是看守奧斯威辛集中營的士兵。某天離開營區時，被一位老人攔住，表示願意以金錢為代價，請求他幫忙將信件、衣服轉交給另一猶太工人，並為他攜帶回信。 你是否會願意冒著被人發現，甚至被射殺的風險提供協助？","o1":"冒險協助，同時收下金錢","o2":"拒絕協助，自己的生命更重要","s1":-1,"m1":1,"s2":1,"m2":-1},{"id":"G18","type":"","text":"保時捷是德國頂尖汽車生產公司。二戰時納粹政府要求協助設計坦克車，並將汽車工廠轉型成武器工廠，還提供猶太人作為廉價勞力。 如果你是保時捷老闆，你會接受政府的提議嗎？","o1":"接受提議，趁戰爭賺取財富","o2":"拒絕提議，不取不義之財","s1":1,"m1":-1,"s2":-1,"m2":1},{"id":"G19","type":"","text":"卡蘿拉是德國12歲中學生，「種族學」課程教導了猶太人是劣等人種。還曾目睹猶太人不需要任何原因，就被綁在椅上受皮鞭責打。 如果你是卡蘿拉，看到這種場景，會有什麼反應？","o1":"冷眼旁觀，認為他們是劣等人種，處罰是應得的","o2":"找同學討論，質疑這行為的合理性","s1":1,"m1":-1,"s2":-1,"m2":1},{"id":"G20","type":"","text":"艾希曼將匈牙利44萬名猶太孩童、婦女送進毒氣室。眾多納粹官員為了搶功而想要擔任先鋒，積極去爭取這項「血腥」的任務。 如果你是納粹官員，你是否會去爭取這個任務？","o1":"爭取任務，搶先立功過更好生活","o2":"不去爭取，協助大屠殺是不道德行為","s1":1,"m1":-1,"s2":0,"m2":1},{"id":"G21","type":"","text":"埃里希曾是德國海軍元帥，因與希特勒發生戰術上的爭執，被解除元帥職位。隨著戰況惡化，一群軍官計畫推翻希特勒，於是邀請埃里希加入。 如果你是埃里希，你會選擇加入推翻計畫嗎？","o1":"加入推翻計畫","o2":"拒絕加入，保持對國家的忠誠","s1":-1,"m1":0,"s2":1,"m2":0},{"id":"G22","type":"","text":"里芬斯塔爾是女性電影導演，作品深受希特勒喜愛。但金援拍片的條件是必須為希特勒拍攝形象影片，宣傳他與日耳曼民族的偉大，以及猶太人的邪惡。 如果你是里芬斯塔爾，你會接受元首的條件嗎？","o1":"接受條件，得到金援才能有所成就","o2":"拒絕條件，藝術不應沾染政治色彩","s1":0,"m1":-1,"s2":0,"m2":1},{"id":"G23","type":"","text":"為了毫無顧忌地實施「解決方案」，必須先修改法律規範讓猶太人失去參政權、工作權、財產權甚至國籍。 如果你是一位法學專家，你是否會無視自身法學素養，配合政府制定法案？","o1":"配合制定法案，反正我不做也會有別人做","o2":"拒絕背書，堅守職業道德","s1":1,"m1":-2,"s2":-1,"m2":2},{"id":"G24","type":"","text":"倪慕樂牧師反抗納粹干涉教會與信仰的自由，因此他先被禁止發表言論，之後被捕。刑期屆滿卻未被釋放，在集中營滯留，直至戰爭結束。 如果是你，願意為宗教信仰自由反抗政府當局嗎？","o1":"挺身反抗，一切應歸於耶穌基督","o2":"保持沉默，相信上帝會明白我的困境","s1":-1,"m1":1,"s2":1,"m2":-1},{"id":"G25","type":"","text":"1943年納粹開始逮捕德國女人的猶太裔丈夫。她們聚集於玫瑰街猶太人安置所門前，要求釋放她們的丈夫。軍人威脅開槍，但她們毫不退讓，持續抗議。 如果你的猶太丈夫突然被監禁，你會進行抗議嗎？","o1":"走上玫瑰街抗議，自己的男人自己救","o2":"接受政策，聽天由命","s1":-1,"m1":1,"s2":1,"m2":-1},{"id":"G26","type":"","text":"施丁騰堡伯爵是德國外交官，家世顯赫。他厭惡納粹，拒絕擔任政府公職。運用自己的影響力協助猶太學生申請獎學金留學英國，幫助猶太人移民國外。 如果你是納粹時期的外交官，當你發現伯爵的作為，是否願意冒著風險協助他？","o1":"竭盡所能協助伯爵","o2":"裝作不知情，保住官場前程","s1":-1,"m1":1,"s2":1,"m2":-1},{"id":"G27","type":"","text":"1944年史陶芬保上校曾企圖引爆炸彈炸死希特勒，但未成功，導致「華爾奇麗雅行動」未能啟動，使政變走向失敗。 若你身為納粹軍官將領，你是否會參與 720 密謀案？","o1":"參與密謀，無法認同希特勒理念","o2":"拒絕參與，保住個人地位","s1":-1,"m1":0,"s2":1,"m2":0},{"id":"G28","type":"","text":"白玫瑰運動是由慕尼黑醫學院大學生組成，他們透過發送傳單，呼籲人們反抗希特勒。不久後，成員都被處死。然而傳單被大量印刷祕密送出德國，透過同盟國飛機散布各地。 若你拾獲傳單，你是否願意將它傳遞出去？","o1":"把傳單傳遞出去","o2":"丟掉傳單，不冒生命風險","s1":-1,"m1":1,"s2":1,"m2":-1},{"id":"G29","type":"","text":"德國相機品牌「萊卡」主席萊茲二世，二戰時雇用大量猶太人，並以派任海外為由將猶太人送離德國，被稱為「萊卡自由列車」。數百人因他而被拯救。 若你是萊茲二世，會進行「自由列車行動」嗎？","o1":"啟動「自由列車」，竭盡所能幫助猶太人","o2":"不採取行動，與納粹保持良好關係","s1":-1,"m1":1,"s2":1,"m2":-1},{"id":"G30","type":"","text":"木匠艾爾塞對納粹作為反感，決心刺殺希特勒。他利用希特勒每年會到慕尼黑啤酒館發表演說的機會，預先裝設炸彈。但因希特勒提前離開，而未能成功。 如果你是艾爾塞，你是否仍會執行暗殺行動？","o1":"照計畫執行暗殺行動","o2":"放棄行動，小人物無法對抗強權","s1":-1,"m1":1,"s2":1,"m2":-1},{"id":"G31","type":"","text":"納粹佔領波蘭時，把動物園改為養豬場。札賓斯基夫婦被允許到猶太隔離區收廚餘餵豬，趁機把猶太人私運出來，藏在獸檻、鳥籠、獅舍，並協助猶太人逃往安全地區。 如果是你，是否會像札賓斯基夫婦救助猶太人？","o1":"冒險救助猶太人，善行是永恆價值","o2":"袖手旁觀，明哲保身","s1":-1,"m1":1,"s2":1,"m2":-1},{"id":"G32","type":"","text":"1933年德國大學生組織(DST)成員衝進「猶太博物館」，把猶太裔學者包括佛洛依德和愛因斯坦等人的著作都焚燒殆盡。 若你是當時德國大學生，你是否會參與焚書運動？","o1":"參與焚書，支持國家反猶政策","o2":"拒絕參與，學術文化不應有種族差別","s1":0,"m1":-1,"s2":0,"m2":1},{"id":"G33","type":"","text":"1938年，猶太青年格林斯潘因反對猶太人被逐出德國，槍殺了高官，此事成為納粹採取暴力的藉口。之後，蓋世太保對猶太人住宅、商店、教堂徹底破壞，被稱為「水晶之夜」。 若你是德國年輕人，你是否會參與「水晶之夜」的暴力行為？","o1":"參與暴行，響應政府反猶政策","o2":"拒絕參與，不願捲入政治操弄","s1":0,"m1":-1,"s2":0,"m2":1},{"id":"G34","type":"","text":"奧古斯特為獲得造船廠工作加入納粹黨，但他愛上猶太人艾爾瑪後，堅持與她結婚。《紐倫堡法案》公布後，這段婚姻被視為非法，他被判「玷污種族」罪名而被送入集中營。 如果你是奧古斯特，並能預知你的命運，是否決定與猶太妻子結婚？","o1":"仍與艾爾瑪結婚","o2":"放棄艾爾瑪","s1":-1,"m1":1,"s2":1,"m2":-1},{"id":"G35","type":"","text":"弗萊斯勒是法官，負責審理對抗希特勒獨裁政權的活動。他喜愛作秀式地公開審訊，並處以犯人極刑。1942-1945年間，5000件死刑案中，超過半數是由弗萊斯勒的法庭所判。 若你是當時的法官，是否敢批評弗萊斯勒的作法？","o1":"公開批評，法律不應為政權服務","o2":"保持沉默，極權下個人無從選擇","s1":-1,"m1":1,"s2":1,"m2":-1},{"id":"J01","type":"","text":"有位猶太人回憶，為求盡快逃出危險的猶太隔離區以躲過死劫。於是考慮洗劫「猶太委員會」錢箱，讓自己能在短時間內弄到足夠的金錢。 你是否會為了逃離隔離區而搶劫與納粹政權親近的「猶太委員會」？","o1":"搶劫錢箱，為生存去冒險","o2":"不搶劫，不願造成別人的損失","s1":1,"m1":-1,"s2":-1,"m2":1},{"id":"J02","type":"","text":"學醫的猶太人回憶：「曾經在納粹的要求下，切下健康女孩的肉，把侏儒、殘疾人的身體用化學溶液保存。目的是放入帝國博物館，讓後代理解滅絕猶太人的行為是正當的。」 若你擁有醫學背景被聘為集中營醫生，你是否願意執行解剖活體的任務？","o1":"為了生存，執行任務","o2":"拒絕任務，無法殘忍對待同胞","s1":1,"m1":-2,"s2":-1,"m2":2},{"id":"J03","type":"","text":"猶太人遭受歧視的氛圍下，最慘的是猶太小孩。雅利安小孩會毆打他們，有些猶太人為了救小孩，不顧危險幫忙解圍，好讓猶太小孩有機會逃脫。 如果你見到猶太小孩被毆打，是否願意伸出援手解救他們？","o1":"伸出援手，解救小孩","o2":"不介入，擔心受到牽連","s1":-1,"m1":1,"s2":1,"m2":-1},{"id":"J04","type":"","text":"地鐵、街上，會有不認識的人靠近猶太人，放些東西到大衣口袋，像是蘋果、肉等，大多是猶太人不能取得的物資。 在猶太人被限制物資來源的情況下，你是否會將無法公開取得的物資分享給猶太人？","o1":"把物資分享給猶太人","o2":"不分享，物資有限","s1":-1,"m1":1,"s2":1,"m2":-1},{"id":"J05","type":"","text":"1939年大學、科學機構，被要求解雇猶太人。同時猶太人亦被禁止出入公共場所、參加體育比賽、擁有汽車牌照、電話和收音機。 你若是被解雇的一員，是否會挺身抗議不平等法律？","o1":"挺身抗議不公","o2":"默默接受，不冒生命危險","s1":-1,"m1":1,"s2":1,"m2":-1},{"id":"J06","type":"","text":"克羅赫瑪是比利時猶太人，1943年他與1900人一起被移送到奧斯威辛集中營的路上。途中有3名年輕人阻止了死亡列車前進，拯救231條人命。 如果你也在現場，是否願意和年輕人們一起阻止死亡列車的前進呢？","o1":"和年輕人一起阻止列車","o2":"留在車廂，害怕遭到納粹報復","s1":-1,"m1":1,"s2":1,"m2":-1},{"id":"J07","type":"","text":"葛柏是奧斯威辛集中營猶太人囚工，負責把猶太人屍體從毒氣室拉出來，再塞進焚屍爐火化。在黨衛軍的監視下，他必須取出受害者的值錢物品和金牙，然後再把屍體塞進焚燒爐。 如果你是葛柏，是否願意擔任這項工作？","o1":"接下工作，不計一切求生存","o2":"拒絕工作，不當納粹幫凶","s1":1,"m1":-1,"s2":-1,"m2":1},{"id":"J08","type":"","text":"鄰居門口站著兩位高大納粹，他們問：「霍恩斯坦太太是不是住在這裡？」結果她就被帶走了。我思考著是否應該通知她的女兒？但猶太人無法使用電話、夜晚又被禁止外出。 若是你，是否會冒著被納粹捕捉的風險，去告知霍恩斯坦太太的家人？","o1":"冒險通知她的家人","o2":"留在家中，不冒被捕的風險","s1":-1,"m1":1,"s2":1,"m2":-1},{"id":"J09","type":"","text":"「水晶之夜」使柏林成為人間煉獄，衝鋒隊在深夜以斧頭、長刀敲碎猶太商店的櫥窗玻璃。一對猶太夫婦木然看著，卻有人喊：「猶太人滾！」太太回嗆：「你這該死的豬！」先生面色慘白：「天啊～別再說了！」 如果是你，你會如何面對這場災難與羞辱？","o1":"出面指責雅利安人","o2":"閉嘴忍耐，息事寧人","s1":-1,"m1":1,"s2":1,"m2":-1},{"id":"J10","type":"","text":"長居英國的猶太人只能收容一位家族成員，並需繳交高額保證金。最終，父親決定獨自飛往英國接受庇護，留下女兒與太太在混亂的德國。 若是你擁有逃往英國的機會，是否會選擇拋下家人獨自前去英國接受庇護？","o1":"拋下家人，獨自前往英國","o2":"留下來，與家人團聚","s1":1,"m1":-1,"s2":-1,"m2":1},{"id":"J11","type":"","text":"凱明斯基擁有偽造護照的專業技術，他協助猶太人製造假護照，以避免被送至集中營。但此舉同時也讓他自己陷入危機。 如果你是凱明斯基，你會幫助猶太人製作假證件嗎？","o1":"製造假護照，盡可能幫助更多人","o2":"銷毀工具，獨善其身","s1":-1,"m1":2,"s2":1,"m2":0},{"id":"J12","type":"","text":"馬賽琳是一名13歲小女孩，在集中營裡負責拉馬鈴薯貨車。與她合作的另一個小女孩，因過度勞動與營養不良已奄奄一息。馬賽琳會偷留下馬鈴薯，讓她補充營養，維持體力。 如果你是馬賽琳，你也會這樣幫助小女孩嗎？","o1":"偷取馬鈴薯，補充她的營養","o2":"無視她的身體狀況","s1":-1,"m1":1,"s2":1,"m2":-1},{"id":"J13","type":"","text":"安妮·法蘭克為逃避查緝，和6名猶太人躲藏在密室，密室的空間尚可容納1人。此時，附近有位猶太人遭到追捕，密室裡7人開會討論是否要讓他進入密室。 如果你是安妮·法蘭克，你是否會冒險收容這位逃亡的猶太人？","o1":"冒險收容這位猶太人","o2":"拒絕收容，人多被發現的風險更高","s1":-1,"m1":1,"s2":1,"m2":-1},{"id":"J14","type":"","text":"史羅因在集中營時，因擁有修理水電技術，可自由來回於兩個看守營區。一位猶太人託他將親筆信和節省下來的食物，交給在另一個營區的7歲女兒。 如果你是史羅因，你會幫助這位猶太同胞嗎？","o1":"將食物與信親手交給他的女兒","o2":"假裝答應，燒掉信並留下食物","s1":-1,"m1":1,"s2":1,"m2":-1},{"id":"J15","type":"","text":"納粹黨員沃納有一個猶太情人伊迪斯，沃納想要與伊迪斯完成合法婚姻程序，以生養孩子。官方提出的條件是伊迪斯必須更改信仰，並進行基督教婚禮。 若你是伊迪斯，你會願意為生存改變猶太人信仰嗎？","o1":"改變信仰，以求活下去","o2":"拒絕改信，不放棄猶太信仰","s1":1,"m1":-1,"s2":-1,"m2":1},{"id":"J16","type":"","text":"一批辛德勒工廠的猶太工人正在集合，我獨自走到負責軍官面前說：「我應該在名單上，不知為何把我刪掉了？」軍官點頭示意我加入工人的行列，我終於脫離了地獄。 若你看到進入辛德勒工廠的機會，是否敢冒險一試？","o1":"冒險一試，爭取活命與家人團聚","o2":"不冒險，以免喪失生命","s1":-1,"m1":0,"s2":1,"m2":0},{"id":"J17","type":"","text":"開往集中營的火車上，每節車廂載滿80人，每人僅能攜帶幾塊麵包。車門被封死，車廂各指派一位廂長協助管理，如果有人逃脫，廂長就會被槍決。 若是你被指派為廂長，火車突然出軌，你會把握機會帶著同車的人逃亡嗎？","o1":"把握機會，帶同車的人逃亡","o2":"守住車門，以免自己被槍決","s1":-1,"m1":2,"s2":1,"m2":-2},{"id":"J18","type":"","text":"女記者露德與她的朋友們，替躲藏的猶太人、政治犯張羅了住處與食物配給卡，讓他們在藏身之處不致挨餓受凍。 若你也認識露德，是否會願意分享食物給這些躲藏著的猶太人呢？","o1":"分享食物，自己少吃一點無所謂","o2":"不分享，顧好自己的溫飽就夠了","s1":-1,"m1":1,"s2":1,"m2":-1},{"id":"J19","type":"","text":"集中營的工頭發現一個男孩嘴巴裡有金牙套，要求男孩交出。工頭惡狠狠地說：「如果不交出牙套，你將付出慘痛代價！」從此每天毆打男孩的父親。 如果你是男孩，看著父親天天遭人痛打，會不會交出金牙套呢？","o1":"為了父親，交出金牙套","o2":"留下金牙套，換取食物","s1":-1,"m1":1,"s2":1,"m2":-1},{"id":"J20","type":"","text":"有少數猶太人趁著遭遇空襲時，企圖逃離集中營，但失敗且被當場判刑，以儆效尤。營長用兩碗湯作為交換條件，徵求兩名集中營囚犯協助執行死刑。 你長久以來都處於飢餓狀態，要把握住這個機會嗎？","o1":"接受交換，協助執行死刑","o2":"拒絕交換，不忍心結束他人生命","s1":1,"m1":-1,"s2":-1,"m2":1},{"id":"J21","type":"","text":"集中營裡一位猶太父親忽然肚子痛，他走向警衛：「對不起，能否告訴我廁所在哪裡？」警衛從頭到腳打量他，突然重重賞給這位父親一記耳光。 如果你是這位父親的兒子，目睹一切，你會奮力保護自己的父親嗎？","o1":"衝上前去，保護父親","o2":"假裝沒看到，以保全自己","s1":-1,"m1":1,"s2":1,"m2":-1},{"id":"J22","type":"","text":"一名猶太女子在德軍佔領期間取得偽造文件，宣稱自己是雅利安人，躲過送進集中營的命運。 你在無意之間發現了這位女子的真實身分，你會向上級報告嗎？","o1":"向上級舉報，換取更好的待遇","o2":"不舉報，救人一命是好事","s1":1,"m1":-1,"s2":-1,"m2":1},{"id":"J23","type":"","text":"集中營的監工身邊會有貼身「小助手」，由年紀較小的男孩擔任，他們卻比大人更殘忍。一名13歲小助手，因為自己父親未妥善整理床舖而出手痛打。 你目睹這個情景，會出手阻止這名小助手嗎？","o1":"出聲阻止：「這是你的父親！」","o2":"裝作沒看到","s1":-1,"m1":1,"s2":1,"m2":-1},{"id":"J24","type":"","text":"集中營定期會舉行「淘汰競選」，猶太人必須全身脫光向前奔跑。此時，黨衛軍則將無法奔跑或是體力虛弱的猶太人，送入焚化爐。 你年邁的父親或許將無法通過淘汰競選，你會想辦法幫助他嗎？","o1":"陪在父親身邊，協助他向前衝","o2":"不管父親，以後也不必再分麵包給他","s1":-1,"m1":2,"s2":1,"m2":-2},{"id":"J25","type":"","text":"戰爭末期物資缺乏，集中營囚犯領不到食物，只能靠吃雪過活。好心工人會扔些麵包給囚犯，幾十個飢民為了麵包一團混戰，一位老人撿到一塊麵包…… 你也在現場，你會搶下老人手上的麵包嗎？","o1":"逼迫老人交出麵包","o2":"不搶麵包，繼續挨餓","s1":1,"m1":-1,"s2":-1,"m2":1},{"id":"J26","type":"","text":"集中營裡，病重的猶太父親已極度虛弱，營長對兒子說：「給你個建議，別再把你的麵包留給你父親，你應該吃下他的食物，才能存活下來。」 如果你是這位父親的兒子，你會聽從營長的建議嗎？","o1":"聽從建議，自己吃才能存活","o2":"不聽從，堅持延續父親生命","s1":1,"m1":-2,"s2":-1,"m2":2},{"id":"J27","type":"","text":"1933年《重設公職人員法》規定：「非雅利安人血統的公職人員沒有退休資格」，有超過1,200名猶太教授、助教遭無故解聘，經濟頓失依靠，淪為無業遊民。 你是否願意為了家中經濟，去重新學習手藝，成為皮匠或鞋匠？","o1":"學習一技之長，養活全家人","o2":"拒絕學手藝，不為五斗米折腰","s1":1,"m1":0,"s2":-1,"m2":0},{"id":"J28","type":"","text":"集中營裡，即將死去的猶太父親不斷呼喚兒子的名字，希望兒子可以在臨終之際陪伴在身邊，卻換來黨衛軍憤怒地用棍子毆打。 你知道父親在呼喚你，你會回應他的要求嗎？","o1":"衝到父親身邊，握著他的手","o2":"不敢回應，任由父親垂死掙扎","s1":-1,"m1":2,"s2":1,"m2":-2},{"id":"J29","type":"","text":"畢爾斯基四兄弟，在納粹追捕中逃進了原始森林，父母和其他家庭成員都不幸遇難。他們開始著手組織反抗軍對抗納粹軍隊。 如果你是畢爾斯基兄弟，是否會選擇組織武裝部隊進行反抗？","o1":"組織武裝部隊，拯救其他猶太人","o2":"躲藏起來，避開戰火","s1":-1,"m1":1,"s2":1,"m2":-1},{"id":"J30","type":"","text":"一對姊妹被命令搬入猶太隔離區時不願服從，坐在路邊泣不成聲。路過的波蘭人聽到哭聲，心生憐憫，把她們藏入農場，兩人因此倖存下來。 你會順從搬遷命令嗎？你不一定會有她們的幸運喔？","o1":"順從命令，搬入隔離區","o2":"不服從，自行決定命運","s1":1,"m1":0,"s2":-1,"m2":0},{"id":"J31","type":"chance","text":"二戰初期，何鳳山擔任中國駐維也納領事。他不忍見猶太人處境艱難，發放猶太人前往中國的生命簽證，一共救助2000多人。 2000年，他被以色列政府授予「國際義人」稱號，並在耶路撒冷紀念碑為其刻下「永遠不能忘記的中國人」。 你是住在維也納的猶太人，幸運取得何鳳山發放的「生命簽證」逃亡中國。","o1":"領受這份幸運","o2":"","s1":1,"m1":0},{"id":"J32","type":"chance","text":"荷蘭小鎮哈林的一家鐘錶店，樓上房間的衣櫃夾層就藏匿著一批猶太人。 店主布姆幫助800多位猶太人和地下反抗成員逃生。 1944年納粹逮捕了布姆，但納粹並沒有抓到密室裡的猶太人和地下反抗成員。 你是布姆的猶太人鄰居，藉由他的協助而逃過這場迫害。","o1":"領受這份幸運","o2":"","s1":1,"m1":0},{"id":"J33","type":"chance","text":"在立陶宛的日本領事杉原千畝，發出數千張日本過境簽證，來拯救猶太人生命。但此舉違反了日本外交部指示，因為當時日本是納粹德國的盟友。 據聞杉原千畝於離開立陶宛前，依然在火車站繼續簽發過境簽證。被問到動機，他說只是「出於對人類的愛」。 你也拿到了一份日本簽證，因此逃出歐洲。","o1":"領受這份幸運","o2":"","s1":1,"m1":0},{"id":"J34","type":"chance","text":"英國曾啟動「兒童救援」計畫，允許未滿17歲的猶太小孩到英國避難。 溫頓在英國尋找願意收養小孩的家庭，並用8列火車，將669名兒童從捷克送往英國。這些「溫頓兒童」及其子孫，約有6000人因溫頓而得以存活。 你是位15歲的猶太男孩，幸運獲得溫頓的協助得以前往英國。","o1":"領受這份幸運","o2":"","s1":1,"m1":0},{"id":"J35","type":"chance","text":"德勒斯基是德國雅利安女孩，但她不願意在軍工廠工作，因此用相當低的價格賣掉了工作證。 你身為猶太人，買到這一張假造的工作證，上方還印有納粹老鷹徽章。 你因此擁有基本的收入與工作機會，在戰爭期間的柏林幸運存活下來。","o1":"領受這份幸運","o2":"","s1":1,"m1":0}];
+const CARDS = {}; CARDS_LIST.forEach(c => { CARDS[c.id] = c; });
+const $ = id => document.getElementById(id);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const arr = v => v ? (Array.isArray(v) ? v.filter(Boolean) : Object.keys(v).sort((a,b)=>a-b).map(k => v[k])) : [];
+const fmt = t => { const d = new Date(t); const p = n => String(n).padStart(2,'0'); return d.getFullYear()+'/'+p(d.getMonth()+1)+'/'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes()); };
+const roleName = r => r === 'A' ? '雅利安人' : '猶太人';
+const pct = (a, b) => b ? Math.round(a * 100 / b) + '%' : '—';
+
+let RAW = {}, DB = null, TAB = 'students', SORT = { students: ['t', -1], cards: ['n', -1], games: ['t', -1] };
+
+// ---------- 資料整理 ----------
+function normalize() {
+  const games = [];
+  Object.keys(RAW || {}).forEach(gid => {
+    const g = RAW[gid]; if (!g || !g.players) return;
+    const players = arr(g.players).map((p, i) => {
+      const log = arr(p.log).map(e => ({ c: e.c, r: e.r || 0, m: e.m, cat: e.cat || '', s: e.s || 0, d: e.d || 0, x: e.x || '' }));
+      return { idx: i, nick: p.nick || '', cls: p.cls || '', role: p.role, survival: p.survival, moral: p.moral, dead: !!p.dead, deathRound: p.deathRound || 0,
+        chance: p.chance || 0, ending: p.ending || '', endingTitle: p.endingTitle || '', titles: arr(p.titles), badges: arr(p.badges), log };
+    });
+    games.push({ gid, t: g.t || 0, mode: g.mode, room: g.room || '', rounds: g.rounds || 0, allDead: !!g.allDead, players });
+  });
+  return games;
+}
+function filtered() {
+  const from = $('fFrom').value ? new Date($('fFrom').value + 'T00:00:00').getTime() : 0;
+  const to = $('fTo').value ? new Date($('fTo').value + 'T23:59:59').getTime() : Infinity;
+  const cls = $('fCls').value.trim().toLowerCase(), room = $('fRoom').value.trim(), mode = $('fMode').value;
+  return normalize().filter(g => g.t >= from && g.t <= to && (!room || g.room === room) && (!mode || g.mode === mode))
+    .map(g => cls ? Object.assign({}, g, { players: g.players.filter(p => p.cls.toLowerCase().includes(cls)) }) : g)
+    .filter(g => g.players.length);
+}
+const moralStats = log => { const real = log.filter(e => e.m === 0 || e.m === 1); return { n: real.length, m: real.filter(e => e.m === 1).length }; };
+
+// ---------- 畫面 ----------
+function render() {
+  const games = filtered();
+  const rows = []; games.forEach(g => g.players.forEach(p => rows.push({ g, p })));
+  const all = rows.reduce((a, r) => { const s = moralStats(r.p.log); a.n += s.n; a.m += s.m; return a; }, { n: 0, m: 0 });
+  const alive = rows.filter(r => !r.p.dead).length;
+  $('tiles').innerHTML = [
+    ['場次', games.length], ['學生人次', rows.length], ['道德選擇率', pct(all.m, all.n)], ['存活率', pct(alive, rows.length)]
+  ].map(t => `<div class="tile"><b>${t[1]}</b><span>${t[0]}</span></div>`).join('');
+  document.querySelectorAll('.tabs [data-tab]').forEach(b => b.classList.toggle('on', b.dataset.tab === TAB));
+  if (TAB === 'students') viewStudents(rows); else if (TAB === 'cards') viewCards(rows); else viewGames(games);
+}
+function sorter(tab, rows, getters) {
+  const [k, dir] = SORT[tab];
+  const f = getters[k] || (() => 0);
+  return rows.slice().sort((a, b) => { const x = f(a), y = f(b); return (x > y ? 1 : x < y ? -1 : 0) * dir; });
+}
+function head(tab, cols) {
+  return '<thead><tr>' + cols.map(c => c[1] ? `<th class="sort" data-sort="${tab}:${c[1]}">${c[0]}${SORT[tab][0] === c[1] ? (SORT[tab][1] > 0 ? ' ▲' : ' ▼') : ''}</th>` : `<th>${c[0]}</th>`).join('') + '</tr></thead>';
+}
+function viewStudents(rows) {
+  if (!rows.length) { $('view').innerHTML = '<div class="empty">目前沒有符合條件的紀錄。學生玩完一場遊戲後，成績會自動出現在這裡。</div>'; return; }
+  const G = { t: r => r.g.t, cls: r => r.p.cls, nick: r => r.p.nick, role: r => r.p.role, sv: r => r.p.survival, mo: r => r.p.moral,
+    res: r => r.p.dead ? r.p.deathRound : 99, mr: r => { const s = moralStats(r.p.log); return s.n ? s.m / s.n : -1; } };
+  const list = sorter('students', rows, G);
+  $('view').innerHTML = '<table>' + head('students', [['時間', 't'], ['班級座號', 'cls'], ['暱稱', 'nick'], ['身分', 'role'], ['生存', 'sv'], ['道德', 'mo'], ['結果', 'res'], ['道德選擇率', 'mr'], ['結局'], ['稱號'], ['徽章']]) + '<tbody>' +
+    list.map(r => { const p = r.p, s = moralStats(p.log), rate = s.n ? Math.round(s.m * 100 / s.n) : 0;
+      return `<tr class="click" data-g="${esc(r.g.gid)}" data-i="${p.idx}"><td>${fmt(r.g.t)}</td><td>${esc(p.cls) || '<span class="muted">—</span>'}</td><td>${esc(p.nick)}</td><td class="${p.role}">${roleName(p.role)}</td>
+      <td>${p.survival}</td><td>${p.moral}</td><td class="${p.dead ? 'bad' : 'ok'}">${p.dead ? '第' + p.deathRound + '回合退出' : '存活'}</td>
+      <td><span class="bar"><i style="width:${rate}%"></i></span>${pct(s.m, s.n)}</td><td>${esc(p.ending)}</td>
+      <td>${p.titles.map(t => `<span class="tag">${esc(t.l)}${t.lv ? ' Lv.' + t.lv : ''}</span>`).join('')}</td><td>${p.badges.map(b => `<span class="tag">${esc(b)}</span>`).join('')}</td></tr>`; }).join('') + '</tbody></table>';
+}
+function cardStats(rows) {
+  const m = {};
+  rows.forEach(r => r.p.log.forEach(e => {
+    const c = m[e.c] = m[e.c] || { id: e.c, n: 0, mo: 0, ds: 0, dm: 0, o1: 0, o2: 0 };
+    c.n++; if (e.m === 1) c.mo++; c.ds += e.s; c.dm += e.d;
+    const cd = CARDS[e.c]; if (cd) { if (e.x === cd.o1) c.o1++; else if (e.x === cd.o2) c.o2++; }
+  }));
+  return Object.values(m);
+}
+function viewCards(rows) {
+  const list = cardStats(rows);
+  if (!list.length) { $('view').innerHTML = '<div class="empty">目前沒有作答紀錄。</div>'; return; }
+  const G = { id: c => c.id, n: c => c.n, rate: c => c.mo / c.n, split: c => Math.abs(0.5 - c.mo / c.n), ds: c => c.ds / c.n, dm: c => c.dm / c.n };
+  const sorted = sorter('cards', list, G);
+  $('view').innerHTML = '<table>' + head('cards', [['卡號', 'id'], ['情境'], ['作答人次', 'n'], ['選道德選項', 'rate'], ['兩極程度（越上面越分歧）', 'split'], ['平均生存變化', 'ds'], ['平均道德變化', 'dm']]) + '<tbody>' +
+    sorted.map(c => { const cd = CARDS[c.id] || {}, rate = Math.round(c.mo * 100 / c.n), split = 100 - Math.abs(50 - rate) * 2;
+      return `<tr class="click" data-card="${esc(c.id)}"><td>${esc(c.id)}</td><td>${esc((cd.text || '').slice(0, 46))}${(cd.text || '').length > 46 ? '…' : ''}</td><td>${c.n}</td>
+      <td><span class="bar"><i style="width:${rate}%"></i></span>${rate}%</td><td>${split}%</td><td>${(c.ds / c.n).toFixed(2)}</td><td>${(c.dm / c.n).toFixed(2)}</td></tr>`; }).join('') + '</tbody></table>';
+}
+function viewGames(games) {
+  if (!games.length) { $('view').innerHTML = '<div class="empty">沒有符合條件的場次。</div>'; return; }
+  const G = { t: g => g.t, room: g => g.room, mode: g => g.mode, n: g => g.players.length, rounds: g => g.rounds };
+  const list = sorter('games', games, G);
+  $('view').innerHTML = '<table>' + head('games', [['時間', 't'], ['房間碼', 'room'], ['模式', 'mode'], ['人數', 'n'], ['進行回合', 'rounds'], ['班級座號'], ['']]) + '<tbody>' +
+    list.map(g => `<tr><td>${fmt(g.t)}</td><td>${esc(g.room) || '—'}</td><td>${g.mode === 'multi' ? '多機連線' : '單機同台'}</td><td>${g.players.length}</td><td>${g.rounds}${g.allDead ? '（全員退出）' : ''}</td>
+    <td>${g.players.map(p => esc(p.cls || p.nick)).join('、')}</td><td><button class="danger" data-del="${esc(g.gid)}">刪除</button></td></tr>`).join('') + '</tbody></table>';
+}
+
+// ---------- 詳細 ----------
+function openStudent(gid, i) {
+  const g = normalize().find(x => x.gid === gid); if (!g) return; const p = g.players[i];
+  $('dtitle').textContent = `${p.cls ? p.cls + '　' : ''}${p.nick}（${roleName(p.role)}）`;
+  const s = moralStats(p.log);
+  $('dbody').innerHTML = `<p class="muted">${fmt(g.t)}｜生存 ${p.survival}、道德 ${p.moral}｜${p.dead ? '第' + p.deathRound + '回合退出' : '存活'}｜道德選擇率 ${pct(s.m, s.n)}</p>
+    <p>結局：<b>${esc(p.ending)}</b> ${esc(p.endingTitle)}</p>
+    <p>稱號：${p.titles.map(t => `<span class="tag">${esc(t.l)}${t.lv ? ' Lv.' + t.lv : ''}</span>`).join('') || '—'}　徽章：${p.badges.map(b => `<span class="tag">${esc(b)}</span>`).join('') || '—'}</p>
+    <h3>逐題作答</h3>` + (p.log.length ? p.log.map(e => { const cd = CARDS[e.c] || {};
+      return `<div class="ch m${e.m}"><small>第 ${e.r} 回合｜${esc(e.c)}｜${e.m === 1 ? '道德選項' : e.m === 0 ? '務實選項' : '機會卡'}｜生存 ${e.s >= 0 ? '+' : ''}${e.s}、道德 ${e.d >= 0 ? '+' : ''}${e.d}</small><br>${esc(cd.text || '')}<br><b>▶ ${esc(e.x)}</b></div>`; }).join('') : '<p class="muted">沒有作答紀錄</p>');
+  $('dlg').showModal();
+}
+function openCard(id) {
+  const cd = CARDS[id] || {}, rows = []; filtered().forEach(g => g.players.forEach(p => p.log.forEach(e => { if (e.c === id) rows.push({ g, p, e }); })));
+  $('dtitle').textContent = `${id}　作答分布`;
+  const n1 = rows.filter(r => r.e.x === cd.o1).length, n2 = rows.filter(r => r.e.x === cd.o2).length;
+  $('dbody').innerHTML = `<p>${esc(cd.text || '')}</p>
+    <div class="ch m${cd.m1 > cd.m2 ? 1 : 0}"><b>① ${esc(cd.o1 || '')}</b><br><small>${n1} 人（${pct(n1, rows.length)}）｜生存 ${cd.s1}、道德 ${cd.m1}</small></div>
+    ${cd.o2 ? `<div class="ch m${cd.m2 > cd.m1 ? 1 : 0}"><b>② ${esc(cd.o2)}</b><br><small>${n2} 人（${pct(n2, rows.length)}）｜生存 ${cd.s2}、道德 ${cd.m2}</small></div>` : ''}
+    <h3>誰選了什麼</h3>` + rows.map(r => `<div class="ch m${r.e.m}"><small>${esc(r.p.cls)} ${esc(r.p.nick)}｜${fmt(r.g.t)}</small><br>${esc(r.e.x)}</div>`).join('');
+  $('dlg').showModal();
+}
+
+// ---------- CSV ----------
+function csv(rows) { return '﻿' + rows.map(r => r.map(v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"').join(',')).join('\r\n'); }
+function download(name, text) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type: 'text/csv;charset=utf-8' })); a.download = name; document.body.appendChild(a); a.click(); a.remove(); }
+function stamp() { return new Date().toISOString().slice(0, 10); }
+function exportStudents() {
+  const rows = [['時間', '房間碼', '模式', '班級座號', '暱稱', '身分', '最終生存', '最終道德', '結果', '道德選擇率', '結局', '稱號', '徽章']];
+  filtered().forEach(g => g.players.forEach(p => { const s = moralStats(p.log);
+    rows.push([fmt(g.t), g.room, g.mode === 'multi' ? '多機' : '單機', p.cls, p.nick, roleName(p.role), p.survival, p.moral, p.dead ? '第' + p.deathRound + '回合退出' : '存活',
+      s.n ? Math.round(s.m * 100 / s.n) + '%' : '', p.ending, p.titles.map(t => t.l + (t.lv ? ' Lv.' + t.lv : '')).join('、'), p.badges.join('、')]); }));
+  download('1940_學生名單_' + stamp() + '.csv', csv(rows));
+}
+function exportChoices() {
+  const rows = [['時間', '房間碼', '班級座號', '暱稱', '身分', '回合', '卡號', '情境', '選擇', '選項類型', '生存變化', '道德變化']];
+  filtered().forEach(g => g.players.forEach(p => p.log.forEach(e => rows.push([fmt(g.t), g.room, p.cls, p.nick, roleName(p.role), e.r, e.c, (CARDS[e.c] || {}).text || '', e.x,
+    e.m === 1 ? '道德' : e.m === 0 ? '務實' : '機會卡', e.s, e.d]))));
+  download('1940_逐題作答_' + stamp() + '.csv', csv(rows));
+}
+
+// ---------- 事件 ----------
+document.addEventListener('click', ev => {
+  const t = ev.target;
+  const sort = t.closest('[data-sort]'); if (sort) { const [tab, k] = sort.dataset.sort.split(':'); SORT[tab] = [k, SORT[tab][0] === k ? -SORT[tab][1] : -1]; render(); return; }
+  const del = t.closest('[data-del]'); if (del) { if (confirm('確定要刪除這一場的紀錄嗎？刪除後無法復原。')) DB.ref('records/' + del.dataset.del).remove(); return; }
+  const row = t.closest('tr.click'); if (row) { if (row.dataset.card) openCard(row.dataset.card); else openStudent(row.dataset.g, +row.dataset.i); return; }
+  const tab = t.closest('[data-tab]'); if (tab) { TAB = tab.dataset.tab; render(); }
+});
+['fFrom', 'fTo', 'fCls', 'fRoom', 'fMode'].forEach(id => $(id).addEventListener('input', render));
+$('fClear').onclick = () => { ['fFrom', 'fTo', 'fCls', 'fRoom', 'fMode'].forEach(id => { $(id).value = ''; }); render(); };
+$('csvStudents').onclick = exportStudents; $('csvChoices').onclick = exportChoices;
+$('dclose').onclick = () => $('dlg').close();
+
+// ---------- 登入與讀取 ----------
+function say(t, bad) { $('msg').textContent = t || ''; $('msg').className = bad ? 'bad' : ''; }
+let ref = null;
+function start(user) {
+  $('login').style.display = 'none'; $('app').style.display = 'block'; $('logout').style.display = ''; $('reload').style.display = '';
+  $('who').textContent = user.email || '';
+  DB = firebase.database();
+  if (ref) ref.off();
+  ref = DB.ref('records');
+  ref.on('value', s => { RAW = s.val() || {}; render(); }, err => {
+    $('app').style.display = 'none'; $('login').style.display = 'block';
+    say('這個帳號沒有查看權限（' + (err && err.code ? err.code : '讀取失敗') + '）。請改用已授權的 Google 帳號，或檢查 Firebase 規則中的 email 是否正確。', true);
+  });
+}
+try {
+  firebase.initializeApp(FIREBASE_CONFIG);
+  firebase.auth().onAuthStateChanged(u => { if (u) start(u); else { $('login').style.display = 'block'; $('app').style.display = 'none'; $('logout').style.display = 'none'; $('reload').style.display = 'none'; $('who').textContent = ''; } });
+} catch (e) { say('Firebase 載入失敗：' + e.message, true); }
+$('loginBtn').onclick = () => {
+  say('登入中…');
+  firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()).then(() => say('')).catch(e => {
+    if (e && e.code === 'auth/unauthorized-domain') say('這個網址尚未加入 Firebase 的「已授權網域」。請到 Authentication → Settings → Authorized domains 新增本網站網域。', true);
+    else say('登入失敗：' + (e && (e.code || e.message)), true);
+  });
+};
+$('logout').onclick = () => firebase.auth().signOut();
+$('reload').onclick = () => { if (ref) ref.once('value').then(s => { RAW = s.val() || {}; render(); }); };
+</script>
+</body>
+</html>
