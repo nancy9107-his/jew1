@@ -206,7 +206,7 @@
 
         @keyframes flipCard3D {
             0% {
-                transform: rotateY(-90deg) scale(0.9);
+                transform: rotateY(-90deg);
                 opacity: 0;
                 box-shadow: 0 0 0 rgba(0,0,0,0);
             }
@@ -214,7 +214,7 @@
                 box-shadow: 15px 20px 30px rgba(0,0,0,0.25);
             }
             100% {
-                transform: rotateY(0deg) scale(1);
+                transform: rotateY(0deg);
                 opacity: 1;
                 box-shadow: 8px 12px 25px rgba(0,0,0,0.15), inset 0 0 0 4px rgba(123, 98, 67, 0.3), inset 0 0 20px rgba(123, 98, 67, 0.05);
             }
@@ -750,18 +750,18 @@
         .card-content.chance-card::before { color: var(--amber); }
         .card-content.chance-card::after { content: "機會 " attr(data-id); border-color: var(--amber); color: var(--amber); }
         @keyframes flipCard3D {
-            0% { transform: rotateY(-90deg) scale(0.9); opacity: 0; box-shadow: 0 0 0 rgba(0,0,0,0); }
-            100% { transform: rotateY(0deg) scale(1); opacity: 1;
+            0% { transform: rotateY(-90deg); opacity: 0; box-shadow: 0 0 0 rgba(0,0,0,0); }
+            100% { transform: rotateY(0deg); opacity: 1;
                    box-shadow: 8px 12px 25px rgba(0,0,0,0.6), inset 0 0 0 4px #1c1a17, inset 0 0 0 5px #4a4638; }
         }
         .card-content.chance-card.flip-anim { animation-name: flipCard3DChance; }
         @keyframes flipCard3DChance {
-            0% { transform: rotateY(-90deg) scale(0.9); opacity: 0; }
-            100% { transform: rotateY(0deg) scale(1); opacity: 1;
+            0% { transform: rotateY(-90deg); opacity: 0; }
+            100% { transform: rotateY(0deg); opacity: 1;
                    box-shadow: 8px 12px 25px rgba(0,0,0,0.6), inset 0 0 0 4px #1c1a17, inset 0 0 0 5px #7a6428; }
         }
         /* 文字像打字機逐行印出 */
-        .card-content.flip-anim .card-text-body { animation: printOut 1.2s steps(12, end) both; }
+        .card-content.print-anim .card-text-body { animation: printOut 1.2s steps(12, end) both; }
         @keyframes printOut { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0 0 0 0); } }
         .option-btn {
             background: #26241f; border: 2px solid var(--border-color); border-left: 6px solid var(--border-color);
@@ -810,7 +810,7 @@
             .card-content.chance-card.flip-anim { animation-name: flipCard3DMobile; }
         }
         @media (prefers-reduced-motion: reduce) {
-            .card-content.flip-anim .card-text-body { animation: none !important; }
+            .card-content.print-anim .card-text-body { animation: none !important; }
         }
 
         /* --- 回合交接過場（全螢幕，擋住卡牌避免誤觸與偷看）--- */
@@ -886,8 +886,8 @@
 
         /* 手機翻牌動畫：不使用 perspective 屬性（會困住 fixed 視窗），改用 transform 內的 perspective() */
         @keyframes flipCard3DMobile {
-            0%   { transform: perspective(900px) rotateY(-90deg) scale(0.9); opacity: 0; }
-            100% { transform: perspective(900px) rotateY(0deg) scale(1); opacity: 1; }
+            0%   { transform: perspective(900px) rotateY(-90deg); opacity: 0; }
+            100% { transform: perspective(900px) rotateY(0deg); opacity: 1; }
         }
 
         /* 觸控裝置：取消 hover 位移，避免點擊後按鈕卡在位移狀態 */
@@ -990,7 +990,7 @@
             .bounce-anim { animation: none !important; color: var(--accent-green); transition: color 0.7s; }
             .death-banner { animation: none !important; }
             .option-btn:hover:not(:disabled) { transform: none; }
-            .card-content.flip-anim, .card-content.flip-anim { animation: none !important; }
+            .card-content.flip-anim, .card-content.print-anim .card-text-body { animation: none !important; }
             .options-group.fade-in { animation: none !important; opacity: 1; }
         }
 
@@ -3255,7 +3255,7 @@ const SceneArt = (function () {
             const cardDisplay = document.getElementById('card-text-display');
             const optionsDiv = document.getElementById('card-options-display');
 
-            cardDisplay.classList.remove('flip-anim');
+            cardDisplay.classList.remove('flip-anim', 'print-anim');
             optionsDiv.classList.remove('fade-in');
             void cardDisplay.offsetWidth;
             void optionsDiv.offsetWidth;
@@ -3279,7 +3279,7 @@ const SceneArt = (function () {
             }
 
             cardDisplay.setAttribute('data-id', card.id);
-            cardDisplay.classList.add('flip-anim');
+            cardDisplay.classList.add('flip-anim', 'print-anim');
             this.settleCard(cardDisplay);
             optionsDiv.classList.add('fade-in');
             AudioController.playFlipSound();
@@ -3292,20 +3292,27 @@ const SceneArt = (function () {
             if (Net.on) Net.decorate();
         },
 
-        // 翻牌動畫（含逐行印出文字）全部結束後，拿掉動畫狀態，讓卡片與插畫以原生解析度重新繪製
+        // 翻牌動畫一結束就立刻拿掉 3D／動畫狀態（插畫以原生解析度重新繪製，避免翻頁後殘留模糊）；
+        // 文字逐行印出是另一個動畫（print-anim），不含 3D，不影響插畫清晰度
         _flipTok: 0,
         settleCard: function(el) {
             const tok = ++this._flipTok;
-            const done = () => { if (tok === this._flipTok) el.classList.remove('flip-anim'); };
+            const flipDone = () => { if (tok === this._flipTok) el.classList.remove('flip-anim'); };
+            const printDone = () => { if (tok === this._flipTok) el.classList.remove('print-anim'); };
             const arm = () => {
                 try {
-                    const list = el.getAnimations ? el.getAnimations({ subtree: true }) : [];
-                    if (list.length) { Promise.all(list.map(a => a.finished.catch(() => {}))).then(done); return; }
+                    if (el.getAnimations) {
+                        const own = el.getAnimations({ subtree: false }), all = el.getAnimations({ subtree: true });
+                        if (own.length) Promise.all(own.map(a => a.finished.catch(() => {}))).then(flipDone); else flipDone();
+                        if (all.length) Promise.all(all.map(a => a.finished.catch(() => {}))).then(printDone); else printDone();
+                        return;
+                    }
                 } catch (e) {}
-                setTimeout(done, 1800);
+                setTimeout(flipDone, 900); setTimeout(printDone, 1800);
             };
             requestAnimationFrame(() => requestAnimationFrame(arm));
-            setTimeout(done, 2600);   // 保險：無論如何 2.6 秒後都會結束
+            setTimeout(flipDone, 1500);    // 保險
+            setTimeout(printDone, 2800);
         },
 
         showFeedback: function(optIndex, sChange, mChange) {
