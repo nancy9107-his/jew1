@@ -194,11 +194,13 @@
                 inset 0 0 20px rgba(123, 98, 67, 0.05);
             position: relative;
             transform-origin: center center;
-            transform-style: preserve-3d;
-            backface-visibility: hidden;
         }
 
+        /* 3D 屬性只在翻牌動畫進行時才啟用；動畫結束後會移除 flip-anim，
+           避免 iPad／Safari 把卡片（含濾鏡的插畫）留在低解析度的合成圖層而變模糊 */
         .card-content.flip-anim {
+            transform-style: preserve-3d;
+            backface-visibility: hidden;
             animation: flipCard3D 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
 
@@ -3278,6 +3280,7 @@ const SceneArt = (function () {
 
             cardDisplay.setAttribute('data-id', card.id);
             cardDisplay.classList.add('flip-anim');
+            this.settleCard(cardDisplay);
             optionsDiv.classList.add('fade-in');
             AudioController.playFlipSound();
             if (card.type === 'chance') AudioController.playChanceSound();
@@ -3287,6 +3290,22 @@ const SceneArt = (function () {
                 AudioController.playFinalRoundSound();
             }
             if (Net.on) Net.decorate();
+        },
+
+        // 翻牌動畫（含逐行印出文字）全部結束後，拿掉動畫狀態，讓卡片與插畫以原生解析度重新繪製
+        _flipTok: 0,
+        settleCard: function(el) {
+            const tok = ++this._flipTok;
+            const done = () => { if (tok === this._flipTok) el.classList.remove('flip-anim'); };
+            const arm = () => {
+                try {
+                    const list = el.getAnimations ? el.getAnimations({ subtree: true }) : [];
+                    if (list.length) { Promise.all(list.map(a => a.finished.catch(() => {}))).then(done); return; }
+                } catch (e) {}
+                setTimeout(done, 1800);
+            };
+            requestAnimationFrame(() => requestAnimationFrame(arm));
+            setTimeout(done, 2600);   // 保險：無論如何 2.6 秒後都會結束
         },
 
         showFeedback: function(optIndex, sChange, mChange) {
