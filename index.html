@@ -992,6 +992,56 @@
             .options-group.fade-in { animation: none !important; opacity: 1; }
         }
 
+        /* ===================================================           多機連線：模式選擇、等待室、輪流提示
+           ========================================================== */
+        .mode-grid { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; margin: 30px 0 10px; }
+        .mode-card { flex: 1 1 240px; max-width: 320px; background: #24221e; border: 2px solid var(--border-color); color: var(--text-main); border-radius: 4px;
+            padding: 22px 16px; cursor: pointer; font-family: inherit; text-align: center; box-shadow: 4px 6px 14px rgba(0,0,0,0.6); }
+        .mode-card:hover { border-color: var(--amber); transform: translateY(-2px); }
+        .mode-icon { font-size: 2.6rem; }
+        .mode-name { font-size: 1.6rem; font-weight: 900; color: var(--amber); letter-spacing: 3px; margin: 6px 0; }
+        .mode-desc { font-size: 1.05rem; color: var(--text-muted); line-height: 1.6; }
+        #net-panel { display: none; max-width: 520px; margin: 26px auto 0; padding: 18px 16px; border: 2px dashed var(--border-color); border-radius: 4px; }
+        #net-panel .player-input-group { margin-bottom: 14px; }
+        .net-row { display: flex; gap: 10px; justify-content: center; align-items: center; flex-wrap: wrap; margin-top: 12px; }
+        .net-row .btn { margin: 0; font-size: 1.2rem; padding: 10px 22px; }
+        #net-join-code { width: 8em; font-size: 1.5rem; letter-spacing: 6px; text-align: center; padding: 10px; border: 2px solid var(--border-color); }
+        .net-msg { text-align: center; min-height: 1.5em; margin: 12px 0 0; color: var(--text-muted); font-size: 1.05rem; line-height: 1.6; }
+        .net-msg.bad { color: var(--accent-red); font-weight: 900; }
+        #net-rejoin-btn { display: none; font-size: 1.1rem; padding: 10px 20px; margin-top: 16px; }
+        .net-code-box { text-align: center; margin: 18px 0; }
+        .net-code-label { color: var(--text-muted); letter-spacing: 4px; }
+        .net-code { font-size: 4.2rem; font-weight: 900; letter-spacing: 12px; color: var(--amber); text-shadow: 0 0 18px rgba(224,184,79,0.3); line-height: 1.2; }
+        #net-qr { display: inline-block; background: #fff; padding: 8px; margin-top: 8px; border-radius: 3px; }
+        #net-qr:empty { display: none; }
+        #net-link { font-size: 0.85rem; color: var(--text-muted); word-break: break-all; margin-top: 8px; }
+        #net-lobby-list { max-width: 460px; margin: 18px auto; }
+        .net-slot { display: flex; align-items: center; gap: 12px; padding: 10px 14px; margin-bottom: 8px; background: #24221e; border: 2px solid var(--border-color); border-radius: 3px; font-size: 1.3rem; font-weight: 900; }
+        .net-slot.empty { opacity: 0.45; border-style: dashed; font-weight: 400; }
+        .net-slot.me { border-color: var(--amber); }
+        .ns-no { color: var(--text-muted); width: 1.4em; }
+        .ns-name { flex: 1; }
+        .ns-dot { font-size: 0.9rem; font-weight: 400; }
+        .ns-dot.on { color: var(--accent-green); }
+        .ns-dot.off { color: var(--accent-red); }
+        #net-lobby-hint { text-align: center; color: var(--text-muted); line-height: 1.7; }
+        #net-start-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .net-banner { display: none; text-align: center; font-weight: 900; font-size: 1.25rem; padding: 10px 12px; margin: 0 0 14px; border-radius: 3px; border: 2px solid var(--border-color); line-height: 1.6; }
+        .net-banner.mine { background: rgba(224,88,75,0.16); border-color: var(--accent-red); color: #ffb3a8; animation: netPulse 1.6s ease-in-out infinite; }
+        .net-banner.wait { background: rgba(224,184,79,0.08); border-color: #7a6a3c; color: var(--amber); }
+        @keyframes netPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(224,88,75,0.0); } 50% { box-shadow: 0 0 14px 2px rgba(224,88,75,0.45); } }
+        #net-skip { display: none; margin: 0 auto 14px; font-size: 1.05rem; padding: 8px 16px; }
+        .roster-item.off svg { opacity: 0.4; }
+        .roster-item.off::before { content: "離線"; position: absolute; top: 0; left: 0; font-size: 0.7rem; color: var(--accent-red); font-weight: 900; }
+        .me-tag { display: inline-block; margin-left: 4px; padding: 0 5px; font-size: 0.7rem; border: 1px solid var(--amber); color: var(--amber); border-radius: 2px; vertical-align: middle; }
+        .me-flag { color: var(--amber); font-weight: 900; font-size: 0.95rem; margin-top: 2px; }
+        .fb-wait { margin-top: 12px; color: var(--text-muted); font-size: 1rem; }
+        .net-toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 9998; background: #2b2824; color: var(--amber); border: 2px solid var(--amber);
+            padding: 10px 18px; border-radius: 3px; font-weight: 900; opacity: 0; pointer-events: none; transition: opacity 0.3s; max-width: 90vw; text-align: center; }
+        .net-toast.show { opacity: 1; }
+        #net-roles-note { display: none; text-align: center; color: var(--text-muted); font-size: 1.05rem; line-height: 1.7; }
+        @media (max-width: 768px) { .net-code { font-size: 3.2rem; letter-spacing: 8px; } .mode-card { max-width: none; } }
+=======
         /* --- 稱號等級與「升級！」提示 --- */
         .lv-tag { display: inline-block; font-size: 0.75em; font-weight: 900; padding: 0 6px; margin-left: 2px;
             border-radius: 3px; background: var(--amber); color: #140f0d; letter-spacing: 1px; vertical-align: 1px; }
@@ -1063,7 +1113,47 @@ window.addEventListener('error', function (e) {
     <h1>1940 ：誰能活下去？</h1>
     <div class="file-meta">檔案編號 1940-DE ｜ 保密等級：機密 ｜ 僅限歷史審判庭閱覽</div>
 
-    <div id="step-1" class="step-section active">
+    <div id="step-0" class="step-section active">
+        <h2>選擇遊戲方式</h2>
+        <p style="text-align: center; color: var(--text-muted);">全班共用一台裝置，或是每人一台裝置連進同一個房間。</p>
+        <div class="mode-grid">
+            <button class="mode-card" onclick="Net.chooseSingle()">
+                <div class="mode-icon">📱</div><div class="mode-name">單機同台</div>
+                <div class="mode-desc">共用一台裝置，輪流操作<br>（1～6 人，不需網路）</div>
+            </button>
+            <button class="mode-card" onclick="Net.chooseMulti()">
+                <div class="mode-icon">📡</div><div class="mode-name">多機連線</div>
+                <div class="mode-desc">每人一台裝置，輸入房間碼進入同一場遊戲<br>（2～6 人，需要網路）</div>
+            </button>
+        </div>
+        <div id="net-panel">
+            <div class="player-input-group"><label>我的名字</label><input type="text" id="net-name" placeholder="輸入名字(3字內)" maxlength="3"></div>
+            <div class="net-row"><button class="btn" onclick="Net.create()">＋ 建立新房間</button></div>
+            <div class="net-row" style="margin-top: 22px;">
+                <input type="text" id="net-join-code" inputmode="numeric" maxlength="4" placeholder="房間碼">
+                <button class="btn" onclick="Net.join()">加入房間</button>
+            </div>
+            <button id="net-rejoin-btn" class="btn"></button>
+            <div id="net-msg" class="net-msg"></div>
+        </div>
+    </div>
+
+    <div id="step-L" class="step-section">
+        <h2>等待玩家加入</h2>
+        <div class="net-code-box">
+            <div class="net-code-label">房間碼</div>
+            <div id="net-room-code" class="net-code">----</div>
+            <div id="net-qr"></div>
+            <div id="net-link"></div>
+        </div>
+        <div id="net-lobby-list"></div>
+        <div class="player-input-group"><label>我的名字</label><input type="text" id="net-my-name" maxlength="3" onchange="Net.renameMe(this.value)"></div>
+        <p id="net-lobby-hint"></p>
+        <button id="net-start-btn" class="btn" onclick="Net.startGame()">開始遊戲（抽籤身分）</button>
+        <button class="btn" style="font-size: 1.1rem; padding: 8px 20px; margin-top: 14px;" onclick="Net.leave()">離開房間</button>
+    </div>
+
+    <div id="step-1" class="step-section">
         <h2>步驟一：設定玩家人數與姓名</h2>
         <p style="text-align: center; color: var(--text-muted);">請選擇遊戲人數（1至6人），並輸入玩家姓名（限三個字內）。</p>
         <div style="text-align: center; margin: 40px 0;">
@@ -1092,6 +1182,7 @@ window.addEventListener('error', function (e) {
         <h2>步驟二：身分抽籤結果</h2>
         <p style="text-align: center; color: var(--text-muted);">歷史的命運已為各位指派了時代身分：</p>
         <div id="identity-results" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin: 40px 0;"></div>
+        <p id="net-roles-note">每個人只能替自己的檔案「換個造型」。確認大家都看完身分後，任何一位玩家按下「開始情境抉擇」即可。</p>
         <button class="btn" onclick="Page2_RoleResult.startGame()">開始情境抉擇</button>
     </div>
 
@@ -1104,6 +1195,8 @@ window.addEventListener('error', function (e) {
             <span id="current-round-info">回合：1 / 10</span>
         </div>
 
+        <div id="net-banner" class="net-banner"></div>
+        <button id="net-skip" class="btn" onclick="Page3_Gameplay.skipTurn()"></button>
         <div id="player-roster" class="player-roster"></div>
         <div id="player-titles" class="player-titles"></div>
 
@@ -1129,11 +1222,26 @@ window.addEventListener('error', function (e) {
         <h2>歷史審判與結局</h2>
         <p style="text-align: center; color: var(--text-muted);">歷史的洪流無情吞噬，以下是最終統計與結局：</p>
         <div id="final-results-container"></div>
-        <button class="btn" onclick="location.reload()">重新開始遊戲</button>
+        <button class="btn" onclick="Net.restart()">重新開始遊戲</button>
     </div>
 </div>
 
 <script>
+    // ==========================================================
+    // ★★★ 多機連線設定 ★★★
+    // 到 Firebase 控制台建立專案後，把「firebaseConfig」的內容貼在下面（逐項填入引號內）。
+    // 不填也沒關係：「單機同台」模式完全不受影響。
+    // ==========================================================
+    const FIREBASE_CONFIG = {
+        apiKey: "AIzaSyCMhylNI8X5Pc8AF_aV4wRp2jCzNidA3jA",
+        authDomain: "jew1-21ffb.firebaseapp.com",
+        databaseURL: "https://jew1-21ffb-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "jew1-21ffb",
+        storageBucket: "jew1-21ffb.firebasestorage.app",
+        messagingSenderId: "284932916231",
+        appId: "1:284932916231:web:4825e7d901a467625016a2"
+    };
+
     const gCards = [
         { id: "G01", text: "G01\n凡穆勒醫生認為精神病患者和殘疾兒童是「浪費糧食的人」、「無用之人只是國家負擔」，將其安樂死是正當的行為。\n你是否會將劇毒調換為無害藥劑，並協助病童逃離醫院？", opt1: "暗中替換藥劑，協助病童逃離", opt2: "遵照命令執行安樂死", s1: -1, m1: 2, s2: 1, m2: -2, x1: 1, x2: -1, fb1: "你成功救下了病童，但蓋世太保對藥劑的消耗起了疑心，你被列入了監視名單。", fb2: "你冷酷地執行了命令。長官對你的忠誠表示讚賞，但每當深夜，你總會聽見孩童的哭聲。" },
         { id: "G02", text: "G02\n戈林將軍在一戰時創下擊落22架敵機的紀錄，因此被希特勒任命為德國空軍總司令。但是，完善空軍設備的經費卻是他強搶猶太人的財產而來。\n若你是戈林，是否會用猶太人財產來完備德國空軍？", opt1: "動用猶太人財產壯大空軍", opt2: "拒絕侵吞他人財產", s1: 1, m1: -1, s2: -1, m2: 1, fb1: "德國空軍日益壯大，你的權力也達到了頂峰，但雙手已沾滿無辜者的鮮血。", fb2: "你拒絕了這項提議。元首對你的軟弱感到失望，你的空軍預算遭到大幅削減。" },
@@ -1293,6 +1401,17 @@ window.addEventListener('error', function (e) {
     };
 
     const GameUtils = {
+        // 可重現的亂數：多機連線時，所有裝置用同一個種子，抽到的稱號／結局文字才會一致；單機時就是一般亂數
+        rnd: function(tag) {
+            if (!Net.on || !Net.seed) return Math.random();
+            const str = Net.seed + '|' + tag;
+            let h = 1779033703 ^ str.length;
+            for (let i = 0; i < str.length; i++) { h = Math.imul(h ^ str.charCodeAt(i), 3432918353); h = (h << 13) | (h >>> 19); }
+            let t = (h += 0x6D2B79F5);
+            t = Math.imul(t ^ (t >>> 15), t | 1);
+            t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+            return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        },
         shuffleArray: function(array) {
             let arr = [...array];
             for (let i = arr.length - 1; i > 0; i--) {
@@ -2752,38 +2871,45 @@ const SceneArt = (function () {
                 `;
             }
         },
-        submit: function() {
-            const count = parseInt(document.getElementById('player-count').value);
+        // 依名單建立所有玩家（單機與多機共用）
+        buildPlayers: function(names) {
+            const count = names.length;
             GameState.players = []; GameState.lastSacrifice = null;
             GameState.initCardPools();
 
             let roles = [];
-            
+
             if (count === 1) {
                 roles.push(Math.random() < 0.5 ? 'A' : 'J');
             } else {
-                for (let i = 0; i < count; i++) { 
-                    roles.push(i < Math.round(count / 2) ? 'A' : 'J'); 
+                for (let i = 0; i < count; i++) {
+                    roles.push(i < Math.round(count / 2) ? 'A' : 'J');
                 }
                 roles = GameUtils.shuffleArray(roles);
             }
 
             for (let i = 0; i < count; i++) {
-                const nameInput = document.getElementById(`p-name-${i}`).value.trim() || `玩家${i+1}`;
-                GameState.players.push({ 
+                const nameInput = (names[i] || '').trim() || `玩家${i+1}`;
+                GameState.players.push({
                     rawName: nameInput,
                     name: nameInput.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),
-                    role: roles[i], 
-                    survival: START_STATS.survival, 
-                    moral: START_STATS.moral, 
+                    role: roles[i],
+                    survival: START_STATS.survival,
+                    moral: START_STATS.moral,
                     isDead: false,
-                    history: [], 
+                    history: [],
                     choiceLog: [],
                     chanceCount: 0,
-                    worstDecision: { cardId: null, cardText: null, choice: null, deduction: 0 } 
+                    worstDecision: { cardId: null, cardText: null, choice: null, deduction: 0 }
                 });
             }
             AvatarFactory.assignAll(GameState.players);
+        },
+        submit: function() {
+            const count = parseInt(document.getElementById('player-count').value);
+            const names = [];
+            for (let i = 0; i < count; i++) names.push(document.getElementById(`p-name-${i}`).value);
+            this.buildPlayers(names);
             Page2_RoleResult.init();
         }
     };
@@ -2798,7 +2924,8 @@ const SceneArt = (function () {
                 <div class="avatar-name">${p.name}</div>
                 <div class="avatar-occ">「${p.avatar.occ.label}」</div>
                 <div class="avatar-role" style="color: ${roleColor};">${roleName}</div>
-                <button class="reroll-btn" onclick="Page2_RoleResult.reroll(${i})">🎲 換個造型</button>
+                ${Net.on && Net.myIdx === i ? '<div class="me-flag">★ 這是你的檔案</div>' : ''}
+                ${(!Net.on || Net.myIdx === i) ? `<button class="reroll-btn" onclick="Page2_RoleResult.reroll(${i})">🎲 換個造型</button>` : ''}
             `;
         },
         init: function() {
@@ -2807,17 +2934,25 @@ const SceneArt = (function () {
             GameState.players.forEach((p, i) => {
                 resContainer.innerHTML += `<div class="avatar-card" id="avatar-card-${i}" style="--d:${(i * 0.15).toFixed(2)}s">${this.cardInner(p, i)}</div>`;
             });
+            const note = document.getElementById('net-roles-note');
+            if (note) note.style.display = Net.on ? 'block' : 'none';
             GameUtils.switchStep(2);
         },
-        reroll: function(i) {
-            AvatarFactory.reroll(i);
+        refreshCard: function(i) {
             const card = document.getElementById(`avatar-card-${i}`);
+            if (!card) return;
             card.classList.remove('rerolled');
             card.innerHTML = this.cardInner(GameState.players[i], i);
             void card.offsetWidth;
             card.classList.add('rerolled');
         },
-        startGame: function() { Page3_Gameplay.init(); }
+        reroll: function(i) {
+            if (Net.on && Net.myIdx !== i) return;
+            AvatarFactory.reroll(i);
+            this.refreshCard(i);
+            if (Net.on) Net.pushAvatar(i);
+        },
+        startGame: function() { if (Net.on) Net.beginPlay(); else Page3_Gameplay.init(); }
     };
 
 
@@ -2876,7 +3011,7 @@ const SceneArt = (function () {
             let cand = pool.filter(x => everyone.indexOf(x) === -1);
             if (!cand.length) cand = pool.filter(x => mine.indexOf(x) === -1);
             if (!cand.length) cand = pool;
-            const label = cand[Math.floor(Math.random() * cand.length)];
+            const label = cand[Math.floor(GameUtils.rnd('tl' + GameState.players.indexOf(p) + key + lv) * cand.length)];
             // 只有「第一次達到」更高等級才算升級（數值上下起伏時不重複提示）
             p._tlMax = p._tlMax || {};
             if (old && lv > old.lv && lv > (p._tlMax[key] || 0)) this._upgrades.push({ player: p, key: key, lv: lv, label: label });
@@ -3007,7 +3142,7 @@ const SceneArt = (function () {
         _handoff: false,
         _handoffTimer: null,
         beginTurn: function(prevIdx) {
-            const needHandoff = GameState.players.length > 1 && prevIdx !== GameState.currentPlayerIndex;
+            const needHandoff = !Net.on && GameState.players.length > 1 && prevIdx !== GameState.currentPlayerIndex;
             if (needHandoff) this.showHandoff(); else this.loadQuestion();
         },
         showHandoff: function() {
@@ -3068,10 +3203,10 @@ const SceneArt = (function () {
                 const main = titles[i][0];
                 const pin = main ? `<span class="title-pin" title="${main.label}">${main.icon}</span>` : '';
                 return `
-                <div class="roster-item ${p.isDead ? 'dead' : ''} ${(i === cur && !p.isDead) ? 'current' : ''}">
+                <div class="roster-item ${p.isDead ? 'dead' : ''} ${(i === cur && !p.isDead) ? 'current' : ''} ${(Net.on && !p.isDead && Net.isOffline(i)) ? 'off' : ''}">
                     ${pin}
                     ${AvatarFactory.render(p.avatar, 44)}
-                    <div>${p.name}</div>
+                    <div>${p.name}${(Net.on && i === Net.myIdx) ? '<span class="me-tag">你</span>' : ''}</div>
                 </div>`;
             }).join('');
             TitleSystem.renderPanel();
@@ -3090,8 +3225,10 @@ const SceneArt = (function () {
             document.getElementById('current-round-info').innerText = `回合：${GameState.currentRound} / ${this.MAX_ROUND}`;
             this.renderRoster();
 
-            const card = GameState.drawCard(player.role);
+            const card = (Net.on && GameState.currentCard) ? GameState.currentCard : GameState.drawCard(player.role);
             GameState.currentCard = card;
+            document.getElementById('fb-next-btn').style.display = '';
+            if (!Net.on) document.getElementById('net-banner').style.display = 'none';
 
             const cardDisplay = document.getElementById('card-text-display');
             const optionsDiv = document.getElementById('card-options-display');
@@ -3124,15 +3261,17 @@ const SceneArt = (function () {
             optionsDiv.classList.add('fade-in');
             AudioController.playFlipSound();
             if (card.type === 'chance') AudioController.playChanceSound();
-            if (this.statusOf(player.survival).cls === 's-critical') AudioController.playHeartbeatSound(0.7);
+            if (this.statusOf(player.survival).cls === 's-critical' && (!Net.on || Net.myIdx === GameState.currentPlayerIndex)) AudioController.playHeartbeatSound(0.7);
             if (GameState.currentRound === this.MAX_ROUND && !this._finalBell) {
                 this._finalBell = true;
                 AudioController.playFinalRoundSound();
             }
+            if (Net.on) Net.decorate();
         },
 
         showFeedback: function(optIndex, sChange, mChange) {
             if (this._handoff) return;   // 交接過場期間不接受選擇
+            if (Net.on && Net.myIdx !== GameState.currentPlayerIndex) return;   // 多機：只有輪到的人能選
             AudioController.playConfirmSound();
             const player = GameState.getCurrentPlayer();
             const card = GameState.currentCard;
@@ -3224,6 +3363,7 @@ const SceneArt = (function () {
                 AudioController.playResultSound('neutral');
             }
 
+            const fbSnd = player.isDead ? 'dead' : (sChange <= -2 ? 'heavy' : (sChange < 0 ? 'down' : (sChange > 0 ? 'up' : 'neutral')));
             document.getElementById('fb-player-title').innerHTML = card.type === 'chance' ? `【 ${player.name} 的機會 】` : `【 ${player.name} 的抉擇 】`;
             document.getElementById('fb-text').innerHTML = GameUtils.highlightKeywords(feedbackText.replace(/\n/g, '<br>'));
             this._baseHint = hintHtml;
@@ -3234,6 +3374,44 @@ const SceneArt = (function () {
             btn.disabled = !!this._pendingCross;
             document.getElementById('feedback-overlay').classList.add('active');
             btn.focus({ preventScroll: true });
+            this.renderRoster();
+            // 多機：把這次的結果同步給其他裝置
+            this._fb = {
+                title: document.getElementById('fb-player-title').innerHTML,
+                text: document.getElementById('fb-text').innerHTML,
+                hint: hintHtml,
+                cross: this._pendingCross ? '' : crossHtml,
+                pc: this._pendingCross ? { x: this._pendingCross.x, t: this._pendingCross.targets.map(q => GameState.players.indexOf(q)) } : null,
+                dead: !!player.isDead, snd: fbSnd, btn: btn.innerText
+            };
+            if (Net.on) Net.publish('feedback', { fb: this._fb });
+        },
+
+        // 其他玩家的裝置：唯讀地顯示這次的結果（輪到的人才有「繼續」按鈕）
+        showRemoteFeedback: function(fb, interactive) {
+            const overlay = document.getElementById('feedback-overlay');
+            const was = overlay.classList.contains('active');
+            const actor = GameState.getCurrentPlayer();
+            document.getElementById('fb-player-title').innerHTML = fb.title;
+            document.getElementById('fb-text').innerHTML = fb.text;
+            let stats = fb.hint;
+            if (fb.cross) stats += '<br>' + fb.cross;
+            this._pendingCross = null; this._baseHint = fb.hint; this._fb = fb;
+            if (fb.pc) {
+                const targets = fb.pc.t.map(i => GameState.players[i]);
+                if (interactive) { this._pendingCross = { x: fb.pc.x, targets: targets }; stats += '<br>' + this.crossPickerHtml(fb.pc.x, targets); }
+                else stats += '<br><span class="fb-hint">⏳ 等待【' + actor.name + '】指定連動對象…</span>';
+            }
+            if (!interactive) stats += '<div class="fb-wait">等待【' + actor.name + '】按下「繼續」…</div>';
+            document.getElementById('fb-stats').innerHTML = stats;
+            const btn = document.getElementById('fb-next-btn');
+            btn.style.display = interactive ? '' : 'none';
+            btn.innerText = fb.btn || '繼續下一回合 ➔';
+            btn.disabled = !!this._pendingCross;
+            overlay.classList.add('active');
+            if (!was) {
+                if (fb.dead) this.playDeathSound(); else AudioController.playResultSound(fb.snd || 'neutral');
+            }
             this.renderRoster();
         },
 
@@ -3265,6 +3443,7 @@ const SceneArt = (function () {
             const btn = document.getElementById('fb-next-btn');
             btn.disabled = false; btn.focus({ preventScroll: true });
             this.renderRoster();
+            if (Net.on && this._fb) { this._fb.cross = html; this._fb.pc = null; Net.publish('feedback', { fb: this._fb }); }
         },
 
         playDeathSound: function() {
@@ -3282,20 +3461,10 @@ const SceneArt = (function () {
             AudioController.safePlay(gameOverSound, null, e => console.log("無法自動播放死亡音效:", e));
         },
 
-        nextTurn: function() {
-            const overlay = document.getElementById('feedback-overlay');
-            if (!overlay.classList.contains('active')) return;
-            if (this._pendingCross) return;   // 尚未指定連動對象
-            overlay.classList.remove('active');
-
+        // 輪到下一位（略過已退出者）；繞回第一位時回合數 +1。回傳是否結束
+        advanceState: function() {
             const players = GameState.players;
-            if (players.every(p => p.isDead)) {
-                this.renderRoster();
-                Page4_Ending.init(true);
-                return;
-            }
-
-            // 找下一位仍在遊戲中的玩家；繞回第一位時回合數 +1
+            if (players.every(p => p.isDead)) return { end: 'allDead' };
             const prevIdx = GameState.currentPlayerIndex;
             let idx = prevIdx;
             do {
@@ -3303,12 +3472,45 @@ const SceneArt = (function () {
                 if (idx === 0) GameState.currentRound++;
             } while (players[idx].isDead);
             GameState.currentPlayerIndex = idx;
+            if (GameState.currentRound > this.MAX_ROUND) return { end: 'rounds' };
+            return { end: null, prevIdx: prevIdx };
+        },
 
-            if (GameState.currentRound > this.MAX_ROUND) {
+        nextTurn: function() {
+            const overlay = document.getElementById('feedback-overlay');
+            if (!overlay.classList.contains('active')) return;
+            if (this._pendingCross) return;   // 尚未指定連動對象
+            if (Net.on && Net.myIdx !== GameState.currentPlayerIndex) return;
+            overlay.classList.remove('active');
+            this.moveOn();
+        },
+
+        moveOn: function() {
+            const r = this.advanceState();
+            if (r.end === 'allDead') {
+                this.renderRoster();
+                if (Net.on) Net.publish('ended', { allDead: true });
+                Page4_Ending.init(true);
+                return;
+            }
+            if (r.end === 'rounds') {
+                if (Net.on) Net.publish('ended', { allDead: false });
                 Page4_Ending.init(false);
                 return;
             }
-            this.beginTurn(prevIdx);
+            if (Net.on) {
+                GameState.currentCard = GameState.drawCard(GameState.getCurrentPlayer().role);
+                Net.publish('turn');
+            }
+            this.beginTurn(r.prevIdx);
+        },
+
+        // 多機：目前輪到的玩家離線太久時，由其他玩家代為跳過
+        skipTurn: function() {
+            if (!Net.on || (Net.phase !== 'turn' && Net.phase !== 'feedback')) return;
+            document.getElementById('feedback-overlay').classList.remove('active');
+            this._pendingCross = null;
+            this.moveOn();
         }
     };
 
@@ -3860,7 +4062,7 @@ const SceneArt = (function () {
 
                 let availableEndings = possibleEndingIds.filter(id => !usedEndings.has(id));
                 if (availableEndings.length === 0) availableEndings = possibleEndingIds;
-                const randId = availableEndings[Math.floor(Math.random() * availableEndings.length)];
+                const randId = availableEndings[Math.floor(GameUtils.rnd('e' + idx) * availableEndings.length)];
                 usedEndings.add(randId); 
 
                 const chosenEnding = endingsDB[randId];
@@ -3946,12 +4148,411 @@ const SceneArt = (function () {
         }
     };
 
+    // ==========================================================
+    // 多機連線模式（Firebase Realtime Database）
+    // 每位玩家用自己的裝置加入同一個房間；沒有主持端，六台地位相同。
+    // 做法：全場只有一份「遊戲快照」存在資料庫，輪到誰，誰的裝置負責結算並寫入新快照，
+    //       其餘裝置即時接收並顯示（輪到的人才能點選項，其他人可一起看題、討論）。
+    // ==========================================================
+    const Net = {
+        on: false, db: null, room: null, cid: null, name: '', myIdx: -1, slot: -1,
+        phase: 'idle', seed: '', seq: 0, cids: [], lobby: {}, online: {}, presLoaded: false,
+        gameStarted: false, pendingSeq: -1, pendingJson: null, epoch: 0, q: Promise.resolve(),
+        _refs: [], _av: {}, _timer: null, _offSince: null, _offFor: -1, _qrDone: false, _alertKey: '',
+        MAX: 6,
+        LIBS: [
+            'https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js',
+            'https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js'
+        ],
+        QR_LIB: 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js',
+
+        // ---------- 工具 ----------
+        store: function(k, v) {
+            try {
+                if (v === undefined) return window.localStorage.getItem(k);
+                if (v === null) window.localStorage.removeItem(k); else window.localStorage.setItem(k, v);
+            } catch (e) {}
+            return null;
+        },
+        getCid: function() {
+            let c = this.store('1940cid');
+            if (!c) { c = 'c' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36); this.store('1940cid', c); }
+            return c;
+        },
+        R: function(sub) { return this.db.ref('rooms/' + this.room + (sub ? '/' + sub : '')); },
+        esc: function(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); },
+        msg: function(text, bad) {
+            const el = document.getElementById('net-msg');
+            if (!el) return;
+            el.textContent = text || ''; el.className = 'net-msg' + (bad ? ' bad' : '');
+        },
+        toast: function(text) {
+            let t = document.getElementById('net-toast');
+            if (!t) { t = document.createElement('div'); t.id = 'net-toast'; t.className = 'net-toast'; document.body.appendChild(t); }
+            t.textContent = text; t.classList.add('show');
+            clearTimeout(this._toastT); this._toastT = setTimeout(() => t.classList.remove('show'), 2600);
+        },
+        loadScript: function(url) {
+            return new Promise((resolve, reject) => {
+                const s = document.createElement('script');
+                const t = setTimeout(() => reject(new Error('載入逾時：' + url)), 12000);
+                s.src = url; s.onload = () => { clearTimeout(t); resolve(); };
+                s.onerror = () => { clearTimeout(t); reject(new Error('無法載入：' + url)); };
+                document.head.appendChild(s);
+            });
+        },
+        configured: function() {
+            return !!(FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.databaseURL);
+        },
+        connect: async function() {
+            if (this.db) return;
+            if (typeof firebase === 'undefined' || !firebase.database) {
+                for (const u of this.LIBS) await this.loadScript(u);
+            }
+            if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+            this.db = firebase.database();
+        },
+
+        // ---------- 首頁 ----------
+        init: function() {
+            const params = new URLSearchParams(location.search);
+            const code = (params.get('room') || '').replace(/\D/g, '').slice(0, 4);
+            const nameEl = document.getElementById('net-name');
+            if (nameEl) nameEl.value = this.store('1940name') || '';
+            if (code) { this.chooseMulti(); document.getElementById('net-join-code').value = code; }
+            // 上次的房間（6 小時內）
+            try {
+                const s = JSON.parse(this.store('1940session') || 'null');
+                if (s && s.room && Date.now() - s.t < 6 * 3600 * 1000) {
+                    const b = document.getElementById('net-rejoin-btn');
+                    b.style.display = 'block'; b.textContent = '↩ 回到上次的房間（' + s.room + '）';
+                    b.onclick = () => this.run(() => this.joinRoom(s.room, s.name || ''));
+                }
+            } catch (e) {}
+        },
+        chooseSingle: function() { this.on = false; GameUtils.switchStep(1); },
+        chooseMulti: function() {
+            document.getElementById('net-panel').style.display = 'block';
+            if (!this.configured()) {
+                this.msg('⚠ 尚未設定 Firebase：請依照說明，把 firebaseConfig 貼到程式碼最上方的 FIREBASE_CONFIG，才能使用多機連線。', true);
+            } else this.msg('');
+        },
+        getName: function() {
+            const v = (document.getElementById('net-name').value || '').trim().slice(0, 3);
+            this.store('1940name', v);
+            return v;
+        },
+        busy: false,
+        run: async function(fn) {
+            if (this.busy) return;
+            if (!this.configured()) { this.chooseMulti(); return; }
+            this.busy = true; this.msg('連線中…');
+            try { await fn(); this.msg(''); }
+            catch (e) {
+                console.log(e);
+                let m = (e && e.message) || String(e);
+                if (/permission|PERMISSION/.test(m)) m = '沒有讀寫權限：請檢查 Firebase Realtime Database 的規則（Rules）是否已依說明設定。';
+                this.msg('⚠ ' + m, true);
+            }
+            this.busy = false;
+        },
+        create: function() { this.run(() => this.createRoom(this.getName())); },
+        join: function() {
+            const code = (document.getElementById('net-join-code').value || '').replace(/\D/g, '');
+            if (code.length !== 4) { this.msg('請輸入 4 位數的房間碼', true); return; }
+            this.run(() => this.joinRoom(code, this.getName()));
+        },
+
+        // ---------- 建立／加入房間 ----------
+        createRoom: async function(name) {
+            await this.connect(); this.cid = this.getCid();
+            for (let tries = 0; tries < 10; tries++) {
+                const code = String(Math.floor(1000 + Math.random() * 9000));
+                const res = await this.db.ref('rooms/' + code + '/meta').transaction(cur => {
+                    if (cur && cur.t && Date.now() - cur.t < 12 * 3600 * 1000) return;   // 使用中，換一個號碼
+                    return { t: Date.now(), host: this.cid };
+                }, undefined, false);
+                if (res.committed) {
+                    await this.db.ref('rooms/' + code).set({ meta: { t: Date.now(), host: this.cid } });   // 清掉舊資料
+                    return this.joinRoom(code, name);
+                }
+            }
+            throw new Error('暫時無法建立房間，請再試一次');
+        },
+        joinRoom: async function(code, name) {
+            await this.connect(); this.cid = this.getCid(); this.room = code;
+            const meta = await this.R('meta').once('value');
+            if (!meta.exists()) { this.room = null; throw new Error('找不到房間 ' + code + '，請確認房間碼'); }
+            const g = (await this.R('g').once('value')).val();
+            this.gameStarted = false;
+            if (g) {
+                const snap = JSON.parse(g.json);
+                if (snap.cids.indexOf(this.cid) < 0) { this.room = null; throw new Error('這個房間的遊戲已經開始，無法中途加入'); }
+                this.gameStarted = true;
+            } else {
+                const res = await this.R('lobby').transaction(cur => {
+                    cur = cur || {};
+                    for (const k in cur) if (cur[k] && cur[k].cid === this.cid) { if (name) cur[k].name = name; return cur; }
+                    for (let i = 0; i < this.MAX; i++) {
+                        const k = 's' + i;
+                        if (!cur[k]) { cur[k] = { cid: this.cid, name: name || ('玩家' + (i + 1)), t: Date.now() }; return cur; }
+                    }
+                    return;
+                });
+                if (!res.committed) { this.room = null; throw new Error('房間已滿（最多 ' + this.MAX + ' 人）'); }
+            }
+            this.name = name;
+            this.attach();
+        },
+        attach: function() {
+            this.on = true; this.phase = this.gameStarted ? 'roles' : 'lobby';
+            this.seq = 0; this.pendingSeq = -1; this.pendingJson = null; this.epoch = 0; this.q = Promise.resolve();
+            this.online = {}; this.presLoaded = false; this.lobby = {}; this._av = {}; this._qrDone = false;
+            const add = (ref, fn) => { ref.on('value', fn); this._refs.push([ref, fn]); };
+            add(this.R('lobby'), s => this.onLobby(s.val() || {}));
+            add(this.R('pres'), s => { this.online = s.val() || {}; this.presLoaded = true; this.onPresence(); });
+            add(this.R('av'), s => { this._av = s.val() || {}; this.onAvatars(this._av); });
+            add(this.R('g'), s => this.onGame(s.val()));
+            const me = this.R('pres/' + this.cid);
+            const conn = this.db.ref('.info/connected');
+            const cf = s => { if (s.val() === true) { me.onDisconnect().remove(); me.set(true); } };
+            conn.on('value', cf); this._refs.push([conn, cf]);
+            this.store('1940session', JSON.stringify({ room: this.room, name: this.name, t: Date.now() }));
+            clearInterval(this._timer); this._timer = setInterval(() => this.tick(), 2000);
+        },
+        detach: function() {
+            this._refs.forEach(p => { try { p[0].off('value', p[1]); } catch (e) {} });
+            this._refs = []; clearInterval(this._timer);
+        },
+        leave: function() {
+            const go = () => { this.store('1940session', null); location.href = location.pathname; };
+            try {
+                if (this.on && !this.gameStarted && this.slot >= 0) {
+                    Promise.all([this.R('lobby/s' + this.slot).remove(), this.R('pres/' + this.cid).remove()]).then(go, go);
+                    return;
+                }
+            } catch (e) {}
+            go();
+        },
+        restart: function() {
+            if (this.on) { this.store('1940session', null); location.href = location.pathname; }
+            else location.reload();
+        },
+
+        // ---------- 等待室 ----------
+        onLobby: function(v) {
+            this.lobby = v;
+            this.slot = -1;
+            Object.keys(v).forEach(k => { if (v[k] && v[k].cid === this.cid) this.slot = parseInt(k.slice(1), 10); });
+            if (this.gameStarted) return;
+            if (!document.getElementById('step-L').classList.contains('active')) GameUtils.switchStep('L');
+            this.renderLobby();
+        },
+        lobbySlots: function() {
+            return Object.keys(this.lobby).filter(k => /^s\d$/.test(k) && this.lobby[k]).sort();
+        },
+        renderLobby: function() {
+            document.getElementById('net-room-code').textContent = this.room;
+            const url = location.href.split('#')[0].split('?')[0] + '?room=' + this.room;
+            document.getElementById('net-link').textContent = url;
+            if (!this._qrDone) {
+                this._qrDone = true;
+                const box = document.getElementById('net-qr'); box.innerHTML = '';
+                const draw = () => { try { new QRCode(box, { text: url, width: 150, height: 150, colorDark: '#000000', colorLight: '#ffffff' }); } catch (e) {} };
+                if (typeof QRCode !== 'undefined') draw(); else this.loadScript(this.QR_LIB).then(draw, () => {});
+            }
+            const slots = this.lobbySlots();
+            document.getElementById('net-lobby-list').innerHTML = Array.from({ length: this.MAX }, (_, i) => {
+                const p = this.lobby['s' + i];
+                if (!p) return `<div class="net-slot empty"><span class="ns-no">${i + 1}</span><span class="ns-name">等待加入…</span></div>`;
+                const on = this.presLoaded ? !!this.online[p.cid] : true;
+                return `<div class="net-slot ${p.cid === this.cid ? 'me' : ''}"><span class="ns-no">${i + 1}</span><span class="ns-name">${this.esc(p.name)}${p.cid === this.cid ? '（你）' : ''}</span><span class="ns-dot ${on ? 'on' : 'off'}">${on ? '在線' : '離線'}</span></div>`;
+            }).join('');
+            const nameEl = document.getElementById('net-my-name');
+            if (document.activeElement !== nameEl && this.slot >= 0 && this.lobby['s' + this.slot]) nameEl.value = this.lobby['s' + this.slot].name;
+            const btn = document.getElementById('net-start-btn');
+            btn.disabled = slots.length < 2;
+            document.getElementById('net-lobby-hint').textContent = slots.length < 2
+                ? '至少需要 2 位玩家才能開始。請其他人輸入房間碼或掃描 QR Code 加入。'
+                : '目前 ' + slots.length + ' 人。確認所有人都到齊後，任何一位玩家按下「開始」即可（開始後無法再加入）。';
+        },
+        renameMe: function(v) {
+            v = String(v || '').trim().slice(0, 3);
+            if (!v || this.slot < 0) return;
+            this.store('1940name', v);
+            this.R('lobby/s' + this.slot + '/name').set(v);
+        },
+        startGame: function() {
+            if (this.gameStarted || this.phase !== 'lobby') return;
+            const slots = this.lobbySlots();
+            if (slots.length < 2) return;
+            this.cids = slots.map(k => this.lobby[k].cid);
+            this.seed = Math.random().toString(36).slice(2, 10);
+            Page1_Setup.buildPlayers(slots.map(k => this.lobby[k].name));
+            this.myIdx = this.cids.indexOf(this.cid);
+            this.gameStarted = true;
+            this.publish('roles');
+            Page2_RoleResult.init();
+        },
+
+        // ---------- 快照 ----------
+        cardById: function(id) {
+            if (!this._cardMap) { this._cardMap = {}; gCards.concat(jCards).forEach(c => { this._cardMap[c.id] = c; }); }
+            return this._cardMap[id] || null;
+        },
+        makeSnap: function(phase, extra) {
+            try { TitleSystem.get(); } catch (e) {}   // 先讓稱號抽籤結果寫進玩家資料，一起同步
+            const P = GameState.players, ids = a => a.map(c => c.id);
+            return Object.assign({
+                phase: phase, seed: this.seed, cids: this.cids,
+                round: GameState.currentRound, cur: GameState.currentPlayerIndex,
+                pools: { A: ids(GameState.cardPools.A), J: ids(GameState.cardPools.J) },
+                cardId: GameState.currentCard ? GameState.currentCard.id : null,
+                last: GameState.lastSacrifice ? P.indexOf(GameState.lastSacrifice) : -1,
+                players: P.map(p => { const o = Object.assign({}, p); delete o._quipCache; return o; })
+            }, extra || {});
+        },
+        publish: function(phase, extra) {
+            if (!this.on) return;
+            this.phase = phase;
+            const snap = this.makeSnap(phase, extra), epoch = this.epoch;
+            this.q = this.q.then(() => this._send(snap, epoch)).catch(e => console.log('同步失敗', e));
+        },
+        _send: function(snap, epoch) {
+            if (epoch !== this.epoch) return null;
+            const exp = this.seq;
+            snap.seq = exp + 1;
+            const json = JSON.stringify(snap);
+            this.pendingSeq = exp + 1; this.pendingJson = json;
+            return this.R('g').transaction(cur => {
+                // cur 可能是 null（本機尚無快取）：此時先照樣提交，伺服器若不同會以真實資料再呼叫一次
+                if (cur && cur.seq !== exp) return;
+                return { seq: exp + 1, json: json };
+            }, undefined, false).then(res => {
+                if (res.committed) { this.seq = Math.max(this.seq, exp + 1); return; }
+                this.epoch++; this.pendingSeq = -1;
+                this.toast('剛好有人先操作了，已同步到最新狀態');
+                return this.R('g').once('value').then(s => this.onGame(s.val()));
+            });
+        },
+        onGame: function(g) {
+            if (!this.on || !g) return;
+            if (g.seq <= this.seq) return;
+            if (g.seq === this.pendingSeq && g.json === this.pendingJson) { this.seq = g.seq; return; }
+            this.seq = g.seq;
+            this.gameStarted = true;
+            let snap;
+            try { snap = JSON.parse(g.json); } catch (e) { return; }
+            this.applySnap(snap);
+        },
+        applySnap: function(snap) {
+            this.seed = snap.seed; this.cids = snap.cids; this.myIdx = snap.cids.indexOf(this.cid);
+            if (this.myIdx < 0) { alert('你沒有被編入這場遊戲（可能是開始前才剛加入）。請重新建立或加入房間。'); this.leave(); return; }
+            // 稱號升級提示：對照上一份快照，找出這次新升上去的稱號（輪到的人那台是自己算出來的，其他台靠這裡）
+            const oldP = GameState.players;
+            snap.players.forEach((np, i) => {
+                const op = oldP[i];
+                if (!op || !op._tl || !np._tl) return;
+                Object.keys(np._tl).forEach(k => {
+                    const o = op._tl[k], n = np._tl[k];
+                    if (o && n && n.lv > o.lv && n.lv > ((op._tlMax || {})[k] || 0)) TitleSystem._upgrades.push({ player: np, key: k, lv: n.lv, label: n.label });
+                });
+            });
+            GameState.players = snap.players;
+            GameState.currentPlayerIndex = snap.cur;
+            GameState.currentRound = snap.round;
+            GameState.cardPools = { A: snap.pools.A.map(id => this.cardById(id)).filter(Boolean), J: snap.pools.J.map(id => this.cardById(id)).filter(Boolean) };
+            GameState.currentCard = snap.cardId ? this.cardById(snap.cardId) : null;
+            GameState.lastSacrifice = snap.last >= 0 ? snap.players[snap.last] : null;
+            this.phase = snap.phase;
+            const P3 = Page3_Gameplay;
+            if (snap.phase === 'roles') {
+                Page2_RoleResult.init();
+                this.onAvatars(this._av);
+            } else if (snap.phase === 'turn') {
+                document.getElementById('feedback-overlay').classList.remove('active');
+                P3._pendingCross = null;
+                if (!document.getElementById('step-3').classList.contains('active')) GameUtils.switchStep(3);
+                P3.loadQuestion();
+            } else if (snap.phase === 'feedback') {
+                const shown = document.getElementById('card-text-display').getAttribute('data-id');
+                if (!document.getElementById('step-3').classList.contains('active')) GameUtils.switchStep(3);
+                if (!GameState.currentCard || shown !== GameState.currentCard.id) P3.loadQuestion();
+                P3.showRemoteFeedback(snap.fb, this.myIdx === snap.cur);
+            } else if (snap.phase === 'ended') {
+                document.getElementById('feedback-overlay').classList.remove('active');
+                Page4_Ending.init(!!snap.allDead);
+            }
+        },
+
+        // ---------- 身分頁：換造型 ----------
+        pushAvatar: function(i) {
+            if (!this.on) return;
+            this.R('av/a' + i).set(JSON.stringify(GameState.players[i].avatar));
+        },
+        onAvatars: function(v) {
+            if (this.phase !== 'roles' || !GameState.players.length) return;
+            Object.keys(v || {}).forEach(k => {
+                const i = parseInt(k.slice(1), 10), p = GameState.players[i];
+                if (!p || i === this.myIdx) return;
+                if (JSON.stringify(p.avatar) !== v[k]) {
+                    try { p.avatar = JSON.parse(v[k]); } catch (e) { return; }
+                    if (document.getElementById('step-2').classList.contains('active')) Page2_RoleResult.refreshCard(i);
+                }
+            });
+        },
+        beginPlay: function() {
+            if (this.phase !== 'roles') return;
+            GameState.currentPlayerIndex = 0; GameState.currentRound = 1;
+            GameState.currentCard = GameState.drawCard(GameState.players[0].role);
+            Page3_Gameplay._finalBell = false;
+            this.publish('turn');
+            GameUtils.switchStep(3);
+            Page3_Gameplay.loadQuestion();
+        },
+
+        // ---------- 遊戲中 ----------
+        isOffline: function(i) { return !!(this.presLoaded && this.cids[i] && !this.online[this.cids[i]]); },
+        onPresence: function() {
+            if (this.phase === 'lobby') { if (document.getElementById('step-L').classList.contains('active')) this.renderLobby(); return; }
+            if (document.getElementById('step-3').classList.contains('active')) Page3_Gameplay.renderRoster();
+        },
+        decorate: function() {
+            const cur = GameState.currentPlayerIndex, mine = cur === this.myIdx, p = GameState.getCurrentPlayer();
+            const b = document.getElementById('net-banner');
+            b.style.display = 'block'; b.className = 'net-banner ' + (mine ? 'mine' : 'wait');
+            b.innerHTML = mine
+                ? '🎯 輪到你了！請做出你的選擇'
+                : '👀 現在輪到「' + p.name + '」作答——你的選項暫時不能按，請一起討論他會怎麼選';
+            if (!mine) document.querySelectorAll('#card-options-display .option-btn').forEach(btn => { btn.disabled = true; });
+            const key = GameState.currentRound + ':' + cur;
+            if (mine && this._alertKey !== key) {
+                this._alertKey = key;
+                try { if (navigator.vibrate) navigator.vibrate(220); } catch (e) {}
+                try { AudioController.playStepSound(); } catch (e) {}
+            }
+        },
+        tick: function() {
+            const sk = document.getElementById('net-skip');
+            if (!this.on || !sk) return;
+            if (this.phase !== 'turn' && this.phase !== 'feedback') { sk.style.display = 'none'; this._offSince = null; return; }
+            const cur = GameState.currentPlayerIndex;
+            if (cur === this.myIdx || !this.isOffline(cur)) { this._offSince = null; sk.style.display = 'none'; return; }
+            if (this._offFor !== cur || !this._offSince) { this._offFor = cur; this._offSince = Date.now(); }
+            if (Date.now() - this._offSince > 15000) {
+                sk.style.display = 'block';
+                sk.textContent = '⏭ 「' + GameState.players[cur].name + '」已離線，跳過他這一回合';
+            }
+        }
+    };
+
     // ==========================================
     // 4. 初始化啟動
     // ==========================================
     // 各項初始化彼此獨立：音效若在某些手機瀏覽器失敗，也不會影響遊戲開始
     try { AudioController.init(); } catch (e) { console.log('音效初始化失敗：', e); }
     Page1_Setup.init();
+    try { Net.init(); } catch (e) { console.log('連線模式初始化失敗：', e); }
 
 </script>
 </body>
