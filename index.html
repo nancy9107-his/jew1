@@ -1904,62 +1904,94 @@ window.addEventListener('error', function (e) {
             const rgb = h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16));
             const blend = (a, b, t) => { const x = rgb(a), y = rgb(b); return '#' + x.map((v, i) => Math.round(v + (y[i] - v) * t).toString(16).padStart(2, '0')).join(''); };
             const dark = (h, t) => blend(h, '#000000', t), light = (h, t) => blend(h, '#ffffff', t);
-            const LN = '#17120f';
-            const ol = `stroke="${LN}" stroke-opacity="0.55" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"`;
-            const skinD = dark(S, 0.3), hairD = dark(H, 0.35), hairL = light(H, 0.3);
-            const lip = blend(S, '#8f3f3a', 0.5);
 
-            // 棚拍背景：依身分略帶冷／暖色調，兩者共用同一組外貌，避免刻板印象
-            const bgTop = isA ? '#5b6672' : '#6d5d52', bgBot = isA ? '#20262c' : '#291f1a';
+            // 日系動畫風：乾淨的深褐色線稿、賽璐珞式的兩階陰影、大而有高光的眼睛
+            const LN = '#2b1d17';
+            const ol = `stroke="${LN}" stroke-opacity="0.85" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"`;
+            const skinD = dark(blend(S, '#c0786a', 0.18), 0.12), skinDD = dark(S, 0.35);
+            const hairD = dark(H, 0.42), hairL = light(H, 0.4);
+            const lip = blend(S, '#b0504c', 0.55);
+
+            // 瞳色：依外貌特徵固定（同一個角色每次畫出來都一樣）
+            const irisSet = ['#6b8fb5', '#7ea36e', '#8d6a45', '#6f7f8f', '#5a8a8a', '#a8704f'];
+            let hs = 0; (H + S + A + C).split('').forEach(ch => { hs = (hs * 31 + ch.charCodeAt(0)) % 997; });
+            const IR = irisSet[hs % irisSet.length];
+
+            // 背景：柔和的色調＋漫畫網點＋集中線；兩種身分共用同一組外貌，只在底色上略分冷／暖
+            const bgTop = isA ? '#aebdc9' : '#cdb09f', bgBot = isA ? '#6c8094' : '#8c6b5c';
             const frame = isA ? '#7f9bb5' : '#b57b6f';
-
-            // ---- 頭型 ----
-            const headD = isMasc
-                ? 'M80 38 C57 38 49 58 50 82 C51 100 57 116 80 122 C103 116 109 100 110 82 C111 58 103 38 80 38Z'
-                : 'M80 38 C58 38 50 58 51 80 C52 98 61 114 80 122 C99 114 108 98 109 80 C110 58 102 38 80 38Z';
-
-            // ---- 髮型 ----
-            let hairBack = '', hairFront = '';
-            const hf = `fill="${H}" ${ol}`;
-            const hl = d => `<path d="${d}" fill="none" stroke="${hairL}" stroke-width="1.4" stroke-opacity="0.45" stroke-linecap="round"/>`;
-            switch (cfg.hairStyle) {
-                case 'buzz':
-                    hairFront = `<path d="M50 80 C46 52 60 38 80 38 C100 38 114 52 110 80 C108 64 100 56 80 55 C60 56 52 64 50 80Z" fill="${H}" fill-opacity="0.92" stroke="none"/>`;
-                    break;
-                case 'side':
-                    hairFront = `<path d="M48 84 C42 48 62 32 84 34 C108 36 118 56 111 86 C109 68 102 58 88 56 C72 54 56 62 48 84Z" ${hf}/>` + hl('M66 38 Q62 48 60 58');
-                    break;
-                case 'slick':
-                    hairFront = `<path d="M47 82 C42 46 64 30 82 32 C108 34 118 54 112 82 C108 64 96 52 80 51 C62 51 52 62 47 82Z" ${hf}/>` + hl('M60 44 Q80 36 102 44') + hl('M58 52 Q80 44 104 52');
-                    break;
-                case 'flat':
-                    hairFront = `<path d="M49 76 C46 54 50 40 60 36 L100 36 C110 40 114 54 111 76 C106 62 96 56 80 56 C64 56 54 62 49 76Z" ${hf}/>` + hl('M56 42 L104 42');
-                    break;
-                case 'short':
-                    hairFront = `<path d="M47 90 C40 50 62 32 82 34 C106 34 120 54 113 90 C112 72 104 60 88 57 C72 55 56 62 47 90Z" ${hf}/>` + hl('M62 42 Q80 36 98 44');
-                    break;
-                case 'curly':
-                    hairBack = [[50, 74], [110, 74], [52, 56], [108, 56], [62, 44], [98, 44], [80, 38]]
-                        .map(c => `<circle cx="${c[0]}" cy="${c[1]}" r="11" fill="${hairD}" ${ol}/>`).join('');
-                    hairFront = [[56, 60], [66, 50], [80, 46], [94, 50], [104, 60]]
-                        .map(c => `<circle cx="${c[0]}" cy="${c[1]}" r="7" fill="${H}" ${ol}/>`).join('');
-                    break;
-                case 'bob':
-                    hairBack = `<path d="M44 74 C38 40 60 28 80 28 C102 28 124 40 116 74 L120 122 Q108 130 106 112 L54 112 Q52 130 40 122Z" fill="${hairD}" ${ol}/>`;
-                    hairFront = `<path d="M49 80 C48 52 62 40 82 40 C102 40 114 54 111 80 C104 60 96 54 80 54 C64 54 56 62 49 80Z" ${hf}/>` + hl('M62 46 Q80 40 98 48');
-                    break;
-                case 'bun':
-                    hairBack = `<circle cx="80" cy="30" r="12" fill="${hairD}" ${ol}/>`;
-                    hairFront = `<path d="M49 82 C46 50 62 38 80 38 C100 38 114 50 111 82 C106 62 96 54 80 54 C64 54 54 62 49 82Z" ${hf}/>` + hl('M62 44 Q80 38 98 46');
-                    break;
-                case 'braids':
-                    hairBack = `<path d="M44 74 C38 40 60 28 80 28 C102 28 124 40 116 74 L118 112 L42 112Z" fill="${hairD}" ${ol}/>`;
-                    hairFront = `<path d="M49 80 C48 52 62 40 82 40 C102 40 114 54 111 80 C104 60 96 54 80 54 C64 54 56 62 49 80Z" ${hf}/>` +
-                        [46, 114].map(x => [128, 140, 152].map(y => `<ellipse cx="${x}" cy="${y}" rx="6" ry="7" fill="${H}" ${ol}/>`).join('') + `<circle cx="${x}" cy="164" r="4" fill="${A}" ${ol}/>`).join('');
-                    break;
+            let rays = '';
+            for (let i = 0; i < 28; i++) {
+                const a = (i / 28) * Math.PI * 2, r1 = 58 + (i % 3) * 6, r2 = 130;
+                rays += `<path d="M${(80 + Math.cos(a) * r1).toFixed(1)} ${(88 + Math.sin(a) * r1).toFixed(1)} L${(80 + Math.cos(a + 0.035) * r2).toFixed(1)} ${(88 + Math.sin(a + 0.035) * r2).toFixed(1)} L${(80 + Math.cos(a - 0.035) * r2).toFixed(1)} ${(88 + Math.sin(a - 0.035) * r2).toFixed(1)}Z" fill="#fff" opacity="0.16"/>`;
             }
 
-            // ---- 上衣 ----
+            // ---- 臉型（尖下巴的動畫臉）----
+            const faceD = isMasc
+                ? 'M52 78 C50 56 62 42 80 42 C98 42 110 56 108 78 C108 98 98 114 88 121 Q80 125 72 121 C62 114 52 98 52 78Z'
+                : 'M53 80 C51 58 62 42 80 42 C98 42 109 58 107 80 C106 98 97 114 86 121 Q80 125 74 121 C63 114 54 98 53 80Z';
+
+            // ---- 髮型：以「尖角瀏海」表現動畫的髮束分組 ----
+            const HS = {
+                buzz:   { top: 36, wide: -3, pts: [[108,76],[103,67],[95,71],[88,64],[80,69],[72,64],[65,69],[58,66],[52,78]] },
+                side:   { top: 30, wide: 0,  pts: [[111,82],[107,68],[100,77],[94,60],[86,73],[80,58],[72,72],[65,62],[58,74],[52,72]] },
+                slick:  { top: 27, wide: 1,  pts: [[111,80],[107,62],[97,55],[85,52],[73,54],[63,58],[55,65],[51,78]] },
+                flat:   { top: 32, wide: 0,  pts: [[111,80],[109,70],[101,74],[95,69],[87,74],[80,69],[73,74],[66,69],[59,74],[53,70]] },
+                short:  { top: 29, wide: 1,  pts: [[112,86],[107,68],[101,80],[96,62],[89,76],[83,59],[75,74],[68,61],[61,75],[55,66],[50,82]] },
+                bob:    { top: 30, wide: 1,  pts: [[111,82],[108,70],[101,75],[95,67],[87,74],[80,66],[73,74],[65,67],[59,75],[52,70]] },
+                bun:    { top: 33, wide: 0,  pts: [[111,82],[107,68],[99,74],[92,64],[84,72],[78,62],[70,72],[62,64],[56,74],[51,78]] },
+                braids: { top: 31, wide: 0,  pts: [[111,82],[107,70],[99,74],[91,66],[84,74],[80,64],[76,74],[69,66],[61,74],[53,70],[50,82]] }
+            };
+            const hf = `fill="${H}" ${ol}`;
+            const hairGrad = `url(#${id}-hg)`;
+            let hairBack = '', hairFront = '', sideLocks = '';
+            const sideLockPaths = (len) => `<path d="M51 82 C46 ${92 + len / 3} 47 ${104 + len / 2} 52 ${112 + len} C55 ${100 + len / 2} 57 92 57 84Z" fill="${H}" ${ol}/>
+                <path d="M109 82 C114 ${92 + len / 3} 113 ${104 + len / 2} 108 ${112 + len} C105 ${100 + len / 2} 103 92 103 84Z" fill="${H}" ${ol}/>`;
+            const style = HS[cfg.hairStyle];
+            const buildCap = st => {
+                let d = `M50 88 C${44 - st.wide} 56 62 ${st.top} 80 ${st.top} C98 ${st.top} ${116 + st.wide} 56 110 88`;
+                st.pts.forEach(p => { d += ` L${p[0]} ${p[1]}`; });
+                return d + 'Z';
+            };
+            const strandLines = st => {
+                let out = '';
+                for (let i = 1; i < st.pts.length - 1; i++) {
+                    const p = st.pts[i];
+                    if (p[1] < st.pts[i - 1][1] && p[1] < st.pts[i + 1][1])
+                        out += `<path d="M${p[0]} ${p[1]} Q${p[0] + (p[0] < 80 ? 2 : -2)} ${p[1] - 7} ${p[0] + (p[0] < 80 ? 1 : -1)} ${p[1] - 14}" fill="none" stroke="${hairD}" stroke-width="1" stroke-opacity="0.7" stroke-linecap="round"/>`;
+                }
+                return out;
+            };
+            const shine = (y) => `<path d="M60 ${y + 17} Q80 ${y + 3} 100 ${y + 17}" fill="none" stroke="${hairL}" stroke-width="4.2" stroke-opacity="0.6" stroke-linecap="round"/>
+                <path d="M66 ${y + 22} Q80 ${y + 12} 94 ${y + 22}" fill="none" stroke="${hairL}" stroke-width="1.6" stroke-opacity="0.5" stroke-linecap="round"/>`;
+            const capOf = st => `<path d="${buildCap(st)}" ${hf}/><path d="${buildCap(st)}" fill="${hairGrad}"/>${shine(st.top)}${strandLines(st)}`;
+
+            switch (cfg.hairStyle) {
+                case 'curly':
+                    hairBack = [[50, 76], [110, 76], [52, 56], [108, 56], [62, 42], [98, 42], [80, 36]]
+                        .map(c => `<circle cx="${c[0]}" cy="${c[1]}" r="12" fill="${hairD}" ${ol}/>`).join('');
+                    hairFront = [[54, 66], [64, 56], [76, 52], [88, 52], [98, 56], [106, 66]]
+                        .map(c => `<circle cx="${c[0]}" cy="${c[1]}" r="9" fill="${H}" ${ol}/>`).join('') +
+                        `<path d="M58 56 Q80 44 102 56" fill="none" stroke="${hairL}" stroke-width="3.6" stroke-opacity="0.55" stroke-linecap="round"/>`;
+                    break;
+                case 'bob':
+                    hairBack = `<path d="M44 80 C36 40 60 26 80 26 C100 26 124 40 116 80 L119 126 Q107 134 105 114 L55 114 Q53 134 41 126Z" fill="${hairD}" ${ol}/>`;
+                    hairFront = capOf(style) + sideLockPaths(8);
+                    break;
+                case 'bun':
+                    hairBack = `<circle cx="80" cy="25" r="12" fill="${hairD}" ${ol}/><path d="M72 22 Q80 16 88 22" fill="none" stroke="${hairL}" stroke-width="2" stroke-opacity="0.55" stroke-linecap="round"/>`;
+                    hairFront = capOf(style) + sideLockPaths(0);
+                    break;
+                case 'braids':
+                    hairBack = `<path d="M44 80 C36 40 60 26 80 26 C100 26 124 40 116 80 L118 114 L42 114Z" fill="${hairD}" ${ol}/>`;
+                    hairFront = capOf(style) + sideLockPaths(-2) +
+                        [46, 114].map(x => [132, 144, 156].map(y => `<ellipse cx="${x}" cy="${y}" rx="6.5" ry="7.5" fill="${H}" ${ol}/>`).join('') + `<circle cx="${x}" cy="168" r="4.5" fill="${A}" ${ol}/>`).join('');
+                    break;
+                default:
+                    hairFront = capOf(style || HS.side);
+            }
+
+            // ---- 上衣（沿用原本的服裝設計）----
             const baseFill = o.outfit === 'coat' ? '#d6d2c6' : C;
             const torsoD = 'M6 190 C8 152 40 140 64 134 L80 140 L96 134 C120 140 152 152 154 190Z';
             let outfit = '';
@@ -2004,7 +2036,7 @@ window.addEventListener('error', function (e) {
                     break;
             }
 
-            // ---- 帽子 ----
+            // ---- 帽子（沿用原本設計）----
             let hat = '';
             switch (o.hat) {
                 case 'newsboy':
@@ -2027,76 +2059,92 @@ window.addEventListener('error', function (e) {
                     break;
             }
 
+            // ---- 眼睛：大而有神、上緣粗睫毛線、雙高光 ----
+            const sx = isMasc ? 0.9 : 1, sy = isMasc ? 0.84 : 1;
+            const eye = (cx, dir) => `<g transform="translate(${cx} 91) scale(${sx} ${sy})">
+                    <path d="M-8.5 -9.6 Q0 -13.6 8.5 -9.6" fill="none" stroke="${skinDD}" stroke-width="1" stroke-opacity="0.7" stroke-linecap="round"/>
+                    <g clip-path="url(#${id}-ec)">
+                        <path d="M-9 -1 C-8.4 -8.4 -3 -10.5 0 -10.5 C3 -10.5 8.4 -8.4 9 -1 C8.4 7 3.6 10 0 10 C-3.6 10 -8.4 7 -9 -1Z" fill="#f7f2e9"/>
+                        <ellipse cx="0" cy="1" rx="7.4" ry="9.4" fill="url(#${id}-ir)"/>
+                        <ellipse cx="0" cy="1.4" rx="3.5" ry="5" fill="#18110e"/>
+                        <ellipse cx="0" cy="-7" rx="9" ry="4.4" fill="#000" opacity="0.22"/>
+                        <circle cx="-2.9" cy="-3.2" r="2.9" fill="#fff"/>
+                        <circle cx="3.1" cy="4.8" r="1.4" fill="#fff" opacity="0.9"/>
+                        <circle cx="0.6" cy="7" r="0.8" fill="#fff" opacity="0.7"/>
+                    </g>
+                    <path d="M-9.8 -0.4 C-9 -9 -3.2 -11.4 0 -11.4 C3.4 -11.4 9 -9 9.8 -0.4" fill="none" stroke="${LN}" stroke-width="2.5" stroke-linecap="round"/>
+                    ${isMasc ? '' : `<path d="M${dir * 9.8} -0.6 L${dir * 12.4} -3.6" stroke="${LN}" stroke-width="1.8" stroke-linecap="round"/>`}
+                    <path d="M-6.5 8 Q0 11 6.5 8" fill="none" stroke="${LN}" stroke-opacity="0.4" stroke-width="0.9" stroke-linecap="round"/>
+                </g>`;
+            const brow = isMasc
+                ? `<path d="M55 77 Q64 72.5 75 76 M85 76 Q96 72.5 105 77" fill="none" stroke="${hairD}" stroke-width="3" stroke-linecap="round"/>`
+                : `<path d="M57 77.5 Q65 73 74 76.5 M86 76.5 Q95 73 103 77.5" fill="none" stroke="${hairD}" stroke-width="2" stroke-linecap="round"/>`;
+
             // ---- 眼鏡 ----
-            const glasses = o.glasses ? `<g fill="rgba(255,255,255,0.08)" stroke="#2a2420" stroke-width="1.7">
-                    <circle cx="65" cy="85" r="10"/><circle cx="95" cy="85" r="10"/>
-                    <path d="M75 84 Q80 81 85 84" fill="none"/></g>` : '';
+            const glasses = o.glasses ? `<g fill="rgba(255,255,255,0.10)" stroke="#3a2e28" stroke-width="2">
+                    <circle cx="66" cy="91" r="12.5"/><circle cx="94" cy="91" r="12.5"/>
+                    <path d="M78 89.5 Q80 87 82 89.5" fill="none"/>
+                    <path d="M53.5 90 L50 88 M106.5 90 L110 88" fill="none"/></g>
+                    <path d="M58.5 85 L62 81.5 M86.5 85 L90 81.5" stroke="#fff" stroke-width="1.8" stroke-opacity="0.7" stroke-linecap="round" fill="none"/>` : '';
 
             // ---- 鬍子 ----
             let beard = '';
             switch (cfg.beard) {
                 case 'stubble':
-                    beard = `<path d="M52 96 Q56 118 80 124 Q104 118 108 96 Q104 108 92 110 Q80 106 68 110 Q56 108 52 96Z" fill="${hairD}" fill-opacity="0.38"/>`;
+                    beard = `<path d="M54 98 Q58 118 80 123 Q102 118 106 98 Q100 112 80 114 Q60 112 54 98Z" fill="${hairD}" fill-opacity="0.3"/>`;
                     break;
                 case 'mustache':
-                    beard = `<path d="M67 108 Q74 104 80 107 Q86 104 93 108 Q86 112 80 110 Q74 112 67 108Z" fill="${hairD}"/>`;
+                    beard = `<path d="M68 108.5 Q74 105 80 107.5 Q86 105 92 108.5 Q86 110.5 80 109.5 Q74 110.5 68 108.5Z" fill="${hairD}"/>`;
                     break;
                 case 'full':
-                    beard = `<path d="M50 90 Q50 124 80 131 Q110 124 110 90 Q106 112 92 112 Q80 108 68 112 Q54 112 50 90Z" fill="${hairD}" ${ol}/>
-                        <path d="M67 108 Q74 104 80 107 Q86 104 93 108 Q86 112 80 110 Q74 112 67 108Z" fill="${hairD}"/>`;
+                    beard = `<path d="M52 92 Q52 122 80 128 Q108 122 108 92 Q104 110 92 110 Q80 107 68 110 Q56 110 52 92Z" fill="${hairD}" ${ol}/>
+                        <path d="M68 108.5 Q74 105 80 107.5 Q86 105 92 108.5 Q86 110.5 80 109.5 Q74 110.5 68 108.5Z" fill="${hairD}"/>`;
                     break;
             }
-
-            const brow = isMasc
-                ? `<path d="M55 76 Q64 71 74 75 M86 75 Q96 71 105 76" fill="none" stroke="${hairD}" stroke-width="3.6" stroke-linecap="round"/>`
-                : `<path d="M56 76 Q65 71 74 75 M86 75 Q95 71 104 76" fill="none" stroke="${hairD}" stroke-width="2.2" stroke-linecap="round"/>`;
-            const eye = x => `<ellipse cx="${x}" cy="86" rx="10" ry="5.5" fill="${skinD}" opacity="0.32"/>
-                <path d="M${x - 6.5} 86 Q${x} 81.5 ${x + 6.5} 86 Q${x} 89.5 ${x - 6.5} 86Z" fill="#efe9de" stroke="${LN}" stroke-opacity="0.7" stroke-width="1"/>
-                <circle cx="${x}" cy="85.6" r="2.9" fill="#2a211c"/><circle cx="${x + 1.2}" cy="84.6" r="0.9" fill="#fff" opacity="0.8"/>
-                <path d="M${x - 7.5} 85.6 Q${x} 79.5 ${x + 7.5} 85.6" fill="none" stroke="${LN}" stroke-opacity="0.8" stroke-width="1.5" stroke-linecap="round"/>`;
-
-            const grain = size >= 80
-                ? `<filter id="${id}-gr" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="${(this.uid * 7) % 50}"/><feColorMatrix type="saturate" values="0"/></filter>`
-                : '';
-            const grainRect = size >= 80 ? `<rect x="4" y="4" width="152" height="182" filter="url(#${id}-gr)" opacity="0.1" style="mix-blend-mode:overlay"/>` : '';
 
             return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 190" width="${size}" height="${Math.round(size * 190 / 160)}" role="img" aria-label="${o.label}角色頭像">
                 <defs>
                     <linearGradient id="${id}-bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${bgTop}"/><stop offset="1" stop-color="${bgBot}"/></linearGradient>
-                    <radialGradient id="${id}-glow" cx="0.5" cy="0.36" r="0.55"><stop offset="0" stop-color="#fff" stop-opacity="0.3"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
-                    <radialGradient id="${id}-vg" cx="0.5" cy="0.45" r="0.75"><stop offset="0.55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.55"/></radialGradient>
-                    <linearGradient id="${id}-ts" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0.12"/><stop offset="0.55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.4"/></linearGradient>
-                    <linearGradient id="${id}-fs" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0.14"/><stop offset="0.5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.32"/></linearGradient>
+                    <pattern id="${id}-dots" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(30)"><circle cx="2.5" cy="2.5" r="1" fill="#000" opacity="0.16"/></pattern>
+                    <linearGradient id="${id}-dm" x1="0" y1="0" x2="0" y2="1"><stop offset="0.45" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity="1"/></linearGradient>
+                    <mask id="${id}-mk"><rect x="4" y="4" width="152" height="182" fill="url(#${id}-dm)"/></mask>
+                    <linearGradient id="${id}-hg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0.12"/><stop offset="0.5" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.3"/></linearGradient>
+                    <linearGradient id="${id}-ir" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${dark(IR, 0.55)}"/><stop offset="0.5" stop-color="${IR}"/><stop offset="1" stop-color="${light(IR, 0.45)}"/></linearGradient>
+                    <linearGradient id="${id}-ts" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0.14"/><stop offset="0.55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity="0.22"/></linearGradient>
                     <clipPath id="${id}-clip"><rect x="4" y="4" width="152" height="182" rx="22"/></clipPath>
-                    ${grain}
+                    <clipPath id="${id}-fc"><path d="${faceD}"/></clipPath>
+                    <clipPath id="${id}-ec"><path d="M-9 -1 C-8.4 -8.4 -3 -10.5 0 -10.5 C3 -10.5 8.4 -8.4 9 -1 C8.4 7 3.6 10 0 10 C-3.6 10 -8.4 7 -9 -1Z"/></clipPath>
                 </defs>
                 <rect x="4" y="4" width="152" height="182" rx="22" fill="url(#${id}-bg)"/>
                 <g clip-path="url(#${id}-clip)">
-                    <rect x="4" y="4" width="152" height="182" fill="url(#${id}-glow)"/>
+                    ${rays}
+                    <rect x="4" y="4" width="152" height="182" fill="url(#${id}-dots)" mask="url(#${id}-mk)"/>
                     ${hairBack}
                     <path d="${torsoD}" fill="${baseFill}" ${ol}/>
                     <path d="${torsoD}" fill="url(#${id}-ts)"/>
-                    <path d="M67 104 L67 132 Q80 146 93 132 L93 104Z" fill="${dark(S, 0.12)}" ${ol}/>
-                    <path d="M67 112 Q80 126 93 112 L93 126 Q80 136 67 126Z" fill="${skinD}" opacity="0.55"/>
+                    <path d="M72 108 L72 134 Q80 143 88 134 L88 108Z" fill="${S}" ${ol}/>
+                    <path d="M72 120 Q80 132 88 120 L88 134 Q80 143 72 134Z" fill="${skinD}" opacity="0.7"/>
                     ${outfit}
-                    <ellipse cx="49" cy="87" rx="5.5" ry="9.5" fill="${S}" ${ol}/>
-                    <ellipse cx="111" cy="87" rx="5.5" ry="9.5" fill="${S}" ${ol}/>
-                    <path d="${headD}" fill="${S}" ${ol}/>
-                    <path d="${headD}" fill="url(#${id}-fs)"/>
-                    ${isMasc ? `<path d="M52 100 Q58 116 80 122 Q102 116 108 100 Q100 112 80 114 Q60 112 52 100Z" fill="${skinD}" opacity="0.32"/>` : ''}
-                    <ellipse cx="100" cy="100" rx="12" ry="14" fill="#000" opacity="0.05"/>
+                    <ellipse cx="51.5" cy="90" rx="4.2" ry="7" fill="${S}" ${ol}/>
+                    <ellipse cx="108.5" cy="90" rx="4.2" ry="7" fill="${S}" ${ol}/>
+                    <path d="${faceD}" fill="${S}"/>
+                    <g clip-path="url(#${id}-fc)">
+                        <rect x="40" y="40" width="80" height="90" fill="${skinD}" opacity="0.55"/>
+                        <path d="${faceD}" fill="${S}" transform="translate(-4.5 -1)"/>
+                        <ellipse cx="80" cy="73" rx="34" ry="8" fill="${skinD}" opacity="0.5"/>
+                        <ellipse cx="62" cy="105" rx="7.5" ry="3.4" fill="#e58a86" opacity="0.28"/>
+                        <ellipse cx="98" cy="105" rx="7.5" ry="3.4" fill="#e58a86" opacity="0.28"/>
+                    </g>
+                    <path d="${faceD}" fill="none" ${ol}/>
                     ${brow}
-                    ${eye(65)}${eye(95)}
-                    <path d="M80 86 Q77 98 73 103 Q80 108 87 103" fill="none" stroke="${skinD}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.75"/>
-                    <circle cx="75.5" cy="104" r="1.1" fill="${LN}" opacity="0.4"/><circle cx="84.5" cy="104" r="1.1" fill="${LN}" opacity="0.4"/>
+                    ${eye(66, -1)}${eye(94, 1)}
+                    <path d="M80.4 100 Q78.4 103 80.8 104.3" fill="none" stroke="${skinDD}" stroke-width="1.2" stroke-linecap="round" opacity="0.8"/>
                     ${beard}
-                    <path d="M69 112 Q80 116 91 112 Q80 121 69 112Z" fill="${lip}" ${ol}/>
-                    <path d="M69 112 Q80 115 91 112" fill="none" stroke="#3b1f1a" stroke-width="1.4" stroke-opacity="0.85" stroke-linecap="round"/>
+                    <path d="M74.5 111.6 Q80 114.8 85.5 111.6" fill="none" stroke="#7d3a36" stroke-width="1.6" stroke-linecap="round"/>
+                    <path d="M77 113.8 Q80 115.6 83 113.8 Q80 117 77 113.8Z" fill="${lip}" opacity="0.7"/>
                     ${hairFront}
                     ${hat}
                     ${glasses}
-                    <rect x="4" y="4" width="152" height="182" fill="url(#${id}-vg)"/>
-                    ${grainRect}
                 </g>
                 <rect x="4" y="4" width="152" height="182" rx="22" fill="none" stroke="${frame}" stroke-width="4" stroke-opacity="0.9"/>
             </svg>`;
