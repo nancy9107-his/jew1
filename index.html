@@ -549,6 +549,9 @@
             transition: all 0.2s ease;
         }
         .reroll-btn:hover { background: var(--border-color); color: var(--parchment-bg); }
+        .gender-pick { display: flex; justify-content: center; gap: 8px; margin: 4px 0 10px; }
+        .gender-pick .gender-btn { margin-top: 0; border-style: solid; }
+        .gender-pick .gender-btn.on { background: var(--border-color); color: var(--parchment-bg); font-weight: 900; }
         .game-status-bar { align-items: center; flex-wrap: wrap; gap: 10px; }
         #current-player-avatar { display: inline-flex; align-items: center; }
         .ending-card p { margin: 0 0 14px; }
@@ -1833,48 +1836,40 @@ window.addEventListener('error', function (e) {
         hairColors: ['#2b211c', '#4a3326', '#6b4a32', '#b89a5e', '#7a3f26', '#8a8a88', '#1c1714'],
         clothColors: ['#4d5a66', '#6a4f48', '#55634f', '#7a6a45', '#5b5068', '#7a5a40', '#3f4d5c', '#555555'],
         accentColors: ['#8a3b36', '#3a6355', '#a07e32', '#445f80', '#6e4561', '#6a5238'],
-        // 髮型清單：多數為男性偏好造型（平頭、旁分、油頭、方型頭），
-        // 少數保留中性／女性造型（短髮、捲髮、鮑伯頭、丸子頭、辮子），
-        // 高職男學生比例高，故權重約 8:2
-        hairStyles: ['buzz', 'buzz', 'buzz', 'side', 'side', 'side', 'slick', 'slick', 'flat', 'flat', 'short', 'short', 'curly', 'bob', 'bun', 'braids'],
-        maleHairStyles: ['buzz', 'side', 'slick', 'flat'],
-        beardOptions: ['none', 'none', 'none', 'none', 'none', 'stubble', 'stubble', 'mustache', 'full'],
-        occupations: [
-            { label: '機械技工', outfit: 'workwear', hat: 'flatcap', glasses: false },
-            { label: '鐵道工人', outfit: 'workwear', hat: 'flatcap', glasses: false },
-            { label: '碼頭搬運工', outfit: 'workwear', hat: null, glasses: false },
-            { label: '木工師傅', outfit: 'apron', hat: 'flatcap', glasses: false },
-            { label: '小學教師', outfit: 'cardigan', hat: null, glasses: true },
-            { label: '醫生', outfit: 'coat', hat: null, glasses: false },
-            { label: '報社記者', outfit: 'sweater', hat: 'newsboy', glasses: false },
-            { label: '麵包學徒', outfit: 'apron', hat: null, glasses: false },
-            { label: '中學生', outfit: 'sweater', hat: null, glasses: false },
-            { label: '音樂家', outfit: 'scarf', hat: 'beret', glasses: false },
-            { label: '農家子弟', outfit: 'apron', hat: 'straw', glasses: false },
-            { label: '圖書館員', outfit: 'cardigan', hat: null, glasses: true }
-        ],
+        // 性別由學生自己選擇；髮型、鬍鬚、臉型與眼神依性別對應
+        hairByGender: {
+            M: ['buzz', 'buzz', 'side', 'side', 'slick', 'flat', 'short'],
+            F: ['bob', 'bob', 'bun', 'bun', 'braids', 'curly', 'short']
+        },
+        beardOptions: ['none', 'none', 'none', 'none', 'none', 'none', 'stubble', 'stubble', 'mustache', 'full'],
+        // 服裝與配件隨機搭配，不再對應任何職業
+        outfits: ['workwear', 'apron', 'cardigan', 'coat', 'sweater', 'scarf'],
+        hats: [null, null, null, 'flatcap', 'newsboy', 'beret', 'straw'],
 
         pick: function(arr) { return arr[Math.floor(Math.random() * arr.length)]; },
 
-        create: function(role, taken) {
+        create: function(role, taken, gender) {
+            gender = gender || this.pick(['M', 'F']);
             let cfg, tries = 0;
             do {
-                const occ = this.pick(this.occupations);
-                const hairStyle = this.pick(this.hairStyles);
-                const canBeard = this.maleHairStyles.indexOf(hairStyle) !== -1 && occ.label !== '中學生';
+                const hairStyle = this.pick(this.hairByGender[gender]);
                 cfg = {
                     role: role,
-                    occ: occ,
+                    gender: gender,
+                    outfit: this.pick(this.outfits),
+                    hat: hairStyle === 'bun' ? null : this.pick(this.hats),
+                    glasses: Math.random() < 0.2,
                     skin: this.pick(this.skins),
                     hairStyle: hairStyle,
                     hair: this.pick(this.hairColors),
                     cloth: this.pick(this.clothColors),
                     accent: this.pick(this.accentColors),
-                    beard: canBeard ? this.pick(this.beardOptions) : 'none'
+                    beard: gender === 'M' ? this.pick(this.beardOptions) : 'none'
                 };
                 tries++;
             } while (tries < 40 && taken.some(t =>
-                t.occ.label === cfg.occ.label || (t.hairStyle === cfg.hairStyle && t.hair === cfg.hair)));
+                (t.hairStyle === cfg.hairStyle && t.hair === cfg.hair) ||
+                (t.outfit === cfg.outfit && t.cloth === cfg.cloth)));
             return cfg;
         },
 
@@ -1886,19 +1881,20 @@ window.addEventListener('error', function (e) {
             });
         },
 
-        reroll: function(i) {
+        // gender 省略＝維持目前性別，只換造型
+        reroll: function(i, gender) {
             const players = GameState.players;
             const others = players.filter((_, k) => k !== i).map(p => p.avatar);
-            players[i].avatar = this.create(players[i].role, others);
+            players[i].avatar = this.create(players[i].role, others, gender || players[i].avatar.gender);
         },
 
         render: function(cfg, size) {
             size = size || 150;
             const id = 'av' + (this.uid++);
-            const o = cfg.occ;
+            const o = cfg;
             const S = cfg.skin, H = cfg.hair, C = cfg.cloth, A = cfg.accent;
             const isA = cfg.role === 'A';
-            const isMasc = this.maleHairStyles.indexOf(cfg.hairStyle) !== -1;
+            const isMasc = cfg.gender === 'M';
 
             // ---- 色彩工具 ----
             const rgb = h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16));
@@ -2102,7 +2098,7 @@ window.addEventListener('error', function (e) {
                     break;
             }
 
-            return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 190" width="${size}" height="${Math.round(size * 190 / 160)}" role="img" aria-label="${o.label}角色頭像">
+            return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 190" width="${size}" height="${Math.round(size * 190 / 160)}" role="img" aria-label="${isMasc ? '男性' : '女性'}角色頭像">
                 <defs>
                     <linearGradient id="${id}-bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${bgTop}"/><stop offset="1" stop-color="${bgBot}"/></linearGradient>
                     <pattern id="${id}-dots" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(30)"><circle cx="2.5" cy="2.5" r="1" fill="#000" opacity="0.16"/></pattern>
@@ -2992,7 +2988,10 @@ const SceneArt = (function () {
                 <div class="dossier-no">檔案 NO.${String(i + 1).padStart(3, '0')}</div>
                 ${AvatarFactory.render(p.avatar, 150)}
                 <div class="avatar-name">${p.name}</div>
-                <div class="avatar-occ">「${p.avatar.occ.label}」</div>
+                ${(!Net.on || Net.myIdx === i) ? `<div class="gender-pick">
+                    <button class="reroll-btn gender-btn${p.avatar.gender === 'M' ? ' on' : ''}" onclick="Page2_RoleResult.setGender(${i},'M')">♂ 男生</button>
+                    <button class="reroll-btn gender-btn${p.avatar.gender === 'F' ? ' on' : ''}" onclick="Page2_RoleResult.setGender(${i},'F')">♀ 女生</button>
+                </div>` : `<div class="avatar-occ">${p.avatar.gender === 'M' ? '♂ 男生' : '♀ 女生'}</div>`}
                 <div class="avatar-role" style="color: ${roleColor};">${roleName}</div>
                 ${Net.on && Net.myIdx === i ? '<div class="me-flag">★ 這是你的檔案</div>' : ''}
                 ${(!Net.on || Net.myIdx === i) ? `<button class="reroll-btn" onclick="Page2_RoleResult.reroll(${i})">🎲 換個造型</button>` : ''}
@@ -3019,6 +3018,13 @@ const SceneArt = (function () {
         reroll: function(i) {
             if (Net.on && Net.myIdx !== i) return;
             AvatarFactory.reroll(i);
+            this.refreshCard(i);
+            if (Net.on) Net.pushAvatar(i);
+        },
+        setGender: function(i, g) {
+            if (Net.on && Net.myIdx !== i) return;
+            if (GameState.players[i].avatar.gender === g) return;
+            AvatarFactory.reroll(i, g);
             this.refreshCard(i);
             if (Net.on) Net.pushAvatar(i);
         },
@@ -3895,10 +3901,9 @@ const SceneArt = (function () {
             ctx.font = `900 40px ${F}`; ctx.fillStyle = isJ ? red : blue;
             ctx.fillText('身分：' + (isJ ? '猶太人' : '雅利安人'), tx, 392);
             ctx.font = `400 36px ${F}`; ctx.fillStyle = muted;
-            ctx.fillText('職業：「' + p.avatar.occ.label + '」', tx, 450);
-            ctx.fillText('生存 ' + p.survival + '　道德 ' + p.moral, tx, 508);
+            ctx.fillText('生存 ' + p.survival + '　道德 ' + p.moral, tx, 450);
             ctx.font = `900 36px ${F}`; ctx.fillStyle = dead ? red : green;
-            ctx.fillText(dead ? ('第 ' + p.deathRound + ' 回合退出歷史') : '撐過了這段歷史', tx, 566);
+            ctx.fillText(dead ? ('第 ' + p.deathRound + ' 回合退出歷史') : '撐過了這段歷史', tx, 508);
 
             // 印章
             ctx.save();
