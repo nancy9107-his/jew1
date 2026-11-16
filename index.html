@@ -729,6 +729,67 @@
         .scene-box .scene-cap { font-style: normal; letter-spacing: 1px; }
         .scene-box .scene-cap::before { content: "▣ 照片說明："; color: var(--amber); }
 
+        /* ===== 情境卡動畫（只播一次；最終畫面＝原本的靜態插畫） ===== */
+        .scene-box { position: relative; }
+        .scene-box .an {
+            animation-duration: var(--t, 1s);
+            animation-delay: calc(var(--d, 0s) + 0.55s);
+            animation-timing-function: ease-out;
+            animation-fill-mode: backwards;
+            animation-iteration-count: 1;
+            transform-box: fill-box;
+            transform-origin: var(--o, center);
+        }
+        .scene-box .an-slide   { animation-name: anSlide; }
+        .scene-box .an-fade    { animation-name: anFade; }
+        .scene-box .an-pop     { animation-name: anPop; }
+        .scene-box .an-fall    { animation-name: anFall; animation-timing-function: ease-in-out; }
+        .scene-box .an-thump   { animation-name: anThump; --o: center bottom; }
+        .scene-box .an-puff    { animation-name: anPuff; --o: center bottom; }
+        .scene-box .an-spin    { animation-name: anSpin; }
+        .scene-box .an-draw    { animation-name: anDraw; stroke-dasharray: 1; animation-timing-function: linear; }
+        .scene-box .an-bob     { animation-name: anBob; animation-iteration-count: var(--n, 4); animation-timing-function: ease-in-out; }
+        .scene-box .an-flicker { animation-name: anFlicker; animation-iteration-count: var(--n, 4); animation-timing-function: linear; }
+        .scene-box .an-enter   { animation-name: anEnter; }
+        .scene-box .an-flame   { animation-name: anFlame; animation-iteration-count: var(--n, 5); animation-timing-function: ease-in-out; --o: center bottom; }
+        .scene-box .an-wiggle  { animation-name: anWiggle; animation-iteration-count: var(--n, 6); animation-timing-function: ease-in-out; }
+        @keyframes anSlide { from { transform: translate(var(--x, 0px), var(--y, 0px)); } }
+        @keyframes anFade { from { opacity: 0; } }
+        @keyframes anEnter { from { transform: translate(var(--x, 0px), var(--y, 0px)); opacity: 0; } }
+        @keyframes anFlame { 0%, 100% { transform: none; } 30% { transform: scale(1.06, 1.14); } 65% { transform: scale(.96, .92); } }
+        @keyframes anPop { 0% { transform: scale(0); opacity: 0; } 60% { transform: scale(1.18); opacity: 1; } 100% { transform: scale(1); } }
+        @keyframes anFall {
+            0% { transform: translate(var(--x, 0px), var(--y, -120px)) rotate(var(--r, 30deg)); opacity: 0; }
+            10% { opacity: 1; }
+            35% { transform: translate(calc(var(--x, 0px) * .6 + 16px), calc(var(--y, -120px) * .62)) rotate(calc(var(--r, 30deg) * -.6)); }
+            68% { transform: translate(calc(var(--x, 0px) * .25 - 12px), calc(var(--y, -120px) * .26)) rotate(calc(var(--r, 30deg) * .4)); }
+            100% { transform: none; }
+        }
+        @keyframes anThump {
+            0% { transform: translateY(-48px); opacity: 0; }
+            15% { opacity: 1; }
+            55% { transform: translateY(0) scale(1, 1); animation-timing-function: ease-out; }
+            65% { transform: translateY(0) scale(1.15, .8); }
+            82% { transform: translateY(-5px) scale(1, 1); }
+            100% { transform: none; }
+        }
+        @keyframes anPuff { from { opacity: 0; transform: translateY(14px) scale(.3); } }
+        @keyframes anSpin { from { transform: rotate(-200deg); } }
+        @keyframes anDraw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+        @keyframes anBob { 50% { transform: translateY(-3px); } }
+        @keyframes anFlicker { 0%, 100% { opacity: 1; } 20% { opacity: .45; } 45% { opacity: .9; } 65% { opacity: .55; } 85% { opacity: .95; } }
+        @keyframes anWiggle { 50% { transform: rotate(-12deg); } }
+        /* 關閉動畫：使用者按了開關，或 iPad 開啟「減少動態效果」 */
+        body.no-scene-anim .scene-box .an { animation: none !important; }
+        .anim-toggle {
+            position: absolute; top: 8px; right: 8px; z-index: 2;
+            font-family: inherit; font-size: 0.85rem; letter-spacing: 1px;
+            padding: 3px 10px; border-radius: 2px; cursor: pointer;
+            background: rgba(31, 29, 25, 0.78); color: #e8dfc8; border: 1px solid #cfc9b6;
+        }
+        .anim-toggle:hover { background: rgba(31, 29, 25, 0.95); }
+        .scene-box svg { cursor: pointer; }
+
         /* 遊戲中 */
         .game-status-bar { border-bottom: 3px double var(--border-color); }
         .status-label.s-uneasy { color: #d9a441; }
@@ -2326,7 +2387,11 @@ const SceneArt = (function () {
         if (h === 'straw') hd += E(0, -79, 12.4, 2.8, '#dcbc74') + P('M-6.2 -79 Q-6.2 -88.6 0 -88.6 Q6.2 -88.6 6.2 -79Z', '#e5cd8a');
         if (h === 'white') hd += P('M-6.9 -78 Q-6.9 -84.6 0 -84.6 Q6.9 -84.6 6.9 -78Z', '#f3f0e8') + `<line x1="0" y1="-83.4" x2="0" y2="-79.4" stroke="#b03a35" stroke-width="1.1"/><line x1="-2" y1="-81.4" x2="2" y2="-81.4" stroke="#b03a35" stroke-width="1.1"/>`;
         if (h === 'kepi') hd += P('M-7.2 -77 Q-6.4 -84.6 1.6 -84.6 Q8 -83.6 7.4 -77Z', '#3f5c8a') + `<rect x="-7.3" y="-79" width="14.6" height="2.2" fill="#a8473f" ${OL}/>` + P('M1.8 -77.4 Q11 -77.4 11 -75.8 L2 -75.8Z', '#26385a');
+        if (o.tears) hd += [-1, 1].map(sd => `<path d="M${sd * 2.9} -73 Q${sd * 3.6} -70.6 ${sd * 3.5} -67.4" fill="none" stroke="#8fc6de" stroke-width="1.3" stroke-linecap="round"/><path d="M${sd * 3.5} -67.6 q1.5 2.6 0 4 q-1.5 -1.4 0 -4Z" fill="#bfe3f2" stroke="#5f8aa0" stroke-width=".45"/>`).join('');
+        if (o.old) hd += `<g fill="none" stroke="${skinD}" stroke-width=".55" stroke-linecap="round"><path d="M-3.6 -79.2 Q0 -80 3.6 -79.2"/><path d="M-2.8 -78.2 Q0 -78.8 2.8 -78.2"/><path d="M-4.4 -72.6 Q-2.9 -71.7 -1.5 -72.6"/><path d="M4.4 -72.6 Q2.9 -71.7 1.5 -72.6"/><path d="M-2 -70.6 Q-3.1 -68.8 -2.6 -67.2"/><path d="M2 -70.6 Q3.1 -68.8 2.6 -67.2"/></g>`;
         if (o.sweat) hd += `<path d="M8 -80 Q9.6 -76.4 8 -75.2 Q6.4 -76.4 8 -80Z" fill="#bfe3f2" stroke="#6f9aae" stroke-width=".5"/>`;
+        if (o.stoop) hd = `<path d="M-9 -64.5 Q0 -69 9 -64.5 Q0 -62.5 -9 -64.5Z" fill="${c}" ${OL}/><g transform="translate(0 5.5)">${hd}</g>`;   // 駝背：頭縮進肩膀、往下垂
+        if (o.cane) b += `<path d="M28.8 -35.4 Q29.6 -40 33.6 -39.4 M28.8 -35.4 L31.4 0" fill="none" stroke="#3b2a1e" stroke-width="2.2" stroke-linecap="round"/>`;   // 拐杖（右手）
         b += o.kidProp ? `<g transform="translate(0 -64) scale(1.28) translate(0 64)">${hd}</g>` : hd;
         return `<g transform="translate(${x} ${y}) scale(${s * fl} ${s})">${b}</g>`;
     }
@@ -2406,6 +2471,21 @@ const SceneArt = (function () {
 </svg>`;
     }
 
+    // 動畫包裝：an('slide', 內容, { d: 延遲秒, t: 長度秒, x: 起點位移, y: 起點位移, r: 角度, n: 次數 })
+    const an = (type, inner, o = {}) => {
+        let st = '';
+        if (o.d != null) st += `--d:${o.d}s;`;
+        if (o.t != null) st += `--t:${o.t}s;`;
+        if (o.x != null) st += `--x:${o.x}px;`;
+        if (o.y != null) st += `--y:${o.y}px;`;
+        if (o.r != null) st += `--r:${o.r}deg;`;
+        if (o.n != null) st += `--n:${o.n};`;
+        if (o.o) st += `--o:${o.o};`;
+        return `<g class="an an-${type}"${st ? ` style="${st}"` : ''}>${inner}</g>`;
+    };
+    // 會「畫出來」的線條（日記字跡等）
+    const drawLine = (x1, y1, x2, y2, w = 1.3, d = 0, t = 1) => `<path d="M${x1} ${y1} L${x2} ${y2}" pathLength="1" fill="none" stroke="${INK}" stroke-width="${w}" stroke-linecap="round" class="an an-draw" style="--d:${d}s;--t:${t}s"/>`;
+
     const S = {};   // 場景表：id -> { cap, draw }
     const add = (id, cap, draw) => { S[id] = { cap, draw }; };
     const H = { sky, ground, room, stars, moon, sun, cloud, man, soldier, officer, gestapo, doctor, prisoner, jew, woman, kid, silhouette, crowd, win, door, house, tree, pine, smoke, chimney, wire, tower, rails, boxcar, engine, paper, book, books, lamp, fire, bubble, thought, sign, clock, table, desk, bed, bottle, bag, suitcase, loaf, coin, stamp, sparkle, shock, drops, shard, banner, col: col_, plane, tank, globe, camera, bars, cross, crossX, snowfall, glow, heart, roofTiles, mug, rect, circ, ell, poly, path, line, txt, g, star, SK, SK2, SK3, UG, UGD, LEATHER, WHITE, BLUE, RED, GREEN, MUST, PURP, ORNG, GREY, INK };
@@ -2457,15 +2537,54 @@ const SceneArt = (function () {
         });
     }
 
+    // ---------- 自動動畫（劇情順序：環境 → 人物依序走進畫面 → 道具／效果出現 → 對話泡泡跳出）----------
+    const MANUAL = new Set(['G04', 'G28', 'J31', 'J34']);   // 這幾張是逐格手調的動畫
+    let auto = false;
+    const cnt = { F: 0, P: 0, B: 0 };
+    const tok = k => `__${k}${cnt[k]++}__`;
+    const wrapH = (name, fn) => { const orig = H[name]; H[name] = (...a) => { const r = orig(...a); return auto ? fn(r, a) : r; }; };
+    const sty = o => Object.entries(o).map(([k, v]) => `--${k}:${v}`).join(';');
+    const G = (cls, inner, o) => `<g class="an an-${cls}" style="${sty(o)}">${inner}</g>`;
+    ['man', 'soldier', 'officer', 'gestapo', 'doctor', 'prisoner', 'jew', 'woman', 'kid'].forEach(n => wrapH(n, (r, a) => {
+        const d = tok('F');
+        return G('enter', G('bob', r, { d: d + 's', t: '.3s', n: 3 }), { d: d + 's', t: '.9s', x: (a[0] < 200 ? -60 : 60) + 'px' });
+    }));
+    ['silhouette', 'crowd'].forEach(n => wrapH(n, r => G('fade', r, { d: tok('F') + 's', t: '1.2s' })));
+    ['sparkle', 'coin', 'shock', 'crossX', 'drops', 'camera'].forEach(n => wrapH(n, r => G('pop', r, { d: tok('P') + 's', t: '.55s' })));
+    wrapH('stamp', r => G('thump', r, { d: tok('P') + 's', t: '.9s' }));
+    wrapH('shard', r => G('fall', r, { d: tok('P') + 's', t: '1s', x: '0px', y: '-50px', r: '160deg' }));
+    ['bubble', 'thought'].forEach(n => wrapH(n, r => G('pop', r, { d: tok('B') + 's', t: '.6s' })));
+    wrapH('fire', r => G('flame', r, { t: '.8s', n: 5 }));
+    wrapH('glow', r => G('flicker', r, { t: '.9s', n: 4 }));
+    wrapH('stars', r => G('flicker', r, { t: 1.2 + 's', n: 3 }));
+    wrapH('smoke', r => r.replace(/<circle [^>]*\/>/g, (c, i) => G('puff', c, { d: (0.3 + (cnt.S = (cnt.S || 0) + 1) * 0.35).toFixed(2) + 's', t: '1s' })));
+    wrapH('cloud', r => G('slide', r, { t: '4.5s', x: '-50px' }));
+    wrapH('plane', r => G('slide', r, { t: '2.2s', x: '-320px', y: '12px' }));
+    wrapH('tank', r => G('slide', r, { t: '2.6s', x: '-240px' }));
+    ['engine', 'boxcar'].forEach(n => wrapH(n, r => G('slide', r, { t: '2.6s', x: '340px' })));
+    wrapH('globe', r => G('spin', r, { t: '2.5s' }));
+    // 把順序代號換成實際秒數
+    function timeline(svg) {
+        const nf = cnt.F, np = cnt.P;
+        const fd = i => 0.1 + Math.min(i, 6) * 0.32;
+        const base = nf ? fd(nf - 1) + 0.8 : 0.3;
+        const pd = i => base + Math.min(i, 8) * 0.18;
+        const base2 = np ? pd(np - 1) + 0.6 : base + 0.2;
+        const bd = i => base2 + i * 0.45;
+        return svg.replace(/__([FPB])(\d+)__/g, (m, k, i) => (k === 'F' ? fd : k === 'P' ? pd : bd)(+i).toFixed(2));
+    }
+
     function render(id) {
         const sc = S[id];
         if (!sc) return '';
         let inner;
         cur = 'sv' + uid;
-        try { inner = avoidBubbles(sc.draw(H)); } catch (e) { console.warn('scene error', id, e); return ''; }
+        auto = !MANUAL.has(id); cnt.F = cnt.P = cnt.B = cnt.S = 0;
+        try { inner = timeline(avoidBubbles(sc.draw(H))); } catch (e) { console.warn('scene error', id, e); auto = false; return ''; }
+        auto = false;
         return `<figure class="scene-wrap">${frame(inner, sc.cap)}<figcaption class="scene-cap">${sc.cap}</figcaption></figure>`;
     }
-    return { add, render, H, ids: () => Object.keys(S), has: id => !!S[id] };
+    return { add, render, H, an, drawLine, ids: () => Object.keys(S), has: id => !!S[id] };
 })();
 /* SCENE-ART-END */
 
@@ -2500,11 +2619,13 @@ const SceneArt = (function () {
         man(335, 196, { s: 1.2, c: '#4b4b4e', hat: 'fedoraB', mood: 'happy', arms: [[-16, -26], [-6, -44]], sweat: true }) + circ(330, 150, 5, '#e3c46a') + sparkle(320, 144, .7));
 
     add('G04', '深夜裡的日記，是留給後人的證詞', () =>
+        // 動畫：燈光搖曳 → 筆在紙上寫字 → 牆上的紙一行行浮現 → 「1946」出現（日記成為後世證詞）
         room('#cdbfa0', '#7d6347') + win(40, 36, 56, 66, false, true) + moon(68, 56, 8) + stars(0) +
-        rect(240, 30, 60, 76, '#fbf6e8', 2) + txt(270, 54, '1946', 16, '#a8473f') + line(250, 66, 290, 66, 1.3) + line(250, 76, 290, 76, 1.3) + line(250, 86, 280, 86, 1.3) +
-        glow(190, 128, 70, '#ffe9a0', .3) + desk(120, 192, 170) + rect(150, 146, 54, 10, '#fbf6e8', 1) + line(158, 150, 196, 150, 1) +
-        rect(228, 142, 4, 24, '#3b3a3a') + path('M222 142 L238 142 L234 130 L226 130Z', '#7aa07a') + `<circle cx="230" cy="128" r="12" fill="#ffe9a0" opacity=".5"/>` +
-        man(176, 150, { s: 1.15, c: '#8a6a58', arms: 'hold', glasses: true, mood: 'sad', hair: 'grey', h: '#aaa' }) + line(168, 152, 160, 160, 2, '#2c2c2c'));
+        rect(240, 30, 60, 76, '#fbf6e8', 2) + SceneArt.an('pop', txt(270, 54, '1946', 16, '#a8473f'), { d: 3.4, t: .7 }) +
+        SceneArt.drawLine(250, 66, 290, 66, 1.3, 2.2, .5) + SceneArt.drawLine(250, 76, 290, 76, 1.3, 2.6, .5) + SceneArt.drawLine(250, 86, 280, 86, 1.3, 3.0, .4) +
+        SceneArt.an('flicker', glow(190, 128, 70, '#ffe9a0', .3), { t: .9, n: 5 }) + desk(120, 192, 170) + rect(150, 146, 54, 10, '#fbf6e8', 1) + SceneArt.drawLine(158, 150, 196, 150, 1, .2, 1.9) +
+        rect(228, 142, 4, 24, '#3b3a3a') + path('M222 142 L238 142 L234 130 L226 130Z', '#7aa07a') + SceneArt.an('flicker', `<circle cx="230" cy="128" r="12" fill="#ffe9a0" opacity=".5"/>`, { t: .7, n: 6 }) +
+        man(176, 150, { s: 1.15, c: '#8a6a58', arms: 'hold', glasses: true, mood: 'sad', hair: 'grey', h: '#aaa' }) + SceneArt.an('wiggle', line(168, 152, 160, 160, 2, '#2c2c2c'), { t: .32, n: 6, o: 'right top' }));
 
     add('G05', '1940 年維也納的會議：一人舉手反對', () =>
         room('#e3e0d2', '#b9a07c') + rect(20, 34, 130, 66, '#3d5a4c', 3) + txt(85, 60, '問題兒童?', 14, '#e9f0e0') + `<g>${[0, 1, 2].map(i => `<circle cx="${50 + i * 28}" cy="82" r="5" fill="none" stroke="#e9f0e0" stroke-width="1.5"/><line x1="${50 + i * 28}" y1="87" x2="${50 + i * 28}" y2="96" stroke="#e9f0e0" stroke-width="1.5"/>`).join('')}</g>` +
@@ -2537,7 +2658,7 @@ const SceneArt = (function () {
     add('G09', '「生命之泉」：以愛國為名的邀請', () =>
         sky('warm') + ground('#b3c79a', 158) + house(150, 158, 160, 70, '#efe4cc', '#8a5a48') + win(168, 100, 22, 24, true) + win(260, 100, 22, 24, true) + door(212, 120, 26, 38) + tree(60, 160, 1.3) + tree(360, 162, 1.2, '#8fb283') + cloud(300, 40) +
         officer(300, 205, { s: 1.35, arms: [[-16, -26], [34, -46]], mood: 'neutral', hat: 'peaked' }) + woman(180, 205, { s: 1.3, hair: 'braid', h: '#d9b560', c: '#f0d9d0', dc: '#f0d9d0', arms: 'hold', mood: 'neutral' }) +
-        rect(196, 174, 10, 8, '#f2c230', 1, 'stroke-width="1"') + thought(112, 70, 54, 38, heart(139, 89, 1.4), 8) + bubble(240, 70, 40, 26, '?', 'r', 16));
+        rect(196, 174, 10, 8, '#f2c230', 1, 'stroke-width="1"') + thought(112, 70, 54, 38, heart(139, 89, 1.4), 8) + bubble(202, 56, 34, 28, '?', 'l', 16));
 
     add('G10', '課堂上掛滿「種族科學」圖片，你是老師', () =>
         room('#d7d3c0', '#a8865f') + rect(60, 22, 280, 84, '#3d5a4c', 3) + rect(78, 34, 40, 52, '#e9e1cd', 2) + circ(98, 54, 12, '#bbb') + path('M82 84 Q98 66 114 84Z', '#bbb') + rect(132, 34, 40, 52, '#e9e1cd', 2) + circ(152, 54, 12, '#bbb') + path('M136 84 Q152 66 168 84Z', '#bbb') + txt(250, 62, '種族科學', 18, '#e9f0e0') + line(212, 76, 300, 76, 2, '#e9f0e0') +
@@ -2565,7 +2686,7 @@ const SceneArt = (function () {
         [0, 1, 2, 3, 4, 5].map(i => silhouette(195 + i * 28, 122, .45, '#3b3a42') + line(200 + i * 28, 100, 208 + i * 28, 118, 2)).join('') +
         tower(380, 118) + wire(180, 372, 130, 22) +
         man(70, 200, { s: 1.3, c: '#7a6a55', hat: 'fedora', mood: 'sad', arms: 'hold' }) + bubble(30, 70, 80, 34, '三千人…?', 'l', 13) +
-        man(150, 206, { s: 1.2, c: '#6b7a8a', hat: 'cap', mood: 'scared', arms: 'face' }) + bubble(120, 108, 40, 24, 'ㄙㄨㄙ', 'r', 9));
+        man(150, 206, { s: 1.2, c: '#6b7a8a', hat: 'cap', mood: 'scared', arms: 'face' }) + bubble(116, 108, 58, 26, '&%$@&*', 'r', 12));
 
     add('G14', '你會把孩子交給「療養院」嗎？', () =>
         sky('day') + cloud(80, 40) + ground('#b3c79a', 160) + rect(190, 62, 190, 98, '#f3ead6', 2) + poly('182,62 285,30 388,62', '#8aa7bf') + win(206, 82, 30, 30, true) + win(256, 82, 30, 30, true) + win(316, 82, 30, 30, true) + door(246, 120, 30, 40, '#7aa7c9') + cross(285, 50, .6, '#d9604f') +
@@ -2627,7 +2748,7 @@ const SceneArt = (function () {
         officer(130, 186, { s: 1, arms: 'hold', mood: 'stern' }) + officer(190, 186, { s: 1, arms: 'point', mood: 'stern' }) + officer(250, 186, { s: 1, arms: 'hold', mood: 'neutral' }) +
         officer(310, 196, { s: 1.3, arms: 'face', mood: 'scared', sweat: true }) + bubble(260, 56, 70, 30, '加入我們?', 'l', 12));
 
-    add('G22', '元首的金援，換來一支宣傳影片的鏡頭', () =>
+    add('G22', '一支宣傳影片，換來元首的金援', () =>
         room('#d9d3c0', '#8f7d66') + rect(40, 40, 140, 90, '#3d3d42', 3) + circ(60, 60, 8, '#8fb0c9') + circ(60, 60, 4, '#222') +
         camera(220, 150, 1.4) + rect(260, 110, 90, 70, '#e6d0a0', 2) + silhouette(280, 170, 1.4) + banner(350, 110, 14, 70, '#8a2f2f') +
         woman(80, 205, { s: 1.35, hair: 'bun', h: '#4a3426', c: '#6b5a8a', dc: '#6b5a8a', arms: [[-16, -26], [30, -30]], mood: 'neutral', beret: false }) +
@@ -2664,9 +2785,10 @@ const SceneArt = (function () {
 
     add('G28', '傳單落在你腳邊，白玫瑰的字跡清晰可見', () =>
         sky('dusk') + ground('#9a968c', 160) + house(260, 160, 120, 70, '#d9cfb6', '#7a5a4a') + win(280, 110, 20, 22) + win(320, 110, 20, 22) +
-        [0, 1, 2].map(i => paper(80 + i * 34 + (i % 2) * 10, 120 - i * 16, 22, 28, i * 18 - 18, 3)).join('') +
-        man(90, 205, { s: 1.35, c: '#7a6a55', hat: 'cap', mood: 'neutral', arms: [[-16, -26], [10, -4]] }) + paper(64, 170, 24, 30, -10, 3) +
-        plane(320, 36, .7, '#8fa4b0') + bubble(30, 60, 76, 30, '自由萬歲', 'r', 12));
+        // 動畫：飛機飛過 → 傳單一張張飄落 → 最後一張落在腳邊 → 對話泡泡跳出
+        [0, 1, 2].map(i => SceneArt.an('fall', paper(80 + i * 34 + (i % 2) * 10, 120 - i * 16, 22, 28, i * 18 - 18, 3), { d: .9 + i * .45, t: 2.2, x: 150 - i * 30, y: -110 + i * 12, r: 40 - i * 15 })).join('') +
+        man(90, 205, { s: 1.35, c: '#7a6a55', hat: 'cap', mood: 'neutral', arms: [[-16, -26], [10, -4]] }) + SceneArt.an('fall', paper(64, 170, 24, 30, -10, 3), { d: 2.3, t: 2.4, x: 200, y: -150, r: 50 }) +
+        SceneArt.an('slide', plane(320, 36, .7, '#8fa4b0'), { t: 2.2, x: -380, y: 10 }) + SceneArt.an('pop', bubble(30, 60, 76, 30, '自由萬歲', 'r', 12), { d: 4.6, t: .6 }));
 
     add('G29', '「萊卡自由列車」：用海外派任，偷偷送走員工', () =>
         sky('day') + ground('#9fb487') + rails(188, 0, 400) + engine(20, 188) + boxcar(96, 188, 80) + boxcar(182, 188, 80) +
@@ -2727,7 +2849,7 @@ const SceneArt = (function () {
 
     add('J02', '集中營醫生要求你解剖活體，用於展示', () =>
         room('#cdd8d2', '#b2bdb6') + rect(260, 30, 110, 76, '#fbf6e8', 2) + txt(315, 56, '帝國博物館', 11, '#a8473f') + rect(272, 70, 20, 24, '#d8d0bd', 1) +
-        table(60, 190, 150, 36, '#b5b0a0') + prisoner(130, 160, { s: .9, arms: 'down', mood: 'scared' }) +
+        table(60, 190, 150, 36, '#b5b0a0') + prisoner(130, 160, { s: .9, arms: [[-12, -42], [12, -42]], mood: 'scared', tears: true, sweat: true }) + shock(130, 68, .8) +
         doctor(220, 206, { s: 1.3, hat: 'white', mood: 'stern', arms: [[-16, -26], [30, -40]] }) + rect(246, 158, 4, 20, '#cfe8f2', 1) + drops(250, 158));
 
     add('J03', '街角，一群孩子正欺負一個猶太小孩', () =>
@@ -2742,9 +2864,17 @@ const SceneArt = (function () {
         man(110, 206, { s: 1.2, c: '#7a6a55', hat: 'fedora', mood: 'neutral', arms: [[-10, -14], [20, -34]] }) + circ(150, 170, 6, '#c0504d') + sparkle(158, 158, .7));
 
     add('J05', '布告欄貼出禁令：猶太人不得使用公共設施', () =>
-        room('#d9d3c0', '#9a8466') + rect(140, 24, 150, 90, '#fbf6e8', 2) + txt(215, 50, '猶太人禁止進入', 13, '#a8473f') + line(160, 66, 280, 66, 1.3) + line(160, 78, 270, 78, 1.3) + line(160, 90, 250, 90, 1.3) +
-        doctor(60, 206, { s: 1.25, star: true, coat: false, c: '#6b6a74', mood: 'sad', arms: 'face' }) + rect(44, 160, 30, 20, '#fbf6e8', 1) +
-        [0, 1].map(i => man(300 + i * 36, 206, { s: 1, c: UG, hat: 'peaked', mood: 'stern', arms: 'hold' })).join(''));
+        // 街頭公園旁：柵欄裡的人照常休閒，柵欄外的公告禁止猶太人進入
+        sky('day') + cloud(300, 30, .8) + ground('#b9b3a3', 150) +
+        tree(26, 128, 1.1) + tree(390, 126, 1.15, '#8fb283') +
+        rect(252, 104, 72, 6, '#9a7650', 2) + rect(255, 110, 4, 16, '#9a7650') + rect(317, 110, 4, 16, '#9a7650') + rect(248, 92, 80, 10, '#9a7650', 2) +
+        man(270, 124, { s: .5, c: BLUE, mood: 'happy', hat: 'straw', arms: 'hold' }) + woman(304, 124, { s: .5, c: '#c9a24f', hair: 'bun', mood: 'happy', arms: 'hold' }) + kid(236, 132, { s: .42, c: RED, mood: 'happy', arms: 'up' }) +
+        line(345, 150, 345, 84, 3, '#5d5048') + sign(330, 72, 58, 14, '限雅利安人', 9) +
+        Array.from({ length: 26 }, (_, k) => k * 16).map(x => line(x, 150, x, 112, 2.2, '#3b3430') + circ(x, 110, 2.2, '#3b3430', 'stroke-width="1"')).join('') + line(0, 120, 400, 120, 2.5, '#3b3430') + line(0, 142, 400, 142, 2.5, '#3b3430') +
+        rect(105, 140, 4, 52, '#6b4a3a') + rect(217, 140, 4, 52, '#6b4a3a') + rect(96, 30, 134, 112, '#fbf6e8', 2) + rect(96, 30, 134, 16, '#8a2f2f', 2) + txt(163, 42, '公　告', 11, '#fbf6e8') +
+        txt(163, 68, '猶太人禁止進入', 15, '#a8473f') + txt(163, 88, '公園・泳池・電影院', 9) + txt(163, 102, '電車座位・公共長椅', 9) + line(112, 114, 214, 114, 1.2) + line(112, 124, 196, 124, 1.2) + stamp(210, 136) +
+        jew(52, 206, { s: 1.25, c: '#6b6a74', hat: 'fedora', mood: 'sad', arms: 'face' }) +
+        [0, 1].map(i => soldier(320 + i * 40, 206, { s: 1, arms: 'hold' })).join(''));
 
     add('J06', '死亡列車上，三名年輕人合力阻止列車前進', () =>
         sky('night') + stars(14) + moon(40, 30, 10) + ground('#55504a', 190) + rails(190, 0, 400) + engine(230, 190) + boxcar(200, 190, 0) +
@@ -2753,7 +2883,7 @@ const SceneArt = (function () {
 
     add('J07', '焚屍爐前，葛柏的雙手正搜刮死者的金牙', () =>
         room('#4a433a', '#55504a') + chimney(340, 150, 90) + smoke(340, 56, 4, '#2b2a30') + rect(280, 150, 90, 40, '#3b3a3a', 2) + glow(300, 160, 50, '#d0693a', .3) +
-        prisoner(120, 206, { s: 1.25, arms: [[-16, -20], [20, -20]], mood: 'sad' }) + bag(90, 184, '#8a7a6a') + coin(96, 178) +
+        prisoner(120, 206, { s: 1.25, arms: 'face', mood: 'sad' }) + bag(90, 184, '#8a7a6a') + coin(96, 178) +
         soldier(220, 206, { s: 1.15, arms: 'hold', mood: 'stern' }));
 
     add('J08', '鄰居被帶走了，電話與夜行都已被禁止', () =>
@@ -2782,7 +2912,7 @@ const SceneArt = (function () {
         [0, 1, 2].map(i => circ(120 + i * 20, 146, 7, '#c9a24f')).join('') +
         kid(130, 206, { s: 1, hair: 'braid', mood: 'neutral', arms: [[-10, -18], [14, -20]] }) + kid(230, 206, { s: .95, hair: 'short', mood: 'sad', arms: 'low' }) + loaf(185, 200, .85));
 
-    add('J13', '密室裡擠著七個人，門外還有一人在等待', () =>
+    add('J13', '密室裡擠著六個人，門外還有一人在等待', () =>
         room('#d5cfbc', '#9a8d76') + rect(30, 24, 260, 130, '#8a7560', 2) + line(50, 50, 270, 50, 1.2) +
         [0, 1, 2, 3, 4, 5].map(i => man(60 + (i % 3) * 70, 110 + Math.floor(i / 3) * 40, { s: .62, mood: 'scared', c: ['#6b7a8a', '#8a6b7a', '#7a8a6b', '#a8977a', '#6b5a8a', '#8a6a58'][i] })).join('') +
         jew(300, 206, { s: 1.05, c: '#6b6a74', mood: 'scared', arms: 'face' }) + line(286, 170, 286, 220, 3, '#3b3430') + bubble(220, 150, 80, 30, '讓他進來嗎?', 'r', 11));
@@ -2836,7 +2966,7 @@ const SceneArt = (function () {
 
     add('J21', '警衛打量著肚子痛的父親，一記耳光隨即落下', () =>
         room('#4a433a', '#55504a') + door(300, 150, 30, 56, '#2c2c2e') + sign(292, 140, 46, 14, 'WC', 10) +
-        jew(150, 206, { s: 1.25, c: '#8a8884', mood: 'scared', arms: 'face' }) +
+        jew(150, 206, { s: 1.15, c: '#8a8884', mood: 'sad', arms: [[-2, -32], [24, -30]], hair: 'grey', beard: '#d6d2c8', old: true, skin: '#dcc0a4', stoop: true, cane: true }) +
         soldier(220, 206, { s: 1.2, arms: [[-16, -26], [32, -36]], mood: 'angry' }) + shock(165, 150, 1));
 
     add('J22', '偽造的文件，讓她躲過了被送走的命運', () =>
@@ -2846,7 +2976,7 @@ const SceneArt = (function () {
 
     add('J23', '監工身邊的小助手，正痛打沒整理床舖的父親', () =>
         room('#4a433a', '#55504a') + bed(60, 206, 110, '#6b7a8a') +
-        jew(140, 206, { s: 1.15, c: '#8a8884', mood: 'scared', arms: 'low' }) +
+        jew(140, 206, { s: 1.1, c: '#8a8884', mood: 'sad', arms: [[-18, -22], [24, -30]], hair: 'grey', beard: '#d6d2c8', old: true, skin: '#dcc0a4', stoop: true, cane: true }) +
         kid(200, 206, { s: .85, mood: 'angry', arms: 'raise1', c: RED }) + soldier(260, 206, { s: 1.2, arms: 'hips', mood: 'stern' }));
 
     add('J24', '「淘汰競選」：體力不支的人，將被送入焚化爐', () =>
@@ -2885,8 +3015,12 @@ const SceneArt = (function () {
 
     add('J31', '何鳳山的簽證，是通往中國的一條生路', () =>
         sky('day') + ground('#9a968c', 170) + house(0, 170, 100, 60, '#c7bfa8', '#6b4a3a') +
-        rails(0, 0, 0) + boxcar(140, 180, 100) + engine(240, 180) + smoke(252, 128, 3, '#aaa6a0') +
-        jew(80, 206, { s: 1.2, c: '#8a8884', mood: 'happy', arms: 'carry' }) + suitcase(70, 206, 24, 16) + stamp(50, 150, '簽') + sparkle(60, 140, .8) + globe(360, 50, 16));
+        // 動畫：印章「碰」一聲蓋下 → 「簽」字與光芒出現 → 火車駛進月台、冒煙 → 人物開心地跳兩下
+        rails(0, 0, 0) + SceneArt.an('slide', boxcar(140, 180, 100) + engine(240, 180), { d: 1.4, t: 2.2, x: 300 }) +
+        [0, 1, 2].map(i => SceneArt.an('puff', `<circle cx="${252 + Math.sin(i * 1.3) * 7 + i * 3}" cy="${128 - i * 15}" r="${8 + i * 3.5}" fill="#aaa6a0" opacity="${0.8 - i * .12}"/>`, { d: 3.3 + i * .3, t: .8 })).join('') +
+        SceneArt.an('bob', SceneArt.an('bob', jew(80, 206, { s: 1.2, c: '#8a8884', mood: 'happy', arms: 'carry' }) + suitcase(70, 206, 24, 16), { d: 1.4, t: .45, n: 2 }), { d: 3.8, t: .45, n: 2 }) +
+        SceneArt.an('thump', stamp(50, 150), { d: .1, t: .9 }) + SceneArt.an('pop', txt(50, 130, '簽', 10, '#a8473f'), { d: .8, t: .5 }) + SceneArt.an('pop', sparkle(60, 140, .8), { d: .9, t: .6 }) +
+        SceneArt.an('spin', globe(360, 50, 16), { t: 3 }));
 
     add('J32', '鐘錶店樓上的衣櫃，藏著一整批逃命的人', () =>
         room('#d9d0b8', '#9a8466') + rect(40, 30, 120, 60, '#fbf6e8', 2) + clock(100, 60, 22) + rect(260, 20, 100, 150, '#8a6240', 3) + line(280, 20, 280, 170, 1.3) +
@@ -2900,8 +3034,11 @@ const SceneArt = (function () {
         [0, 1].map(i => jew(340 + i * 20, 206, { s: .95, c: '#8a8884', mood: 'happy', arms: 'hold' })).join(''));
 
     add('J34', '溫頓的八列火車，載著孩子們前往英國', () =>
-        sky('day') + cloud(100, 36) + ground('#9fb487', 190) + rails(190, 0, 400) + engine(10, 190) + boxcar(90, 190, 90) + boxcar(180, 190, 90) +
-        [0, 1, 2].map(i => kid(260 + i * 28, 206, { s: .85, mood: 'sad', hair: i % 2 ? 'short' : 'braid', arms: 'carry' })).join('') + suitcase(250, 212, 18, 12) +
+        // 動畫：雲慢慢飄 → 火車從左邊駛進、停下 → 孩子們一個個走向火車
+        sky('day') + SceneArt.an('slide', cloud(100, 36), { t: 4.5, x: -60 }) + ground('#9fb487', 190) + rails(190, 0, 400) +
+        SceneArt.an('slide', SceneArt.an('bob', engine(10, 190) + boxcar(90, 190, 90) + boxcar(180, 190, 90), { t: .3, n: 8 }), { t: 2.6, x: -300 }) +
+        [0, 1, 2].map(i => SceneArt.an('slide', SceneArt.an('bob', kid(260 + i * 28, 206, { s: .85, mood: 'sad', hair: i % 2 ? 'short' : 'braid', arms: 'carry' }), { d: 2.2 + i * .35, t: .38, n: 4 }), { d: 2.2 + i * .35, t: 1.5, x: 150 })).join('') +
+        SceneArt.an('slide', suitcase(250, 212, 18, 12), { d: 2.2, t: 1.5, x: 150 }) +
         man(360, 198, { s: 1.1, c: '#7a6a55', hat: 'fedora', mood: 'neutral', arms: 'hold' }));
 
     add('J35', '一張印著老鷹徽章的工作證，是你的護身符', () =>
@@ -2910,6 +3047,43 @@ const SceneArt = (function () {
         jew(260, 206, { s: 1.15, c: '#8a8884', mood: 'happy', arms: 'hold' }) + coin(210, 170) + coin(222, 176, 6));
 })();
 /* SCENE-ART-J2-END */
+
+// ==========================================
+// 情境卡動畫開關：預設依 iPad「減少動態效果」設定，使用者可自行切換（會記住選擇）
+// 點一下插畫可重播動畫
+// ==========================================
+const SceneAnim = (function () {
+    let on;
+    try { const v = localStorage.getItem('sceneAnim'); if (v === '1') on = true; if (v === '0') on = false; } catch (e) {}
+    if (on === undefined) on = !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    const apply = () => document.body.classList.toggle('no-scene-anim', !on);
+    const label = () => on ? '▶ 動畫：開' : '■ 動畫：關';
+    const replay = () => {
+        const box = document.getElementById('card-scene-display');
+        const fig = box && box.querySelector('.scene-wrap');
+        if (!fig) return;
+        const html = fig.outerHTML;
+        fig.outerHTML = html;
+    };
+    const init = () => {
+        apply();
+        const box = document.getElementById('card-scene-display');
+        if (!box) return;
+        box.addEventListener('click', e => {
+            if (e.target.closest('.anim-toggle')) {
+                on = !on;
+                try { localStorage.setItem('sceneAnim', on ? '1' : '0'); } catch (err) {}
+                apply();
+                box.querySelectorAll('.anim-toggle').forEach(b => { b.textContent = label(); b.setAttribute('aria-pressed', on); });
+                if (on) replay();
+                return;
+            }
+            if (on && e.target.closest('svg')) replay();
+        });
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+    return { button: () => `<button type="button" class="anim-toggle" aria-pressed="${on}" title="開啟或關閉情境插畫動畫">${label()}</button>` };
+})();
 
 
     const Page1_Setup = {
@@ -3315,7 +3489,7 @@ const SceneArt = (function () {
             void optionsDiv.offsetWidth;
 
             const cardTextFormatted = card.text.replace(/\n/g, '<br>');
-            document.getElementById('card-scene-display').innerHTML = SceneArt.render(card.id);
+            document.getElementById('card-scene-display').innerHTML = SceneArt.render(card.id) + SceneAnim.button();
             document.getElementById('card-text-body').innerHTML = GameUtils.highlightKeywords(cardTextFormatted);
 
             if (card.type === 'chance') {
