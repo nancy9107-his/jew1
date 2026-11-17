@@ -553,6 +553,8 @@
         /* ===== 家族血統登記 ===== */
         .lin-rule { max-width: 640px; margin: 0 auto 14px; padding: 10px 16px; border: 2px dashed var(--border-color); line-height: 1.8; font-size: 1.05rem; }
         .lin-rule b { color: var(--accent-red); }
+        .lin-list { margin: 6px 0; padding-left: 1.4em; }
+        .lin-rule .ra { color: var(--accent-blue); font-weight: 900; } .lin-rule .rj { color: var(--accent-red); font-weight: 900; } .lin-rule .rm { color: var(--amber, #e0b84f); font-weight: 900; }
         .lin-quota { text-align: center; font-weight: 900; margin: 6px 0 12px; letter-spacing: 1px; }
         .lin-quota .qa { color: var(--accent-blue); } .lin-quota .qj { color: var(--accent-red); }
         .lin-progress { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 16px; }
@@ -1291,9 +1293,13 @@ window.addEventListener('error', function (e) {
     <div id="step-B" class="step-section">
         <h2>步驟二：家族血統抽籤</h2>
         <div class="lin-rule">
-            請依序按下「抽籤」，翻開你的<b>爺爺、奶奶、外公、外婆</b>是不是猶太人，由命運決定你的時代身分。<br>
-            猶太祖父母 <b>0～1 位</b> → 雅利安人；<b>2 位</b> → 混血兒；<b>3～4 位</b> → 猶太人。<br>
-            混血兒與猶太人抽同一副情境卡、使用同一套結局。歷史上，只有 1 位猶太祖父母的人屬於「二級混血者」，後來的政策傾向讓他們同化為雅利安人，因此遊戲中歸為雅利安人。
+            1935 年，納粹頒布《紐倫堡法案》，僅憑「<b>祖父母的宗教信仰</b>」便能決定一個人的生死命運。現在，請翻開你的爺爺、奶奶、外公、外婆，揭曉你的時代身分：
+            <ul class="lin-list">
+                <li><b>0～1 位</b>猶太祖父母｜<span class="ra">雅利安人</span>（歷史上 1 位者屬「二等混血兒」，因政策傾向同化，本體驗歸為雅利安人）</li>
+                <li><b>2 位</b>猶太祖父母｜<span class="rm">混血兒</span></li>
+                <li><b>3～4 位</b>猶太祖父母｜<span class="rj">猶太人</span></li>
+            </ul>
+            面對步步進逼的迫害，混血兒與猶太人將抽同一副情境卡，走向相同的命運終局。
         </div>
         <div id="lin-quota" class="lin-quota"></div>
         <div id="lin-progress" class="lin-progress"></div>
