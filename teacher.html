@@ -109,7 +109,7 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const arr = v => v ? (Array.isArray(v) ? v.filter(Boolean) : Object.keys(v).sort((a,b)=>a-b).map(k => v[k])) : [];
 const fmt = t => { const d = new Date(t); const p = n => String(n).padStart(2,'0'); return d.getFullYear()+'/'+p(d.getMonth()+1)+'/'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes()); };
-const roleName = r => r === 'A' ? '雅利安人' : '猶太人';
+const roleName = r => r === 'A' ? '雅利安人' : (r === 'M' ? '混血兒' : '猶太人');
 const pct = (a, b) => b ? Math.round(a * 100 / b) + '%' : '—';
 
 let RAW = {}, DB = null, TAB = 'students', SORT = { students: ['t', -1], cards: ['n', -1], games: ['t', -1] };
