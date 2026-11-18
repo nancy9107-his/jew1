@@ -749,6 +749,29 @@
         .player-input-group input:focus, select:focus { outline: 2px solid var(--amber); outline-offset: 1px; }
         #music-toggle-btn { color: var(--text-muted); border-radius: 2px; letter-spacing: 1px; font-family: inherit; }
 
+        /* 音量控制：喇叭按鈕 + 展開式拉桿面板 */
+        #audio-ctrls { position: absolute; top: 20px; right: 20px; z-index: 20; display: flex; gap: 6px; align-items: stretch; }
+        #audio-ctrls #music-toggle-btn { position: static; }
+        #volume-btn {
+            background: transparent; border: 1px solid var(--border-color); color: var(--text-muted);
+            padding: 4px 10px; cursor: pointer; font-size: 1.1rem; border-radius: 2px; font-family: inherit; line-height: 1;
+        }
+        #volume-btn:hover, #volume-btn[aria-expanded="true"] { background-color: var(--border-color); color: var(--parchment-bg); }
+        #volume-panel {
+            display: none; position: absolute; top: calc(100% + 6px); right: 0; width: 250px;
+            background: var(--card-bg); border: 1px solid var(--border-color); box-shadow: 4px 5px 0 rgba(0,0,0,0.6);
+            padding: 12px 14px 8px; color: var(--text-main); font-family: inherit; text-align: left;
+        }
+        #volume-panel.open { display: block; }
+        .vol-row { margin-bottom: 10px; }
+        .vol-head { display: flex; justify-content: space-between; font-size: 0.95rem; letter-spacing: 1px; margin-bottom: 4px; }
+        .vol-val { color: var(--amber); font-weight: bold; }
+        #volume-panel input[type=range] {
+            width: 100%; margin: 0; padding: 0; height: 30px; background: transparent;
+            accent-color: var(--amber); cursor: pointer; border: none;
+        }
+        .vol-note { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; margin-top: 2px; }
+
         /* 身分檔案 */
         .avatar-card { position: relative; border-radius: 4px; background: #24221e; padding-top: 34px; box-shadow: 4px 6px 14px rgba(0,0,0,0.6); }
         .dossier-no { position: absolute; top: 9px; left: 12px; font-size: 0.85rem; color: var(--text-muted); letter-spacing: 2px; }
@@ -1001,6 +1024,8 @@
             body { padding: 10px 8px; font-size: 1rem; align-items: flex-start; }
             .container { width: 100%; padding: 48px 16px 24px; border-width: 4px; }
             #music-toggle-btn { top: 8px; right: 8px; padding: 6px 10px; font-size: 0.85rem; }
+            #audio-ctrls { top: 8px; right: 8px; }
+            #volume-btn { padding: 4px 8px; font-size: 1rem; }
 
             h1 { font-size: 2rem; letter-spacing: 1px; padding-bottom: 14px; }
             h2 { font-size: 1.4rem; margin-bottom: 14px; letter-spacing: 1px; }
@@ -1193,7 +1218,24 @@ window.addEventListener('error', function (e) {
 <audio id="game-over-sound" src="2end.m4a" preload="auto"></audio>
 
 <div class="container">
-    <button id="music-toggle-btn" onclick="AudioController.toggleMusic()">開啟音樂</button>
+    <div id="audio-ctrls">
+        <button id="music-toggle-btn" onclick="AudioController.toggleMusic()">開啟音樂</button>
+        <button id="volume-btn" type="button" aria-label="調整音量" aria-expanded="false" aria-controls="volume-panel" onclick="AudioController.toggleVolumePanel(event)">🔊</button>
+        <div id="volume-panel" role="dialog" aria-label="音量設定">
+            <div class="vol-row">
+                <div class="vol-head"><label for="music-vol">♪ 背景音樂</label><span class="vol-val" id="music-vol-val">100%</span></div>
+                <input type="range" id="music-vol" min="0" max="100" step="5" value="100"
+                       oninput="AudioController.setMusicLevel(this.value / 100)">
+            </div>
+            <div class="vol-row">
+                <div class="vol-head"><label for="sfx-vol">✦ 音效</label><span class="vol-val" id="sfx-vol-val">100%</span></div>
+                <input type="range" id="sfx-vol" min="0" max="100" step="5" value="100"
+                       oninput="AudioController.setSfxLevel(this.value / 100)"
+                       onchange="AudioController.playClickSound()">
+            </div>
+            <div class="vol-note">設定會記在這台裝置，下次開啟沿用。</div>
+        </div>
+    </div>
 
     <div id="handoff-overlay" class="handoff-overlay" role="dialog" aria-modal="true" aria-labelledby="handoff-name">
         <div class="handoff-inner">
@@ -1601,6 +1643,8 @@ window.addEventListener('error', function (e) {
                     this._silentEl = a;
                     this.safePlay(a);
                 }
+                // iOS：若上次存的音樂音量不是 100%，在這次手勢中接上音量節點
+                this._routeMusicThroughWebAudio(); this._applyMusicVolume();
                 // 播放一個極短的無聲緩衝，完成 iOS 的解鎖
                 if (!this._wokeOnce) {
                     this._wokeOnce = true;
@@ -1626,6 +1670,13 @@ window.addEventListener('error', function (e) {
             } catch (e) {}
         },
         init: function() {
+            // 讀取上次的音量設定
+            this._loadVolume(); this._applyMusicVolume(); this._syncVolumeUI();
+            // 點面板以外的地方就收起音量面板
+            document.addEventListener('click', (e) => {
+                const p = document.getElementById('volume-panel');
+                if (p && p.classList.contains('open') && !(e.target.closest && e.target.closest('#audio-ctrls'))) this.toggleVolumePanel();
+            });
             // 每次使用者手勢都檢查一次，確保 Web Audio 處於運作狀態（手機可能在切換 App 後再次暫停）
             const wake = () => {
                 if (!this.audioCtx || this.audioCtx.state !== 'running' || !this._silentEl) this.wakeWebAudio();
@@ -1744,7 +1795,85 @@ window.addEventListener('error', function (e) {
         // 靜音旗標：同時控制 <audio> 與程式合成的音效
         muted: false,
         _applyMute: function() {
-            try { if (this._master) this._master.gain.value = this.muted ? 0 : this.sfxVolume; } catch (e) {}
+            try { if (this._master) this._master.gain.value = this.muted ? 0 : this.sfxVolume * this.sfxLevel; } catch (e) {}
+        },
+
+        // ==========================================================
+        // 音量設定（背景音樂、音效分開調整，記在 localStorage）
+        // ==========================================================
+        musicLevel: 1, // 背景音樂 0～1
+        sfxLevel: 1,   // 音效 0～1（再乘上 sfxVolume 倍率）
+        _musicGain: null,
+        _volumeLocked: null,
+        // iPad / iPhone 的 <audio>.volume 是唯讀的（設定無效），需改走 Web Audio 才能調整音樂音量
+        _isVolumeLocked: function() {
+            if (this._volumeLocked === null) {
+                try { const a = document.createElement('audio'); a.volume = 0.5; this._volumeLocked = Math.abs(a.volume - 0.5) > 0.01; }
+                catch (e) { this._volumeLocked = false; }
+            }
+            return this._volumeLocked;
+        },
+        // 只在 iOS 且音樂音量不是 100% 時，才把三個 <audio> 接到 Web Audio 的音量節點（必須在使用者手勢中執行）
+        _routeMusicThroughWebAudio: function() {
+            if (this._musicGain || !this._isVolumeLocked() || this.musicLevel >= 0.999) return;
+            try {
+                const c = this._ctx(); if (!c || !c.createMediaElementSource) return;
+                const g = c.createGain();
+                g.gain.value = this.musicLevel;
+                g.connect(c.destination);
+                ['bg-music', 'ending-music', 'game-over-sound'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) c.createMediaElementSource(el).connect(g);
+                });
+                this._musicGain = g;
+            } catch (e) { console.log('音樂音量節點建立失敗', e); }
+        },
+        _applyMusicVolume: function() {
+            const v = this.musicLevel;
+            if (this._musicGain) { try { this._musicGain.gain.value = v; } catch (e) {} }
+            ['bg-music', 'ending-music', 'game-over-sound'].forEach(id => {
+                const el = document.getElementById(id);
+                try { if (el) el.volume = this._musicGain ? 1 : v; } catch (e) {}
+            });
+        },
+        setMusicLevel: function(v) {
+            this.musicLevel = Math.max(0, Math.min(1, +v || 0));
+            this._routeMusicThroughWebAudio();
+            this._applyMusicVolume();
+            this._saveVolume(); this._syncVolumeUI();
+        },
+        setSfxLevel: function(v) {
+            this.sfxLevel = Math.max(0, Math.min(1, +v || 0));
+            this._applyMute();
+            this._saveVolume(); this._syncVolumeUI();
+        },
+        _saveVolume: function() {
+            try { localStorage.setItem('game1940_volume', JSON.stringify({ music: this.musicLevel, sfx: this.sfxLevel })); } catch (e) {}
+        },
+        _loadVolume: function() {
+            try {
+                const d = JSON.parse(localStorage.getItem('game1940_volume') || 'null');
+                if (d && typeof d.music === 'number') this.musicLevel = Math.max(0, Math.min(1, d.music));
+                if (d && typeof d.sfx === 'number') this.sfxLevel = Math.max(0, Math.min(1, d.sfx));
+            } catch (e) {}
+        },
+        _syncVolumeUI: function() {
+            const set = (id, v) => {
+                const r = document.getElementById(id), t = document.getElementById(id + '-val');
+                if (r) r.value = Math.round(v * 100);
+                if (t) t.textContent = Math.round(v * 100) + '%';
+            };
+            set('music-vol', this.musicLevel); set('sfx-vol', this.sfxLevel);
+            const b = document.getElementById('volume-btn');
+            if (b) b.textContent = (this.musicLevel === 0 && this.sfxLevel === 0) ? '🔇' : (this.musicLevel + this.sfxLevel < 1 ? '🔉' : '🔊');
+        },
+        toggleVolumePanel: function(ev) {
+            if (ev) ev.stopPropagation();
+            const p = document.getElementById('volume-panel'), b = document.getElementById('volume-btn');
+            if (!p) return;
+            const open = !p.classList.contains('open');
+            p.classList.toggle('open', open);
+            if (b) b.setAttribute('aria-expanded', open ? 'true' : 'false');
         },
 
         // ==========================================================
@@ -1764,7 +1893,7 @@ window.addEventListener('error', function (e) {
                     comp.threshold.value = -3; comp.knee.value = 0; comp.ratio.value = 20;
                     comp.attack.value = 0.002; comp.release.value = 0.1;
                     this._master = this.audioCtx.createGain();
-                    this._master.gain.value = this.muted ? 0 : this.sfxVolume;
+                    this._master.gain.value = this.muted ? 0 : this.sfxVolume * this.sfxLevel;
                     this._master.connect(comp);
                     comp.connect(this.audioCtx.destination);
                 }
